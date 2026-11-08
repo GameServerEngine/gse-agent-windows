@@ -70,8 +70,14 @@ is_preserved() {
 	return 1
 }
 
+# The agent is a perl process. The PID the caller passes can be a different
+# process from the one that holds the port, so find the real one by command line.
+agent_pids() {
+	pgrep -f "perl .*gse_agent.pl" 2>/dev/null
+}
+
 agent_running() {
-	[ -n "$AGENT_PID" ] && kill -0 "$AGENT_PID" 2>/dev/null
+	[ -n "$(agent_pids)" ]
 }
 
 start_agent() {
@@ -134,15 +140,21 @@ write_state running "Waiting for agent to stop" "" false
 # 1. Ask the agent to stop, then wait for it to exit.
 sleep 5
 if agent_running; then
-	log "Stopping agent $AGENT_PID"
-	kill -TERM "$AGENT_PID" 2>/dev/null || true
+	log "Stopping agent: $(agent_pids | tr '\n' ' ')"
+	for pid in $(agent_pids); do kill -TERM "$pid" 2>/dev/null || true; done
 fi
 waited=0
 while agent_running && [ "$waited" -lt 120 ]; do sleep 2; waited=$((waited + 2)); done
 if agent_running; then
-	log "Agent $AGENT_PID did not stop after 120s; ending it"
-	kill "$AGENT_PID" 2>/dev/null || true
+	log "Agent did not stop after 120s; ending it"
+	for pid in $(agent_pids); do kill -KILL "$pid" 2>/dev/null || true; done
 	sleep 5
+fi
+if agent_running; then
+	log "Agent still running; nothing was changed"
+	write_state failed "Could not stop the running agent; nothing was changed" "" false
+	rm -rf "$STAGE_DIR"
+	exit 1
 fi
 log "Agent stopped"
 
