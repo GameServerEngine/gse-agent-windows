@@ -178,7 +178,8 @@ fi
 log "Checksum verified"
 
 # 3. Keep one backup of the current install (replaces any older backup).
-rm -rf "$BACKUP_DIR" "$STAGE_DIR"
+# Keep the staged zip: it lives inside the stage folder.
+rm -rf "$BACKUP_DIR" "$STAGE_DIR/payload"
 mkdir -p "$BACKUP_DIR" "$STAGE_DIR" || fail_and_restore "Cannot create backup or staging folder"
 ( cd "$AGENT_DIR" && find . -type f ) | while IFS= read -r rel; do
 	rel="${rel#./}"
