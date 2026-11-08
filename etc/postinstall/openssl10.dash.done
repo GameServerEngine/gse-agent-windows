@@ -1,0 +1,14 @@
+if [ ! -e "/etc/pki/tls/openssl10.cnf" ]
+then
+    /usr/bin/mkdir -p "/etc/pki/tls"
+    /usr/bin/cp "/etc/defaults/etc/pki/tls/openssl10.cnf" "/etc/pki/tls/openssl10.cnf"
+else
+        if [ -f /etc/pki/tls/openssl10.cnf  -a  -x /usr/bin/diff ]
+        then
+            /usr/bin/mkdir -p "/var/cache/setup/etc/pki/tls"
+            /usr/bin/rm -f "/var/cache/setup//etc/pki/tls/openssl10.cnf.diff"
+            /usr/bin/diff -wut "/etc/pki/tls/openssl10.cnf" "/etc/defaults/etc/pki/tls/openssl10.cnf" > "/var/cache/setup//etc/pki/tls/openssl10.cnf.diff" ||
+              echo "Defaults for /etc/pki/tls/openssl10.cnf differ from actual file, please check /var/cache/setup//etc/pki/tls/openssl10.cnf.diff"
+        fi
+fi
+

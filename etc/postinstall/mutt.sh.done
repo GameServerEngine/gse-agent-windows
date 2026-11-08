@@ -1,0 +1,8 @@
+#!/bin/sh
+copy_maybe() {
+    if ! [ -e $1 ] ; then
+        cp /etc/defaults$1 $1 2>/dev/null
+    fi
+}
+copy_maybe /etc/Muttrc
+copy_maybe /etc/mime.types

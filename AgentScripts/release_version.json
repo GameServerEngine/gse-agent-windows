@@ -1,0 +1,6 @@
+{
+  "component": "Agent-Windows",
+  "release_version": "0.1.0",
+  "release_channel": "stable",
+  "manifest_path": "AgentScripts/release_manifest.json"
+}

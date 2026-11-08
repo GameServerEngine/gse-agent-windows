@@ -1,0 +1,83 @@
+# Windows Agent Installation Artifacts
+# These files should not be committed to the repository
+/steamcmd.zip
+
+# Generated Config Files
+AgentScripts/Cfg/Config.pm
+AgentScripts/Cfg/Preferences.pm
+AgentScripts/Cfg/bash_prefs.cfg
+
+# Runtime Files
+AgentScripts/gsp_agent.log
+AgentScripts/*.pid
+AgentScripts/gsp_agent_run.pid
+AgentScripts/gsp_agent_foreground.pid
+AgentScripts/gsp_agent_service.pid
+AgentScripts/GSP.pid
+var/run/*.pid
+
+# Screenlogs (server console output)
+AgentScripts/screenlogs/
+
+# Startup Hints
+AgentScripts/startups/
+
+# Runtime Status Files
+AgentScripts/runtime_status/
+
+# Temporary and Cache Files
+AgentScripts/tmp/
+AgentScripts/shared/
+*.tmp
+*.swp
+*.swo
+*~
+
+# SteamCMD Cache
+AgentScripts/steamcmd/config/
+AgentScripts/steamcmd/linux32/
+AgentScripts/steamcmd/logs/
+AgentScripts/steamcmd/package/
+AgentScripts/steamcmd/public/
+AgentScripts/steamcmd/siteserverui/
+AgentScripts/steamcmd/steamapps/
+AgentScripts/steamcmd/*.log
+AgentScripts/steamcmd/*.old
+AgentScripts/steamcmd/*.tmp
+AgentScripts/steamcmd/*.mdmp
+AgentScripts/steamcmd/steamclient.dll
+AgentScripts/steamcmd/steamclient64.dll
+AgentScripts/steamcmd/tier0_s.dll
+AgentScripts/steamcmd/vstdlib_s.dll
+
+# Logs and Backups (created at C:\GSE\Agent during installation)
+logs/
+backups/
+
+# Windows-specific files
+Thumbs.db
+*.lnk
+.DS_Store
+
+# Inno Setup uninstaller leftovers (legacy installer; not produced by the
+# current CMD/PowerShell installer flow)
+unins000.*
+
+# Editor and IDE Files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+
+# Agent Home Directories (customer servers)
+home/
+
+# Run logs (may contain commands or credentials; never commit)
+.devplus/shell-runs/
+.devplus/command-runs/
+.devplus/leroy-runs/
+.devplus/operations/
+.devplus/inspections/
+.devplus/

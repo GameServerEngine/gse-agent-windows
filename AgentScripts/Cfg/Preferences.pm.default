@@ -1,0 +1,16 @@
+%Cfg::Preferences = (
+	screen_log_local => '1',
+	delete_logs_after => '30',
+	gsp_manages_ftp => '1',
+	ftp_method => 'PureFTPd',
+	gsp_autorestart_server => '1',
+	protocol_shutdown_waittime => '10',
+	windows_home_acl_isolation => '1',
+	PortValidationEnabled => '1',
+	StartupValidationTimeoutSeconds => '180',
+	PortCheckIntervalSeconds => '5',
+	container_runtime_enabled => '0',
+	container_runtime => 'docker',
+	container_runtime_docker_binary => 'docker',
+	container_data_root => '',
+);

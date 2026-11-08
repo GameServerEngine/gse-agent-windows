@@ -1,0 +1,108 @@
+# Cygwin-specific notes for screen
+
+screen has been reported to work well inside the following terminals in Cygwin:
+
+* mintty
+* rxvt
+* xterm
+
+If you use screen in a DOS console, you will be able to detach sessions, but
+reattaching to them later is likely to fail. Then you'll have to use `screen
+-wipe` to clear out your old unusable sessions, and you may have to manually
+kill their child processes.
+
+screen may or may not work well with other terminals in Cygwin. Please post
+test reports to the Cygwin mailing list.
+
+## Color support
+
+screen version 5 now includes both truecolor (24-bit) and 256-color terminal
+support. To determine how many colors your terminal can display now, run
+
+    /usr/share/screen/colortest.sh
+
+Instructions at the bottom of the output will help you to determine how many
+colors your terminal supports. If you want to get more colors, read on.
+
+### Truecolor
+
+To use truecolor, set
+
+    truecolor on
+
+in your ~/.screenrc. (This option is undocumented as of screen version 5.0.1.)
+Then kill your screen session (`C-A \`) and start a new one. According to
+https://github.com/termstandard/colors, you may also need to set one of the
+following in your shell environment:
+
+    COLORTERM=truecolor
+	COLORTERM=24
+
+### 256-color
+
+If truecolor support won't work for you, to get 256-color support you may need
+to set your terminal type to a 256-color variant, both outside and inside of
+screen. A simple way to do this is by invoking screen as e.g.
+
+    TERM=xterm-256color screen -T screen-256color
+
+The correct value of TERM depends on your terminal type, and is believed to be
+well described by
+
+    case $TERM in
+      xterm)  TERM=xterm-256color ;; # for xterm, PuTTY, MinTTY
+      rxvt)   TERM=rxvt-256color  ;; # for rxvt
+      cygwin) ;; # DOS terminal - fewer than 16 colors are supported
+    esac
+
+However as of screen version 5, I now get better results by leaving TERM and
+term unset. The best way to find out is just to try it.
+
+You might be able to set the above permanently in your environment, i.e. by
+putting it into your .bashrc file, without any ill effects. If you know of any
+additions or corrections to the above logic, please post the information to the
+Cygwin mailing list.
+
+To avoid having to specify '-T screen-256color' every time, you can put
+
+    term screen-256color
+
+into your .screenrc or /etc/screenrc file.
+
+
+## FAT file system warning
+
+If your /tmp directory is stored on a FAT file system, you won't be able to
+reattach to screen sessions after you detach from them. The reason is that to
+preserve the security of your session, screen requires that restrictive
+permissions be set on the directory where it stores its socket files, in
+/tmp/uscreens by default. But the FAT file system doesn't support file
+permissions at all, so it's incapable of setting the permissions tightly
+enough. If this is your case, then when you try to reattach to a detached
+session, screen will give you the following unhelpful error message:
+
+    There is a screen on:
+    There is no screen to be resumed.
+
+You can use the 'mount' command to see which type of file system your root
+directory is stored on:
+
+    mount | grep 'on / '
+
+(or `mount | grep 'on /tmp '` in case you've mounted a separate file system on
+/tmp). If the result says the type is fat, fat32, vfat, or some other kind of
+fat, then you won't be able to reattach to screen sessions.
+
+To solve this problem, you need to tell screen to store its socket files in a
+directory on a file system that does support file permissions, such as NTFS. For
+example, you could put the following in your ~/.bash_login file:
+
+    export SCREENDIR=/cygdrive/c/WINDOWS/Temp/screen/$USER
+
+assuming that C:/Windows/Temp/screen/$USER is an existing NTFS directory where
+you have write permission. Another solution would be to mount an NTFS directory
+as your /tmp directory, e.g. by putting
+
+    C:/WINDOWS/Temp /tmp some_fs binary 0 0
+
+into /etc/fstab or /etc/fstab.d/$USER. See mount(1).

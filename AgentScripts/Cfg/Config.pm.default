@@ -1,0 +1,12 @@
+%Cfg::Config = (
+	logfile => '/AgentScripts/gsp_agent.log',
+	listen_port => '12679',
+	listen_ip => '0.0.0.0',
+	version => '1.4.1031.2045',
+	key => 'CHANGE_ME_PANEL_AGENT_KEY',
+	steam_license => 'Accept',
+	web_api_url => '',
+	remote_server_id => '',
+);
+
+1;

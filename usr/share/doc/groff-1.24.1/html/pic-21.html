@@ -1,0 +1,875 @@
+<!-- Creator     : groff version 1.24.1 -->
+<!-- CreationDate: Mon Mar 16 21:28:01 2026 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>pic-21.html</title>
+
+</head>
+<hr>
+[ <a href="pic-20.html">prev</a> | <a href="pic-22.html">next</a> | <a href="pic.html">top</a> ]
+<hr>
+
+
+<h2>21. PIC Reference
+<a name="21. PIC Reference"></a>
+</h2>
+
+
+<p style="margin-top: 1em">This is an annotated grammar of
+<b>pic</b>.</p>
+
+<h3>21.1. Lexical Items
+<a name="21.1. Lexical Items"></a>
+</h3>
+
+
+<p style="margin-top: 1em">In general, <b>pic</b> is a
+free-format, token-oriented language that ignores whitespace
+outside strings. But certain lines and constructs are
+specially interpreted at the lexical level:</p>
+
+<p style="margin-top: 1em">A comment begins with <b>#</b>
+and continues to <b>\n</b> (comments may also follow text in
+a line). A line beginning with a period or backslash may be
+interpreted as text to be passed through to the
+post-processor, depending on command-line options. An
+end-of-line backslash is interpreted as a request to
+continue the line; the backslash and following newline are
+ignored.</p>
+
+<p style="margin-left:28%; margin-top: 1em">Here are the
+grammar terminals:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="7%">
+
+
+<p style="margin-top: 1em"><small>INT</small></p></td>
+<td width="4%"></td>
+<td width="44%">
+
+
+<p style="margin-top: 1em">A positive integer.</p></td>
+<td width="34%">
+</td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>NUMBER</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%"></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p>A floating point numeric constant. May contain a decimal
+point or be expressed in scientific notation in the style of
+<i>printf</i>(3)&rsquo;s %e escape. A trailing
+&lsquo;i&rsquo; or &lsquo;I&rsquo; (indicating the unit
+&lsquo;inch&rsquo;) is ignored.</p></td></tr>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+
+<p style="margin-top: 1em"><small>TEXT</small></p></td>
+<td width="2%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">A string enclosed in double
+quotes. A double quote within <small>TEXT</small> must be
+preceded by a backslash. Instead of <small>TEXT</small> you
+can use</p></td></tr>
+</table>
+
+<p style="margin-left:46%; margin-top: 1em">sprintf ( TEXT
+[, &lt;expr&gt; ...] )</p>
+
+<p style="margin-left:37%; margin-top: 1em">except after
+the &lsquo;until&rsquo; and &lsquo;last&rsquo; keywords, and
+after all ordinal keywords (&lsquo;th&rsquo; and
+friends).</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="18%">
+
+
+<p style="margin-top: 1em"><small>VARIABLE</small></p></td>
+<td width="71%">
+</td></tr>
+</table>
+
+<p style="margin-left:37%;">A string starting with a
+character from the set [a-z], optionally followed by one or
+more characters of the set [a-zA-Z0-9_]. (Values of
+variables are preserved across pictures.)</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="11%">
+
+
+<p style="margin-top: 1em"><small>LABEL</small></p></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">A string starting with a
+character from the set [A-Z], optionally followed by one or
+more characters of the set [a-zA-Z0-9_].</p></td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>COMMAND-LINE</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>A line starting with a command character
+(&lsquo;.&rsquo; in groff mode, &lsquo;\&rsquo; in TeX
+mode).</p> </td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>BALANCED-TEXT</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>A string either enclosed by &lsquo;{&rsquo; and
+&lsquo;}&rsquo; or with <i>X</i> and <i>X</i>, where
+<i>X</i> doesn&rsquo;t occur in the string.</p></td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>BALANCED-BODY</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>Delimiters as in <small>BALANCED-TEXT</small> ; the body
+is interpreted as
+&lsquo;<b>&lang;command&rang;...</b>&rsquo;.</p> </td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>FILENAME</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+
+
+<p>The name of a file. This has the same semantics as
+<small>TEXT</small> .</p></td></tr>
+</table>
+
+
+<p style="margin-left:28%; margin-top: 1em"><small>MACRONAME</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="57%">
+
+
+<p>Either <small>VARIABLE</small> or <small>LABEL</small>
+.</p> </td>
+<td width="21%">
+</td></tr>
+</table>
+
+<h3>21.2. Semi-Formal Grammar
+<a name="21.2. Semi-Formal Grammar"></a>
+</h3>
+
+
+<p style="margin-top: 1em">Tokens not enclosed in
+&lang;&rang; are literals, except:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="4%">
+
+
+<p style="margin-top: 1em">1.</p></td>
+<td width="7%"></td>
+<td width="89%">
+
+
+<p style="margin-top: 1em"><b>\n</b> is a newline.</p></td></tr>
+<tr valign="top" align="left">
+<td width="4%">
+
+
+<p style="margin-top: 1em">2.</p></td>
+<td width="7%"></td>
+<td width="89%">
+
+
+<p style="margin-top: 1em">Three dots is a suffix meaning
+&lsquo;replace with 0 or more repetitions of the preceding
+element(s).</p> </td></tr>
+<tr valign="top" align="left">
+<td width="4%">
+
+
+<p style="margin-top: 1em">3.</p></td>
+<td width="7%"></td>
+<td width="89%">
+
+
+<p style="margin-top: 1em">An enclosure in square brackets
+has its usual meaning of &lsquo;this clause is
+optional&rsquo;.</p> </td></tr>
+<tr valign="top" align="left">
+<td width="4%">
+
+
+<p style="margin-top: 1em">4.</p></td>
+<td width="7%"></td>
+<td width="89%">
+
+
+<p style="margin-top: 1em">Square-bracket-enclosed portions
+within tokens are optional. Thus, &lsquo;h[eigh]t&rsquo;
+matches either &lsquo;height&rsquo; or &lsquo;ht&rsquo;.</p></td></tr>
+</table>
+
+<p style="margin-top: 1em">If one of these special tokens
+has to be referred to literally, it is surrounded with
+single quotes.</p>
+
+<p style="margin-top: 1em">The top-level <b>pic</b> object
+is a picture.</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;picture&gt;
+::= <br>
+.PS [NUMBER [NUMBER]]\n <br>
+&lt;statement&gt; ... <br>
+.PE \n</p>
+
+<p style="margin-top: 1em">The arguments, if present,
+represent the width and height of the picture, causing
+<b>pic</b> to attempt to scale it to the given dimensions in
+inches. In no case, however, the X and Y&nbsp;dimensions of
+the picture exceed the values of the style variables
+<b>maxpswid</b> and <b>maxpsheight</b> (which default to the
+normal 8.5i by 11i page size).</p>
+
+<p style="margin-top: 1em">If the ending &lsquo;.PE&rsquo;
+is replaced by &lsquo;.PF&rsquo; or &lsquo;.PY&rsquo;, the
+page vertical position is restored to its value at the time
+&lsquo;.PS&rsquo; was encountered. Another alternate form of
+invocation is &lsquo;.PS&nbsp;&lt; <small>FILENAME</small>
+&rsquo;, which replaces the &lsquo;.PS&rsquo; line with a
+file to be interpreted by <b>pic</b> (but this feature is
+deprecated).</p>
+
+<p style="margin-top: 1em">The &lsquo;.PS&rsquo;,
+&lsquo;.PE&rsquo;, &lsquo;.PF&rsquo;, and &lsquo;.PY&rsquo;
+macros to perform centering and scaling are normally
+supplied by the post-processor.</p>
+
+<p style="margin-top: 1em">In the following, either
+&lsquo;|&rsquo; or a new line starts an alternative.</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;statement&gt;
+::= <br>
+&lt;command&gt; ; <br>
+&lt;command&gt; \n <br>
+&lt;command&gt; ::= <br>
+&lt;primitive&gt; [&lt;attribute&gt;] <br>
+LABEL : [;] &lt;command&gt; <br>
+LABEL : [;] &lt;command&gt; [&lt;position&gt;] <br>
+{ &lt;command&gt; ... } <br>
+VARIABLE [:] = &lt;any-expr&gt; <br>
+figname = MACRONAME <br>
+up | down | left | right <br>
+COMMAND-LINE <br>
+command &lt;print-arg&gt; ... <br>
+print &lt;print-arg&gt; ... <br>
+sh BALANCED-TEXT <br>
+copy FILENAME <br>
+copy [FILENAME] thru MACRONAME [until TEXT] <br>
+copy [FILENAME] thru BALANCED-BODY [until TEXT] <br>
+for VARIABLE = &lt;expr&gt; to &lt;expr&gt; [by [*]
+&lt;expr&gt;] do BALANCED-BODY <br>
+if &lt;any-expr&gt; then BALANCED-BODY [else BALANCED-BODY]
+<br>
+reset [VARIABLE [[,] VARIABLE ...]] <br>
+&lt;print-arg&gt; ::= <br>
+TEXT <br>
+&lt;expr&gt; <br>
+&lt;position&gt;</p>
+
+<p style="margin-top: 1em">The current position and
+direction are saved on entry to a <br>
+&lsquo;{&nbsp;...&nbsp;}&rsquo; construction and restored on
+exit from it.</p>
+
+<p style="margin-top: 1em">Note that in &lsquo;if&rsquo;
+constructions, newlines can only occur in
+<small>BALANCED-BODY</small> . This means that</p>
+
+<p style="margin-left:28%; margin-top: 1em">if <br>
+{ ... } <br>
+else <br>
+{ ... }</p>
+
+<p style="margin-top: 1em">fails. You have to use the
+braces on the same line as the keywords:</p>
+
+<p style="margin-left:28%; margin-top: 1em">if { <br>
+... <br>
+} else { <br>
+... <br>
+}</p>
+
+<p style="margin-top: 1em">This restriction doesn&rsquo;t
+hold for the body after the &lsquo;do&rsquo; in a
+&lsquo;for&rsquo; construction.</p>
+
+<p style="margin-top: 1em">At the beginning of each
+picture, &lsquo;figname&rsquo; is reset to the vbox name
+&lsquo;graph&rsquo;; this command has only a meaning in TeX
+mode. While the grammar rules allow digits and the
+underscore in the value of &lsquo;figname&rsquo;, TeX
+normally accepts uppercase and lowercase letters only as box
+names (you have to use &lsquo;\csname&rsquo; if you really
+need to circumvent this limitation).</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;any-expr&gt;
+::= <br>
+&lt;expr&gt; <br>
+&lt;text-expr&gt; <br>
+&lt;any-expr&gt; &lt;logical-op&gt; &lt;any-expr&gt; <br>
+! &lt;any-expr&gt; <br>
+&lt;logical-op&gt; ::= <br>
+== | != | &amp;&amp; | &rsquo;||&rsquo; <br>
+&lt;text-expr&gt; ::= <br>
+TEXT == TEXT <br>
+TEXT != TEXT</p>
+
+<p style="margin-top: 1em">Logical operators are handled
+specially by <b>pic</b> since they can deal with text
+strings also. <b>pic</b> uses <i>strcmp</i>(3) to test for
+equality of strings; an empty string is considered as
+&lsquo;false&rsquo; for &lsquo;&amp;&amp;&rsquo; and
+&lsquo;||&rsquo;.</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;primitive&gt;
+::= <br>
+box # closed object &mdash; rectangle <br>
+circle # closed object &mdash; circle <br>
+ellipse # closed object &mdash; ellipse <br>
+polygon # closed object &mdash; polygon <br>
+arc # open object &mdash; quarter-circle <br>
+line # open object &mdash; line <br>
+arrow # open object &mdash; line with arrowhead <br>
+spline # open object &mdash; spline curve <br>
+move <br>
+TEXT TEXT ... # text within invisible box <br>
+plot &lt;expr&gt; TEXT # formatted text <br>
+&rsquo;[&rsquo; &lt;command&gt; ... &rsquo;]&rsquo;</p>
+
+<p style="margin-top: 1em">Drawn objects within
+&lsquo;[&nbsp;...&nbsp;]&rsquo; are treated as a single
+composite object with a rectangular shape (that of the
+bounding box of all the elements). Variable and label
+assignments within a block are local to the block. Current
+direction of motion is restored to the value at start of
+block upon exit. Position is <i>not</i> restored (unlike
+&lsquo;{&nbsp;}&rsquo;); instead, the current position
+becomes the exit position for the current direction on the
+block&rsquo;s bounding box.</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;attribute&gt;
+::= <br>
+h[eigh]t &lt;expr&gt; # set height of closed figure <br>
+wid[th] &lt;expr&gt; # set width of closed figure <br>
+rad[ius] &lt;expr&gt; # set radius of circle/arc <br>
+diam[eter] &lt;expr&gt; # set diameter of circle/arc <br>
+up [&lt;expr&gt;] # move up <br>
+down [&lt;expr&gt;] # move down <br>
+left [&lt;expr&gt;] # move left <br>
+right [&lt;expr&gt;] # move right <br>
+from &lt;position&gt; # set from position of open figure
+<br>
+to &lt;position&gt; # set to position of open figure <br>
+at &lt;position&gt; # set center of open figure <br>
+with &lt;path&gt; # fix corner/named point at specified
+location <br>
+with &lt;position&gt; # fix position of object at specified
+location <br>
+by &lt;expr-pair&gt; # set object&rsquo;s attachment point
+<br>
+then # sequential segment composition <br>
+dotted [&lt;expr&gt;] # set dotted line style <br>
+dashed [&lt;expr&gt;] # set dashed line style <br>
+thick[ness] &lt;expr&gt; # set thickness of lines <br>
+chop [&lt;expr&gt;] # chop end(s) of segment <br>
+&rsquo;-&gt;&rsquo; | &rsquo;&lt;-&rsquo; |
+&rsquo;&lt;-&gt;&rsquo; # decorate with arrows <br>
+invis[ible] # make primitive invisible <br>
+solid # set solid line style <br>
+fill[ed] [&lt;expr&gt;] # fill closed figure with optional
+density <br>
+xscaled &lt;expr&gt; # slant box into x direction <br>
+yscaled &lt;expr&gt; # slant box into y direction <br>
+colo[u]r[ed] TEXT # set fill and outline color for figure
+<br>
+outline[d] TEXT # set outline color for figure <br>
+shaded TEXT # set fill color for figure <br>
+same # copy size of previous object <br>
+cw | ccw # set orientation of curves <br>
+ljust | rjust # adjust text horizontally <br>
+above | below # adjust text vertically <br>
+aligned # align parallel to object <br>
+TEXT TEXT ... # text within object <br>
+&lt;expr&gt; # motion in the current direction</p>
+
+<p style="margin-top: 1em">Missing attributes are supplied
+from defaults; inappropriate ones are silently ignored. For
+lines, splines, and arcs, height and width refer to
+arrowhead size.</p>
+
+<p style="margin-top: 1em">The &lsquo;at&rsquo; primitive
+sets the center of the current object. The
+&lsquo;with&rsquo; attribute fixes the specified feature of
+the given object to a specified location. (Note that
+&lsquo;with&rsquo; is incorrectly described in the Kernighan
+paper.)</p>
+
+<p style="margin-top: 1em">The &lsquo;by&rsquo; primitive
+is not documented in the tutorial portion of the Kernighan
+paper, and should probably be considered unreliable.</p>
+
+<p style="margin-top: 1em">The primitive
+&lsquo;arrow&rsquo; is a synonym for
+&lsquo;line&nbsp;-&gt;&rsquo;.</p>
+
+<p style="margin-top: 1em">Text is normally an attribute of
+some object, in which case successive strings are vertically
+stacked and centered on the object&rsquo;s center by
+default. Standalone text is treated as though placed in an
+invisible box.</p>
+
+<p style="margin-top: 1em">A text item consists of a string
+or sprintf-expression, optionally followed by positioning
+information. Text (or strings specified with
+&lsquo;sprintf&rsquo;) may contain font changes, size
+changes, and local motions, provided those changes are
+undone before the end of the current item. Text may also
+contain \-escapes denoting special characters. The base font
+and specific set of escapes supported is implementation
+dependent, but supported escapes always include the
+following:</p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="18%">
+
+
+<p style="margin-top: 1em">\fR, \f1</p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">Set Roman style (the
+default)</p> </td></tr>
+<tr valign="top" align="left">
+<td width="18%">
+
+
+<p style="margin-top: 1em">\fI, \f2</p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">Set Italic style</p></td></tr>
+<tr valign="top" align="left">
+<td width="18%">
+
+
+<p style="margin-top: 1em">\fB, \f3</p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">Set Bold style</p></td></tr>
+<tr valign="top" align="left">
+<td width="18%">
+
+
+<p style="margin-top: 1em">\fP</p></td>
+<td width="4%"></td>
+<td width="78%">
+
+
+<p style="margin-top: 1em">Revert to previous style; only
+works one level deep, does not stack.</p></td></tr>
+</table>
+
+<p style="margin-top: 1em">Color names are dependent on the
+pic implementation, but in all modern versions color names
+recognized by the X&nbsp;window system are supported.</p>
+
+<p style="margin-top: 1em">A position is an (x,y)
+coordinate pair. There are lots of different ways to specify
+positions:</p>
+
+
+<p style="margin-left:28%; margin-top: 1em">&lt;position&gt;
+::= <br>
+&lt;position-not-place&gt; <br>
+&lt;place&gt; <br>
+( &lt;position&gt; ) <br>
+&lt;position-not-place&gt; ::= <br>
+&lt;expr-pair&gt; <br>
+&lt;position&gt; + &lt;expr-pair&gt; <br>
+&lt;position&gt; - &lt;expr-pair&gt; <br>
+( &lt;position&gt; , &lt;position&gt; ) <br>
+&lt;expr&gt; [of the way] between &lt;position&gt; and
+&lt;position&gt; <br>
+&lt;expr&gt; &rsquo;&lt;&rsquo; &lt;position&gt; ,
+&lt;position&gt; &rsquo;&gt;&rsquo; <br>
+&lt;expr-pair&gt; ::= <br>
+&lt;expr&gt; , &lt;expr&gt; <br>
+( expr-pair ) <br>
+&lt;place&gt; ::= <br>
+&lt;label&gt; <br>
+&lt;label&gt; &lt;corner&gt; <br>
+&lt;label&gt; &lt;reference-point&gt; <br>
+&lt;corner&gt; [of] &lt;label&gt; <br>
+&lt;reference-point&gt; of &lt;label&gt; <br>
+Here <br>
+&lt;label&gt; ::= <br>
+LABEL [. LABEL ...] <br>
+&lt;nth-primitive&gt; <br>
+&lt;corner&gt; ::= <br>
+.n | .e | .w | .s <br>
+.ne | .se | .nw | .sw <br>
+.c[enter] | .start | .end <br>
+.t[op] | .b[ot[tom]] | .l[eft] | .r[ight] <br>
+left | right | &lt;top-of&gt; | &lt;bottom-of&gt; <br>
+&lt;north-of&gt; | &lt;south-of&gt; | &lt;east-of&gt; |
+&lt;west-of&gt; <br>
+&lt;center-of&gt; | &lt;start-of&gt; | &lt;end-of&gt; <br>
+upper left | lower left | upper right | lower right <br>
+&lt;reference-point&gt; ::= <br>
+.v[er[tex]] &lt;expr&gt; <br>
+.v[er[tex]] ` &lt;expr&gt; ' <br>
+.mid[point] &lt;expr&gt; <br>
+.mid[point] ` &lt;expr&gt; ' <br>
+&lt;<i>xxx</i>-of&gt; ::= <i><br>
+xxx</i> # followed by &lsquo;of&rsquo; <br>
+&lt;nth-primitive&gt; ::= <br>
+&lt;ordinal&gt; &lt;object-type&gt; <br>
+[&lt;ordinal&gt;] last &lt;object-type&gt; <br>
+&lt;ordinal&gt; ::= <br>
+INT th <br>
+INT st | INT nd | INT rd <br>
+` &lt;any-expr&gt; 'th <br>
+&lt;object-type&gt; ::= <br>
+box <br>
+circle <br>
+ellipse <br>
+polygon <br>
+arc <br>
+line <br>
+arrow <br>
+spline <br>
+&rsquo;[]&rsquo; <br>
+TEXT</p>
+
+<p style="margin-top: 1em">As Kernighan notes, &ldquo;since
+barbarisms like <b>1th</b> and <b>3th</b> are barbaric,
+synonyms like <b>1st</b> and <b>3rd</b> are accepted as
+well.&rdquo; Objects of a given type are numbered from 1
+upward in order of declaration; the <b>last</b> modifier
+counts backward.</p>
+
+<p style="margin-top: 1em">The &ldquo;'th&rdquo; form
+(which allows you to select a previous object with an
+expression, as opposed to a numeric literal) is not
+documented in DWB&rsquo;s <i>pic</i>(1).</p>
+
+<p style="margin-top: 1em">The &lang;<i>xxx</i>-of&rang;
+rule is special: The lexical parser checks whether
+<i>xxx</i> is followed by the token &lsquo;of&rsquo; without
+eliminating it so that the grammar parser can still see
+&lsquo;of&rsquo;. Valid examples of specifying a place with
+corner and label are thus</p>
+
+<p style="margin-left:28%; margin-top: 1em">A .n <br>
+.n of A <br>
+.n A <br>
+north of A</p>
+
+<p style="margin-top: 1em">while</p>
+
+<p style="margin-left:28%; margin-top: 1em">north A <br>
+A north</p>
+
+<p style="margin-top: 1em">both cause a syntax error. (DWB
+<b>pic</b> also allows the weird form
+&lsquo;A&nbsp;north&nbsp;of&rsquo;.)</p>
+
+<p style="margin-top: 1em">Here the special rules for the
+&lsquo;with&rsquo; keyword using a path:</p>
+
+<p style="margin-left:28%; margin-top: 1em">&lt;path&gt;
+::= <br>
+&lt;relative-path&gt; <br>
+( &lt;relative-path&gt; , &lt;relative-path&gt; ) <br>
+&lt;relative-path&gt; ::= <br>
+&lt;corner&gt; <br>
+. LABEL [. LABEL ...] [&lt;corner&gt;]</p>
+
+<p style="margin-top: 1em">The following style variables
+control output:</p>
+
+
+<p align="center"><img src="img/pic-53.png" alt="Image img/pic-53.png"></p>
+
+<p style="margin-top: 1em">Any of these can be set by
+assignment, or reset using the <b>reset</b> statement. Style
+variables assigned within &lsquo;[&nbsp;]&rsquo; blocks are
+restored to their beginning-of-block value on exit;
+top-level assignments persist across pictures. Dimensions
+are divided by <b>scale</b> on output.</p>
+
+<p style="margin-top: 1em">All <b>pic</b> expressions are
+evaluated in floating point; units are always inches (a
+trailing &lsquo;i&rsquo; or &lsquo;I&rsquo; is ignored).
+Expressions have the following simple grammar, with
+semantics very similar to C&nbsp;expressions:</p>
+
+<p style="margin-left:28%; margin-top: 1em">&lt; <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+: <br>
+: <br>
+= <br>
+V <br>
+A <br>
+R <br>
+I <br>
+A <br>
+B <br>
+L <br>
+E <br>
+N <br>
+U <br>
+M <br>
+B <br>
+E <br>
+R <br>
+&lt; <br>
+p <br>
+l <br>
+a <br>
+c <br>
+e <br>
+&gt; <br>
+&lt; <br>
+p <br>
+l <br>
+a <br>
+c <br>
+e <br>
+- <br>
+a <br>
+t <br>
+t <br>
+r <br>
+i <br>
+b <br>
+u <br>
+t <br>
+e <br>
+&gt; <br>
+&lt; <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+&lt; <br>
+o <br>
+p <br>
+&gt; <br>
+&lt; <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+- <br>
+&lt; <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+( <br>
+&lt; <br>
+a <br>
+n <br>
+y <br>
+- <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+) <br>
+! <br>
+&lt; <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+&lt; <br>
+f <br>
+u <br>
+n <br>
+c <br>
+1 <br>
+&gt; <br>
+( <br>
+&lt; <br>
+a <br>
+n <br>
+y <br>
+- <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+) <br>
+&lt; <br>
+f <br>
+u <br>
+n <br>
+c <br>
+2 <br>
+&gt; <br>
+( <br>
+&lt; <br>
+a <br>
+n <br>
+y <br>
+- <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+, <br>
+&lt; <br>
+a <br>
+n <br>
+y <br>
+- <br>
+e <br>
+x <br>
+p <br>
+r <br>
+&gt; <br>
+) <br>
+r <br>
+a <br>
+n <br>
+d <br>
+( <br>
+) <br>
+&lt;place-attribute&gt; <br>
+.x | .y | .h[eigh]t | .wid[th] | .rad <br>
+&lt;op&gt; ::= <br>
++ | - | * | / | % | ˆ | &rsquo;&lt;&rsquo; |
+&rsquo;&gt;&rsquo; | &rsquo;&lt;=&rsquo; |
+&rsquo;&gt;=&rsquo; <br>
+&lt;func1&gt; ::= <br>
+sin | cos | log | exp | sqrt | int | rand | srand <br>
+&lt;func2&gt; ::= <br>
+atan2 | max | min</p>
+
+<p style="margin-top: 1em">Both <b>exp</b> and <b>log</b>
+are base 10; <b>int</b> does integer truncation; and
+<b>rand()</b> returns a random number in [0-1).</p>
+
+<p style="margin-top: 1em">There are <b>define</b> and
+<b>undef</b> statements which are not part of the grammar
+(they behave as pre-processor macros to the language). These
+may be used to define pseudo-functions.</p>
+
+<p style="margin-left:28%; margin-top: 1em"><b>define</b>
+<i>name</i> <b>{</b> <i>replacement-text</i> <b>}</b></p>
+
+<p style="margin-top: 1em">This defines <i>name</i> as a
+macro to be replaced by the replacement text (not including
+the braces). The macro may be called as</p>
+
+
+<p style="margin-left:28%; margin-top: 1em"><i>name</i><b>(</b><i>arg1,
+arg2, ..., argn</i><b>)</b></p>
+
+<p style="margin-top: 1em">The arguments (if any) are
+substituted for tokens $1, $2 ... $n appearing in the
+replacement text. To undefine a macro, say <b>undef</b>
+<i>name</i>, specifying the name to be undefined.</p>
+<hr>
+[ <a href="pic-20.html">prev</a> | <a href="pic-22.html">next</a> | <a href="pic.html">top</a> ]
+<hr>

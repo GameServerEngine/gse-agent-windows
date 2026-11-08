@@ -1,0 +1,658 @@
+2026/06/06 15:21:52 Starting cygwin install, version 2.937
+2026/06/06 15:21:52 User has backup/restore rights
+2026/06/06 15:21:52 User has symlink creation right
+2026/06/06 15:21:52 io_stream_cygfile: fopen(/etc/setup/setup.rc) failed 2 No such file or directory
+2026/06/06 15:21:52 Current Directory: C:\GSP64\cygTemp
+2026/06/06 15:21:52 root: C:\GSP64 system
+2026/06/06 15:21:52 Changing gid to Administrators
+2026/06/06 15:21:52 Selected local directory: C:\GSP64\cygTemp
+2026/06/06 15:21:52 net: Preconfig
+2026/06/06 15:21:54 Migrated http://cygwin.mirror.constant.com/ to https://cygwin.mirror.constant.com/
+2026/06/06 15:21:54 site: https://cygwin.mirror.constant.com/
+2026/06/06 15:22:01 io_stream_cygfile: fopen(/etc/setup/timestamp) failed 2 No such file or directory
+2026/06/06 15:22:01 io_stream_cygfile: fopen(/etc/setup/installed.db) failed 2 No such file or directory
+2026/06/06 15:22:01 Package 'perl_vendor' not found.
+2026/06/06 15:22:01 solving: 61 tasks, update: no, use test packages: no
+2026/06/06 15:22:02 solving: 176 tasks, update: no, use test packages: no
+2026/06/06 15:22:02 Augmented Transaction List:
+2026/06/06 15:22:02    0 install gettext-locale-alias      0.26-1
+2026/06/06 15:22:02    1 install libpopt-common            1.19-1
+2026/06/06 15:22:02    2 install libsqlite3_0              3.49.1-1
+2026/06/06 15:22:02    3 install publicsuffix-list-dafsa   20260129-1
+2026/06/06 15:22:02    4 install terminfo                  6.5+20240427-1
+2026/06/06 15:22:02    5 install tzdata                    2026b-1
+2026/06/06 15:22:02    6 install cygwin                    3.6.9-1
+2026/06/06 15:22:02    7 install libiconv2                 1.19-2
+2026/06/06 15:22:02    8 install libintl8                  0.22.5-1
+2026/06/06 15:22:02    9 install libncursesw10             6.5+20240427-1
+2026/06/06 15:22:02   10 install libreadline7              8.2-2
+2026/06/06 15:22:02   11 install bash                      5.2.21-1
+2026/06/06 15:22:02   12 install libgcc1                   13.4.0-1
+2026/06/06 15:22:02   13 install crypto-policies           20190218-1
+2026/06/06 15:22:02   14 install base-cygwin               3.8-2
+2026/06/06 15:22:02   15 install libzstd1                  1.5.7-1
+2026/06/06 15:22:02   16 install zlib0                     1.3.2-1
+2026/06/06 15:22:02   17 install which                     2.23-1
+2026/06/06 15:22:02   18 install vim-minimal               9.1.1825-1
+2026/06/06 15:22:02   19 install tzcode                    2026b-1
+2026/06/06 15:22:02   20 install screen                    5.0.1-3
+2026/06/06 15:22:02   21 install run                       1.3.4-2
+2026/06/06 15:22:02   22 install ncurses                   6.5+20240427-1
+2026/06/06 15:22:02   23 install nano                      8.0-1
+2026/06/06 15:22:02   24 install login                     1.13-1
+2026/06/06 15:22:02   25 install libxxhash0                0.8.3-1
+2026/06/06 15:22:02   26 install libuuid1                  2.40.2-2
+2026/06/06 15:22:02   27 install libusb1.0                 1.0.21-1
+2026/06/06 15:22:02   28 install libunistring5             1.4.1-1
+2026/06/06 15:22:02   29 install libtasn1_6                4.21.0-1
+2026/06/06 15:22:02   30 install libstdc++6                13.4.0-1
+2026/06/06 15:22:02   31 install libsmartcols1             2.40.2-2
+2026/06/06 15:22:02   32 install libslang2                 2.3.3-1
+2026/06/06 15:22:02   33 install libreadline8              8.3-1
+2026/06/06 15:22:02   34 install libpopt0                  1.19-1
+2026/06/06 15:22:02   35 install libpipeline1              1.5.8-1
+2026/06/06 15:22:02   36 install libpcre2_8_0              10.47-1
+2026/06/06 15:22:02   37 install libpcre1                  8.45-1
+2026/06/06 15:22:02   38 install libnpth0                  1.8-1
+2026/06/06 15:22:02   39 install libnghttp2_14             1.69.0-1
+2026/06/06 15:22:02   40 install libnettle9                4.0-1
+2026/06/06 15:22:02   41 install libnettle8                3.9.1-1
+2026/06/06 15:22:02   42 install liblzma5                  5.8.3-1
+2026/06/06 15:22:02   43 install liblz4_1                  1.9.4-1
+2026/06/06 15:22:02   44 install liblastlog2               2.40.2-2
+2026/06/06 15:22:02   45 install libkrb5support0           1.15.2-2
+2026/06/06 15:22:02   46 install libiodbc2                 3.52.8-2
+2026/06/06 15:22:02   47 install libidn2_0                 2.3.8-1
+2026/06/06 15:22:02   48 install libidn12                  1.43-1
+2026/06/06 15:22:02   49 install libgpg-error0             1.58-1
+2026/06/06 15:22:02   50 install libgmp10                  6.3.0-1
+2026/06/06 15:22:02   51 install libgdbm6                  1.26-1
+2026/06/06 15:22:02   52 install libgdbm4                  1.13-1
+2026/06/06 15:22:02   53 install libffi6                   3.2.1-2
+2026/06/06 15:22:02   54 install libexpat1                 2.8.0-1
+2026/06/06 15:22:02   55 install libedit0                  20251016-1
+2026/06/06 15:22:02   56 install libcrypt2                 4.5.2-1
+2026/06/06 15:22:02   57 install libcrypt0                 2.1-1
+2026/06/06 15:22:02   58 install libcom_err2               1.44.5-1
+2026/06/06 15:22:02   59 install libcares2                 1.34.6-0
+2026/06/06 15:22:02   60 install libbz2_1                  1.0.8-2
+2026/06/06 15:22:02   61 install libbrotlicommon1          1.2.0-1
+2026/06/06 15:22:02   62 install libblkid1                 2.40.2-2
+2026/06/06 15:22:02   63 install libattr1                  2.5.2-2
+2026/06/06 15:22:02   64 install libargp                   20250917-2
+2026/06/06 15:22:02   65 install ipc-utils                 1.1-1
+2026/06/06 15:22:02   66 install hostname                  3.13-1
+2026/06/06 15:22:02   67 install gzip                      1.14-1
+2026/06/06 15:22:02   68 install gettext                   0.22.5-1
+2026/06/06 15:22:02   69 install editrights                1.04-1
+2026/06/06 15:22:02   70 install dos2unix                  7.5.6-1
+2026/06/06 15:22:02   71 install diffutils                 3.12-1
+2026/06/06 15:22:02   72 install dash                      0.5.12-5
+2026/06/06 15:22:02   73 install cygrunsrv                 1.65-1
+2026/06/06 15:22:02   74 install alternatives              1.31-1
+2026/06/06 15:22:02   75 install libapr1                   1.6.5-1
+2026/06/06 15:22:02   76 install libuchardet0              0.0.8-1
+2026/06/06 15:22:02   77 install libdb5.3                  5.3.28-2
+2026/06/06 15:22:02   78 install cygutils                  1.4.17-4
+2026/06/06 15:22:02   79 install grep                      3.12-1
+2026/06/06 15:22:02   80 install less                      692-1
+2026/06/06 15:22:02   81 install xz                        5.8.3-1
+2026/06/06 15:22:02   82 install libxml2                   2.10.4-2
+2026/06/06 15:22:02   83 install zstd                      1.5.7-1
+2026/06/06 15:22:02   84 install libk5crypto3              1.15.2-2
+2026/06/06 15:22:02   85 install libpsl5                   0.21.5-1
+2026/06/06 15:22:02   86 install libksba8                  1.6.7-1
+2026/06/06 15:22:02   87 install libgcrypt20               1.12.2-1
+2026/06/06 15:22:02   88 install libassuan9                3.0.2-1
+2026/06/06 15:22:02   89 install libassuan0                2.5.7-1
+2026/06/06 15:22:02   90 install libmpfr6                  4.2.2-1
+2026/06/06 15:22:02   91 install libhogweed7               4.0-1
+2026/06/06 15:22:02   92 install libgdbm_compat4           1.26-1
+2026/06/06 15:22:02   93 install libp11-kit0               0.23.20-1
+2026/06/06 15:22:02   94 install perl_base                 5.40.3-1
+2026/06/06 15:22:02   95 install perl_autorebase           5.40.3-1
+2026/06/06 15:22:02   96 install zip                       3.0-13
+2026/06/06 15:22:02   97 install unzip                     6.0-18
+2026/06/06 15:22:02   98 install file                      5.46-1
+2026/06/06 15:22:02   99 install bzip2                     1.0.8-2
+2026/06/06 15:22:02  100 install libbrotlidec1             1.2.0-1
+2026/06/06 15:22:02  101 install libfdisk1                 2.40.2-2
+2026/06/06 15:22:02  102 install sed                       4.10-1
+2026/06/06 15:22:02  103 install coreutils                 9.0-1
+2026/06/06 15:22:02  104 install getent                    2.18.90-5
+2026/06/06 15:22:02  105 install rebase                    4.6.6-1
+2026/06/06 15:22:02  106 install mintty                    3.8.2-1
+2026/06/06 15:22:02  107 install info                      7.1-2
+2026/06/06 15:22:02  108 install _autorebase               001091-1
+2026/06/06 15:22:02  109 install groff                     1.24.1-1
+2026/06/06 15:22:02  110 install libmetalink3              0.1.3-1
+2026/06/06 15:22:02  111 install libkrb5_3                 1.15.2-2
+2026/06/06 15:22:02  112 install pinentry                  1.1.1-1
+2026/06/06 15:22:02  113 install gawk                      5.4.0-1
+2026/06/06 15:22:02  114 install p11-kit-trust             0.23.20-1
+2026/06/06 15:22:02  115 install p11-kit                   0.23.20-1
+2026/06/06 15:22:02  116 install perl-XML-SAX-Base         1.09-6
+2026/06/06 15:22:02  117 install perl-XML-NamespaceSupport 1.12-6
+2026/06/06 15:22:02  118 install perl-TimeDate             2.35-1
+2026/06/06 15:22:02  119 install perl-TermReadKey          2.38-5
+2026/06/06 15:22:02  120 install perl-MIME-Base32          1.303-6
+2026/06/06 15:22:02  121 install perl-LWP-MediaTypes       6.04-5
+2026/06/06 15:22:02  122 install perl-IO-HTML              1.004-4
+2026/06/06 15:22:02  123 install perl-Error                0.17030-1
+2026/06/06 15:22:02  124 install perl-Encode-Locale        1.05-6
+2026/06/06 15:22:02  125 install perl-Clone                0.50-1
+2026/06/06 15:22:02  126 install perl-Class-Inspector      1.36-5
+2026/06/06 15:22:02  127 install perl-Archive-Extract      0.88-3
+2026/06/06 15:22:02  128 install tar                       1.35-2
+2026/06/06 15:22:02  129 install util-linux                2.40.2-2
+2026/06/06 15:22:02  130 install findutils                 4.10.0-1
+2026/06/06 15:22:02  131 install libgssapi_krb5_2          1.15.2-2
+2026/06/06 15:22:02  132 install csih                      0.9.14-1
+2026/06/06 15:22:02  133 install ca-certificates           2025.2.80_v9.0.304-1
+2026/06/06 15:22:02  134 install perl-HTTP-Date            6.06-2
+2026/06/06 15:22:02  135 install perl-File-ShareDir        1.118-4
+2026/06/06 15:22:02  136 install man-db                    2.13.1-1
+2026/06/06 15:22:02  137 install base-files                4.3-3
+2026/06/06 15:22:02  138 install libssl3                   3.5.6-1
+2026/06/06 15:22:02  139 install libssl1.1                 1.1.1w-1
+2026/06/06 15:22:02  140 install libssl1.0                 1.0.2u+za-1
+2026/06/06 15:22:02  141 install libgnutls30               3.8.13-1
+2026/06/06 15:22:02  142 install perl-XML-Parser           2.59-1
+2026/06/06 15:22:02  143 install openssl                   3.5.6-1
+2026/06/06 15:22:02  144 install libfido2                  1.17.0-1
+2026/06/06 15:22:02  145 install libdb18.1                 18.1.40-1
+2026/06/06 15:22:02  146 install ssmtp                     2.64-10.1
+2026/06/06 15:22:02  147 install rsync                     3.3.0-1
+2026/06/06 15:22:02  148 install libssh2_1                 1.11.0-1
+2026/06/06 15:22:02  149 install libsasl2_3                2.1.27-1
+2026/06/06 15:22:02  150 install openssh                   10.3p1-1
+2026/06/06 15:22:02  151 install perl                      5.40.3-1
+2026/06/06 15:22:02  152 install libopenldap2              2.6.13-1
+2026/06/06 15:22:02  153 install perl-XML-SAX              1.02-5
+2026/06/06 15:22:02  154 install perl-URI                  5.34-1
+2026/06/06 15:22:02  155 install perl-Path-Class           0.37-6
+2026/06/06 15:22:02  156 install perl-Archive-Zip          1.68-4
+2026/06/06 15:22:02  157 install libpq5                    18.4-1
+2026/06/06 15:22:02  158 install libopenldap2_4_2          2.6.13-1
+2026/06/06 15:22:02  159 install libcurl4                  8.20.0-1
+2026/06/06 15:22:02  160 install gnupg2                    2.5.20-1
+2026/06/06 15:22:02  161 install perl-XML-SAX-Expat        0.51-7
+2026/06/06 15:22:02  162 install perl-HTTP-Message         7.01-1
+2026/06/06 15:22:02  163 install mariadb-common            3.0.9-1
+2026/06/06 15:22:02  164 install git                       2.51.0-1
+2026/06/06 15:22:02  165 install curl                      8.20.0-1
+2026/06/06 15:22:02  166 install libgpgme11                1.24.2-1
+2026/06/06 15:22:02  167 install perl-XML-Simple           2.25-5
+2026/06/06 15:22:02  168 install perl-HTTP-Daemon          6.17-1
+2026/06/06 15:22:02  169 install mysql-common              10.3.14-1
+2026/06/06 15:22:02  170 install wget                      1.25.0-1
+2026/06/06 15:22:02  171 install mutt                      2.3.2-1
+2026/06/06 15:22:02  172 install libmysqlclient18          10.1.30-1
+2026/06/06 15:22:02  173 install libaprutil1               1.6.1-1
+2026/06/06 15:22:02  174 install libserf1_0                1.3.9-1
+2026/06/06 15:22:02  175 install subversion                1.14.2-2
+2026/06/06 15:22:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/gettext-locale-alias/gettext-locale-alias-0.26-1-x86_64.tar.xz
+2026/06/06 15:22:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/popt/libpopt-common/libpopt-common-1.19-1.tar.xz
+2026/06/06 15:22:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/sqlite3/libsqlite3_0/libsqlite3_0-3.49.1-1.tar.xz
+2026/06/06 15:22:04 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/publicsuffix-list/publicsuffix-list-dafsa/publicsuffix-list-dafsa-20260129-1-noarch.tar.xz
+2026/06/06 15:22:04 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/terminfo/terminfo-6.5+20240427-1.tar.xz
+2026/06/06 15:22:04 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/tzdata/tzdata-2026b-1-noarch.tar.xz
+2026/06/06 15:22:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygwin/cygwin-3.6.9-1-x86_64.tar.xz
+2026/06/06 15:22:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libiconv/libiconv2/libiconv2-1.19-2-x86_64.tar.xz
+2026/06/06 15:22:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/libintl8/libintl8-0.22.5-1.tar.xz
+2026/06/06 15:22:07 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/libncursesw10/libncursesw10-6.5+20240427-1.tar.xz
+2026/06/06 15:22:07 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/readline/libreadline7/libreadline7-8.2-2.tar.xz
+2026/06/06 15:22:08 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bash/bash-5.2.21-1.tar.xz
+2026/06/06 15:22:08 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libgcc1/libgcc1-13.4.0-1-x86_64.tar.zst
+2026/06/06 15:22:08 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/crypto-policies/crypto-policies-20190218-1.tar.xz
+2026/06/06 15:22:08 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/base-cygwin/base-cygwin-3.8-2.tar.xz
+2026/06/06 15:22:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zstd/libzstd1/libzstd1-1.5.7-1.tar.zst
+2026/06/06 15:22:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zlib/zlib0/zlib0-1.3.2-1-x86_64.tar.zst
+2026/06/06 15:22:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/which/which-2.23-1-x86_64.tar.xz
+2026/06/06 15:22:10 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/vim/vim-minimal/vim-minimal-9.1.1825-1-x86_64.tar.xz
+2026/06/06 15:22:11 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/tzcode/tzcode-2026b-1-x86_64.tar.xz
+2026/06/06 15:22:13 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/screen/screen-5.0.1-3-x86_64.tar.xz
+2026/06/06 15:22:14 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/run/run-1.3.4-2.tar.xz
+2026/06/06 15:22:15 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/ncurses-6.5+20240427-1.tar.xz
+2026/06/06 15:22:17 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nano/nano-8.0-1-x86_64.tar.xz
+2026/06/06 15:22:18 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/login/login-1.13-1.tar.xz
+2026/06/06 15:22:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xxhash/libxxhash0/libxxhash0-0.8.3-1.tar.xz
+2026/06/06 15:22:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libuuid1/libuuid1-2.40.2-2.tar.xz
+2026/06/06 15:22:20 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libusb1.0/libusb1.0-1.0.21-1.tar.xz
+2026/06/06 15:22:22 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libunistring/libunistring5/libunistring5-1.4.1-1-x86_64.tar.xz
+2026/06/06 15:22:23 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libtasn1/libtasn1_6/libtasn1_6-4.21.0-1-x86_64.tar.xz
+2026/06/06 15:22:25 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libstdc++6/libstdc++6-13.4.0-1-x86_64.tar.zst
+2026/06/06 15:22:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libsmartcols1/libsmartcols1-2.40.2-2.tar.xz
+2026/06/06 15:22:27 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/slang/libslang2/libslang2-2.3.3-1.tar.xz
+2026/06/06 15:22:28 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/readline/libreadline8/libreadline8-8.3-1-x86_64.tar.xz
+2026/06/06 15:22:28 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/popt/libpopt0/libpopt0-1.19-1.tar.xz
+2026/06/06 15:22:28 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libpipeline/libpipeline1/libpipeline1-1.5.8-1-x86_64.tar.xz
+2026/06/06 15:22:29 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pcre2/libpcre2_8_0/libpcre2_8_0-10.47-1-x86_64.tar.zst
+2026/06/06 15:22:30 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pcre/libpcre1/libpcre1-8.45-1.tar.zst
+2026/06/06 15:22:31 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/npth/libnpth0/libnpth0-1.8-1.tar.xz
+2026/06/06 15:22:31 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nghttp2/libnghttp2_14/libnghttp2_14-1.69.0-1-x86_64.tar.xz
+2026/06/06 15:22:32 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libnettle9/libnettle9-4.0-1-x86_64.tar.xz
+2026/06/06 15:22:33 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libnettle8/libnettle8-3.9.1-1.tar.xz
+2026/06/06 15:22:33 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xz/liblzma5/liblzma5-5.8.3-1-x86_64.tar.zst
+2026/06/06 15:22:34 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/lz4/liblz4_1/liblz4_1-1.9.4-1.tar.xz
+2026/06/06 15:22:34 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/liblastlog2/liblastlog2-2.40.2-2.tar.xz
+2026/06/06 15:22:34 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libkrb5support0/libkrb5support0-1.15.2-2.tar.xz
+2026/06/06 15:22:34 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libiodbc/libiodbc2/libiodbc2-3.52.8-2.tar.bz2
+2026/06/06 15:22:35 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libidn2/libidn2_0/libidn2_0-2.3.8-1.tar.xz
+2026/06/06 15:22:35 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libidn/libidn12/libidn12-1.43-1.tar.xz
+2026/06/06 15:22:35 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libgpg-error/libgpg-error0/libgpg-error0-1.58-1-x86_64.tar.xz
+2026/06/06 15:22:36 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gmp/libgmp10/libgmp10-6.3.0-1.tar.zst
+2026/06/06 15:22:36 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm6/libgdbm6-1.26-1-x86_64.tar.xz
+2026/06/06 15:22:36 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm4/libgdbm4-1.13-1.tar.xz
+2026/06/06 15:22:36 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libffi/libffi6/libffi6-3.2.1-2.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/expat/libexpat1/libexpat1-2.8.0-1-x86_64.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libedit/libedit0/libedit0-20251016-1-x86_64.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libxcrypt/libcrypt2/libcrypt2-4.5.2-1-x86_64.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/crypt/libcrypt0/libcrypt0-2.1-1.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/e2fsprogs/libcom_err2/libcom_err2-1.44.5-1.tar.xz
+2026/06/06 15:22:37 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/c-ares/libcares2/libcares2-1.34.6-0-x86_64.tar.xz
+2026/06/06 15:22:38 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bzip2/libbz2_1/libbz2_1-1.0.8-2-x86_64.tar.xz
+2026/06/06 15:22:38 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/brotli/libbrotlicommon1/libbrotlicommon1-1.2.0-1-x86_64.tar.xz
+2026/06/06 15:22:38 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libblkid1/libblkid1-2.40.2-2.tar.xz
+2026/06/06 15:22:39 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/attr/libattr1/libattr1-2.5.2-2-x86_64.tar.xz
+2026/06/06 15:22:39 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libargp/libargp-20250917-2-x86_64.tar.xz
+2026/06/06 15:22:39 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ipc-utils/ipc-utils-1.1-1.tar.xz
+2026/06/06 15:22:39 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/hostname/hostname-3.13-1.tar.bz2
+2026/06/06 15:22:39 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gzip/gzip-1.14-1-x86_64.tar.xz
+2026/06/06 15:22:40 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/gettext-0.22.5-1.tar.xz
+2026/06/06 15:22:40 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/editrights/editrights-1.04-1.tar.xz
+2026/06/06 15:22:41 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/dos2unix/dos2unix-7.5.6-1-x86_64.tar.xz
+2026/06/06 15:22:42 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/diffutils/diffutils-3.12-1-x86_64.tar.xz
+2026/06/06 15:22:42 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/dash/dash-0.5.12-5.tar.xz
+2026/06/06 15:22:43 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygrunsrv/cygrunsrv-1.65-1-x86_64.tar.xz
+2026/06/06 15:22:43 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/alternatives/alternatives-1.31-1.tar.xz
+2026/06/06 15:22:43 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libapr1/libapr1-1.6.5-1.tar.xz
+2026/06/06 15:22:43 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/uchardet/libuchardet0/libuchardet0-0.0.8-1.tar.zst
+2026/06/06 15:22:44 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/db/libdb5.3/libdb5.3-5.3.28-2.tar.xz
+2026/06/06 15:22:44 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygutils/cygutils-1.4.17-4-x86_64.tar.xz
+2026/06/06 15:22:45 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/grep/grep-3.12-1-x86_64.tar.xz
+2026/06/06 15:22:45 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/less/less-692-1-x86_64.tar.xz
+2026/06/06 15:22:46 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xz/xz-5.8.3-1-x86_64.tar.zst
+2026/06/06 15:22:47 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libxml2/libxml2-2.10.4-2.tar.xz
+2026/06/06 15:22:47 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zstd/zstd-1.5.7-1.tar.zst
+2026/06/06 15:22:48 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libk5crypto3/libk5crypto3-1.15.2-2.tar.xz
+2026/06/06 15:22:48 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libpsl/libpsl5/libpsl5-0.21.5-1.tar.xz
+2026/06/06 15:22:48 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libksba/libksba8/libksba8-1.6.7-1.tar.xz
+2026/06/06 15:22:49 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libgcrypt/libgcrypt20/libgcrypt20-1.12.2-1-x86_64.tar.xz
+2026/06/06 15:22:49 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libassuan/libassuan9/libassuan9-3.0.2-1.tar.xz
+2026/06/06 15:22:49 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libassuan/libassuan0/libassuan0-2.5.7-1.tar.xz
+2026/06/06 15:22:50 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mpfr/libmpfr6/libmpfr6-4.2.2-1.tar.zst
+2026/06/06 15:22:50 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libhogweed7/libhogweed7-4.0-1-x86_64.tar.xz
+2026/06/06 15:22:50 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm_compat4/libgdbm_compat4-1.26-1-x86_64.tar.xz
+2026/06/06 15:22:51 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/libp11-kit0/libp11-kit0-0.23.20-1.tar.xz
+2026/06/06 15:22:54 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl_base/perl_base-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:22:54 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl_autorebase/perl_autorebase-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:22:54 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zip/zip-3.0-13.tar.xz
+2026/06/06 15:22:54 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/unzip/unzip-6.0-18.tar.xz
+2026/06/06 15:22:55 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/file/file-5.46-1-x86_64.tar.xz
+2026/06/06 15:22:55 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bzip2/bzip2-1.0.8-2-x86_64.tar.xz
+2026/06/06 15:22:55 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/brotli/libbrotlidec1/libbrotlidec1-1.2.0-1-x86_64.tar.xz
+2026/06/06 15:22:56 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libfdisk1/libfdisk1-2.40.2-2.tar.xz
+2026/06/06 15:22:56 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/sed/sed-4.10-1-x86_64.tar.xz
+2026/06/06 15:22:58 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/coreutils/coreutils-9.0-1.tar.xz
+2026/06/06 15:22:58 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/getent/getent-2.18.90-5.tar.xz
+2026/06/06 15:22:58 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/rebase/rebase-4.6.6-1.tar.xz
+2026/06/06 15:22:59 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mintty/mintty-3.8.2-1-x86_64.tar.xz
+2026/06/06 15:22:59 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/texinfo/info/info-7.1-2.tar.zst
+2026/06/06 15:23:00 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/_autorebase/_autorebase-001091-1.tar.zst
+2026/06/06 15:23:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/groff/groff-1.24.1-1-x86_64.tar.zst
+2026/06/06 15:23:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libmetalink/libmetalink3/libmetalink3-0.1.3-1.tar.xz
+2026/06/06 15:23:03 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libkrb5_3/libkrb5_3-1.15.2-2.tar.xz
+2026/06/06 15:23:04 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pinentry/pinentry-1.1.1-1.tar.xz
+2026/06/06 15:23:04 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gawk/gawk-5.4.0-1-x86_64.tar.xz
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/p11-kit-trust/p11-kit-trust-0.23.20-1.tar.xz
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/p11-kit-0.23.20-1.tar.xz
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX-Base/perl-XML-SAX-Base-1.09-6.tar.zst
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-NamespaceSupport/perl-XML-NamespaceSupport-1.12-6.tar.zst
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-TimeDate/perl-TimeDate-2.35-1-noarch.tar.zst
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-TermReadKey/perl-TermReadKey-2.38-5.tar.zst
+2026/06/06 15:23:05 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-MIME-Base32/perl-MIME-Base32-1.303-6.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-LWP-MediaTypes/perl-LWP-MediaTypes-6.04-5.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-IO-HTML/perl-IO-HTML-1.004-4.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Error/perl-Error-0.17030-1.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Encode-Locale/perl-Encode-Locale-1.05-6.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-Clone/perl-Clone-0.50-1-x86_64.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Class-Inspector/perl-Class-Inspector-1.36-5.tar.zst
+2026/06/06 15:23:06 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Archive-Extract/perl-Archive-Extract-0.88-3.tar.zst
+2026/06/06 15:23:07 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/tar/tar-1.35-2.tar.zst
+2026/06/06 15:23:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/util-linux-2.40.2-2.tar.xz
+2026/06/06 15:23:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/findutils/findutils-4.10.0-1.tar.xz
+2026/06/06 15:23:09 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libgssapi_krb5_2/libgssapi_krb5_2-1.15.2-2.tar.xz
+2026/06/06 15:23:10 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/csih/csih-0.9.14-1.tar.xz
+2026/06/06 15:23:10 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/ca-certificates/ca-certificates-2025.2.80_v9.0.304-1-noarch.tar.zst
+2026/06/06 15:23:10 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Date/perl-HTTP-Date-6.06-2.tar.zst
+2026/06/06 15:23:10 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-File-ShareDir/perl-File-ShareDir-1.118-4.tar.zst
+2026/06/06 15:23:11 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/man-db/man-db-2.13.1-1-x86_64.tar.zst
+2026/06/06 15:23:11 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/base-files/base-files-4.3-3.tar.zst
+2026/06/06 15:23:12 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl3/libssl3-3.5.6-1-x86_64.tar.zst
+2026/06/06 15:23:13 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl1.1/libssl1.1-1.1.1w-1.tar.zst
+2026/06/06 15:23:13 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl10/libssl1.0/libssl1.0-1.0.2u+za-1.tar.zst
+2026/06/06 15:23:14 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gnutls/libgnutls30/libgnutls30-3.8.13-1-x86_64.tar.xz
+2026/06/06 15:23:14 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-XML-Parser/perl-XML-Parser-2.59-1-x86_64.tar.zst
+2026/06/06 15:23:14 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/openssl-3.5.6-1-x86_64.tar.zst
+2026/06/06 15:23:14 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libfido2/libfido2-1.17.0-1-x86_64.tar.xz
+2026/06/06 15:23:15 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/db/libdb18.1/libdb18.1-18.1.40-1.tar.xz
+2026/06/06 15:23:15 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ssmtp/ssmtp-2.64-10.1.tar.xz
+2026/06/06 15:23:15 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/rsync/rsync-3.3.0-1.tar.xz
+2026/06/06 15:23:15 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libssh2/libssh2_1/libssh2_1-1.11.0-1.tar.xz
+2026/06/06 15:23:16 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cyrus-sasl/libsasl2_3/libsasl2_3-2.1.27-1.tar.xz
+2026/06/06 15:23:16 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssh/openssh-10.3p1-1-x86_64.tar.xz
+2026/06/06 15:23:18 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openldap/libopenldap2/libopenldap2-2.6.13-1-x86_64.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX/perl-XML-SAX-1.02-5.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-URI/perl-URI-5.34-1-noarch.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Path-Class/perl-Path-Class-0.37-6.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Archive-Zip/perl-Archive-Zip-1.68-4.tar.zst
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/postgresql/libpq5/libpq5-18.4-1-x86_64.tar.xz
+2026/06/06 15:23:19 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openldap/libopenldap2_4_2/libopenldap2_4_2-2.6.13-1-x86_64.tar.zst
+2026/06/06 15:23:20 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/curl/libcurl4/libcurl4-8.20.0-1-x86_64.tar.xz
+2026/06/06 15:23:21 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gnupg2/gnupg2-2.5.20-1-x86_64.tar.xz
+2026/06/06 15:23:21 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX-Expat/perl-XML-SAX-Expat-0.51-7.tar.zst
+2026/06/06 15:23:21 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Message/perl-HTTP-Message-7.01-1-noarch.tar.zst
+2026/06/06 15:23:21 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mariadb-connector-c/mariadb-common/mariadb-common-3.0.9-1.tar.xz
+2026/06/06 15:23:24 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/git/git-2.51.0-1-x86_64.tar.zst
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/curl/curl-8.20.0-1-x86_64.tar.xz
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gpgme/libgpgme11/libgpgme11-1.24.2-1.tar.xz
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-Simple/perl-XML-Simple-2.25-5.tar.zst
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Daemon/perl-HTTP-Daemon-6.17-1-noarch.tar.zst
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mysql/mysql-common/mysql-common-10.3.14-1.tar.xz
+2026/06/06 15:23:26 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/wget/wget-1.25.0-1.tar.xz
+2026/06/06 15:23:27 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mutt/mutt-2.3.2-1-x86_64.tar.xz
+2026/06/06 15:23:27 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mysql/libmysqlclient18/libmysqlclient18-10.1.30-1.tar.xz
+2026/06/06 15:23:27 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libaprutil1/libaprutil1-1.6.1-1.tar.xz
+2026/06/06 15:23:27 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/serf/libserf1_0/libserf1_0-1.3.9-1.tar.xz
+2026/06/06 15:23:28 Downloaded C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/subversion/subversion-1.14.2-2-x86_64.tar.xz
+2026/06/06 15:23:28 Registry value set: HKEY_LOCAL_MACHINE\Software\Cygwin\setup\rootdir = "C:\GSP64"
+2026/06/06 15:23:28 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/gettext-locale-alias/gettext-locale-alias-0.26-1-x86_64.tar.xz
+2026/06/06 15:23:28 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/popt/libpopt-common/libpopt-common-1.19-1.tar.xz
+2026/06/06 15:23:29 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/sqlite3/libsqlite3_0/libsqlite3_0-3.49.1-1.tar.xz
+2026/06/06 15:23:29 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/publicsuffix-list/publicsuffix-list-dafsa/publicsuffix-list-dafsa-20260129-1-noarch.tar.xz
+2026/06/06 15:23:29 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/terminfo/terminfo-6.5+20240427-1.tar.xz
+2026/06/06 15:23:29 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/tzdata/tzdata-2026b-1-noarch.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygwin/cygwin-3.6.9-1-x86_64.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libiconv/libiconv2/libiconv2-1.19-2-x86_64.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/libintl8/libintl8-0.22.5-1.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/libncursesw10/libncursesw10-6.5+20240427-1.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/readline/libreadline7/libreadline7-8.2-2.tar.xz
+2026/06/06 15:23:32 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bash/bash-5.2.21-1.tar.xz
+2026/06/06 15:23:33 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libgcc1/libgcc1-13.4.0-1-x86_64.tar.zst
+2026/06/06 15:23:33 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/crypto-policies/crypto-policies-20190218-1.tar.xz
+2026/06/06 15:23:33 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/base-cygwin/base-cygwin-3.8-2.tar.xz
+2026/06/06 15:23:33 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zstd/libzstd1/libzstd1-1.5.7-1.tar.zst
+2026/06/06 15:23:33 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zlib/zlib0/zlib0-1.3.2-1-x86_64.tar.zst
+2026/06/06 15:23:34 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/which/which-2.23-1-x86_64.tar.xz
+2026/06/06 15:23:34 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/vim/vim-minimal/vim-minimal-9.1.1825-1-x86_64.tar.xz
+2026/06/06 15:23:34 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/tzcode/tzcode-2026b-1-x86_64.tar.xz
+2026/06/06 15:23:34 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/screen/screen-5.0.1-3-x86_64.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/run/run-1.3.4-2.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ncurses/ncurses-6.5+20240427-1.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nano/nano-8.0-1-x86_64.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/login/login-1.13-1.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xxhash/libxxhash0/libxxhash0-0.8.3-1.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libuuid1/libuuid1-2.40.2-2.tar.xz
+2026/06/06 15:23:35 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libusb1.0/libusb1.0-1.0.21-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libunistring/libunistring5/libunistring5-1.4.1-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libtasn1/libtasn1_6/libtasn1_6-4.21.0-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libstdc++6/libstdc++6-13.4.0-1-x86_64.tar.zst
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libsmartcols1/libsmartcols1-2.40.2-2.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/slang/libslang2/libslang2-2.3.3-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/readline/libreadline8/libreadline8-8.3-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/popt/libpopt0/libpopt0-1.19-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libpipeline/libpipeline1/libpipeline1-1.5.8-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pcre2/libpcre2_8_0/libpcre2_8_0-10.47-1-x86_64.tar.zst
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pcre/libpcre1/libpcre1-8.45-1.tar.zst
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/npth/libnpth0/libnpth0-1.8-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nghttp2/libnghttp2_14/libnghttp2_14-1.69.0-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libnettle9/libnettle9-4.0-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libnettle8/libnettle8-3.9.1-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xz/liblzma5/liblzma5-5.8.3-1-x86_64.tar.zst
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/lz4/liblz4_1/liblz4_1-1.9.4-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/liblastlog2/liblastlog2-2.40.2-2.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libkrb5support0/libkrb5support0-1.15.2-2.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libiodbc/libiodbc2/libiodbc2-3.52.8-2.tar.bz2
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libidn2/libidn2_0/libidn2_0-2.3.8-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libidn/libidn12/libidn12-1.43-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libgpg-error/libgpg-error0/libgpg-error0-1.58-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gmp/libgmp10/libgmp10-6.3.0-1.tar.zst
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm6/libgdbm6-1.26-1-x86_64.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm4/libgdbm4-1.13-1.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libffi/libffi6/libffi6-3.2.1-2.tar.xz
+2026/06/06 15:23:36 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/expat/libexpat1/libexpat1-2.8.0-1-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libedit/libedit0/libedit0-20251016-1-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libxcrypt/libcrypt2/libcrypt2-4.5.2-1-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/crypt/libcrypt0/libcrypt0-2.1-1.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/e2fsprogs/libcom_err2/libcom_err2-1.44.5-1.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/c-ares/libcares2/libcares2-1.34.6-0-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bzip2/libbz2_1/libbz2_1-1.0.8-2-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/brotli/libbrotlicommon1/libbrotlicommon1-1.2.0-1-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libblkid1/libblkid1-2.40.2-2.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/attr/libattr1/libattr1-2.5.2-2-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libargp/libargp-20250917-2-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ipc-utils/ipc-utils-1.1-1.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/hostname/hostname-3.13-1.tar.bz2
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gzip/gzip-1.14-1-x86_64.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gettext/gettext-0.22.5-1.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/editrights/editrights-1.04-1.tar.xz
+2026/06/06 15:23:37 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/dos2unix/dos2unix-7.5.6-1-x86_64.tar.xz
+2026/06/06 15:23:38 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/diffutils/diffutils-3.12-1-x86_64.tar.xz
+2026/06/06 15:23:38 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/dash/dash-0.5.12-5.tar.xz
+2026/06/06 15:23:38 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygrunsrv/cygrunsrv-1.65-1-x86_64.tar.xz
+2026/06/06 15:23:38 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/alternatives/alternatives-1.31-1.tar.xz
+2026/06/06 15:23:39 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libapr1/libapr1-1.6.5-1.tar.xz
+2026/06/06 15:23:39 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/uchardet/libuchardet0/libuchardet0-0.0.8-1.tar.zst
+2026/06/06 15:23:39 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/db/libdb5.3/libdb5.3-5.3.28-2.tar.xz
+2026/06/06 15:23:39 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cygutils/cygutils-1.4.17-4-x86_64.tar.xz
+2026/06/06 15:23:39 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/grep/grep-3.12-1-x86_64.tar.xz
+2026/06/06 15:23:40 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/less/less-692-1-x86_64.tar.xz
+2026/06/06 15:23:40 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/xz/xz-5.8.3-1-x86_64.tar.zst
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libxml2/libxml2-2.10.4-2.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zstd/zstd-1.5.7-1.tar.zst
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libk5crypto3/libk5crypto3-1.15.2-2.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libpsl/libpsl5/libpsl5-0.21.5-1.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libksba/libksba8/libksba8-1.6.7-1.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libgcrypt/libgcrypt20/libgcrypt20-1.12.2-1-x86_64.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libassuan/libassuan9/libassuan9-3.0.2-1.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libassuan/libassuan0/libassuan0-2.5.7-1.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mpfr/libmpfr6/libmpfr6-4.2.2-1.tar.zst
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/nettle/libhogweed7/libhogweed7-4.0-1-x86_64.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gdbm/libgdbm_compat4/libgdbm_compat4-1.26-1-x86_64.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/libp11-kit0/libp11-kit0-0.23.20-1.tar.xz
+2026/06/06 15:23:41 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl_base/perl_base-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:23:42 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl_autorebase/perl_autorebase-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:23:42 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/zip/zip-3.0-13.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/unzip/unzip-6.0-18.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/file/file-5.46-1-x86_64.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/bzip2/bzip2-1.0.8-2-x86_64.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/brotli/libbrotlidec1/libbrotlidec1-1.2.0-1-x86_64.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/libfdisk1/libfdisk1-2.40.2-2.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/sed/sed-4.10-1-x86_64.tar.xz
+2026/06/06 15:23:43 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/coreutils/coreutils-9.0-1.tar.xz
+2026/06/06 15:23:45 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/getent/getent-2.18.90-5.tar.xz
+2026/06/06 15:23:45 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/rebase/rebase-4.6.6-1.tar.xz
+2026/06/06 15:23:45 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mintty/mintty-3.8.2-1-x86_64.tar.xz
+2026/06/06 15:23:45 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/texinfo/info/info-7.1-2.tar.zst
+2026/06/06 15:23:46 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/_autorebase/_autorebase-001091-1.tar.zst
+2026/06/06 15:23:46 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/groff/groff-1.24.1-1-x86_64.tar.zst
+2026/06/06 15:23:49 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libmetalink/libmetalink3/libmetalink3-0.1.3-1.tar.xz
+2026/06/06 15:23:49 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libkrb5_3/libkrb5_3-1.15.2-2.tar.xz
+2026/06/06 15:23:49 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pinentry/pinentry-1.1.1-1.tar.xz
+2026/06/06 15:23:49 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gawk/gawk-5.4.0-1-x86_64.tar.xz
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/p11-kit-trust/p11-kit-trust-0.23.20-1.tar.xz
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p11-kit/p11-kit-0.23.20-1.tar.xz
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX-Base/perl-XML-SAX-Base-1.09-6.tar.zst
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-NamespaceSupport/perl-XML-NamespaceSupport-1.12-6.tar.zst
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-TimeDate/perl-TimeDate-2.35-1-noarch.tar.zst
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-TermReadKey/perl-TermReadKey-2.38-5.tar.zst
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-MIME-Base32/perl-MIME-Base32-1.303-6.tar.zst
+2026/06/06 15:23:50 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-LWP-MediaTypes/perl-LWP-MediaTypes-6.04-5.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-IO-HTML/perl-IO-HTML-1.004-4.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Error/perl-Error-0.17030-1.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Encode-Locale/perl-Encode-Locale-1.05-6.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-Clone/perl-Clone-0.50-1-x86_64.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Class-Inspector/perl-Class-Inspector-1.36-5.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Archive-Extract/perl-Archive-Extract-0.88-3.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/tar/tar-1.35-2.tar.zst
+2026/06/06 15:23:51 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/util-linux/util-linux-2.40.2-2.tar.xz
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/findutils/findutils-4.10.0-1.tar.xz
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/krb5/libgssapi_krb5_2/libgssapi_krb5_2-1.15.2-2.tar.xz
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/csih/csih-0.9.14-1.tar.xz
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/ca-certificates/ca-certificates-2025.2.80_v9.0.304-1-noarch.tar.zst
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Date/perl-HTTP-Date-6.06-2.tar.zst
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-File-ShareDir/perl-File-ShareDir-1.118-4.tar.zst
+2026/06/06 15:23:53 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/man-db/man-db-2.13.1-1-x86_64.tar.zst
+2026/06/06 15:23:55 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/base-files/base-files-4.3-3.tar.zst
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl3/libssl3-3.5.6-1-x86_64.tar.zst
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl1.1/libssl1.1-1.1.1w-1.tar.zst
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl10/libssl1.0/libssl1.0-1.0.2u+za-1.tar.zst
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gnutls/libgnutls30/libgnutls30-3.8.13-1-x86_64.tar.xz
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl-XML-Parser/perl-XML-Parser-2.59-1-x86_64.tar.zst
+2026/06/06 15:23:56 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/openssl-3.5.6-1-x86_64.tar.zst
+2026/06/06 15:23:58 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libfido2/libfido2-1.17.0-1-x86_64.tar.xz
+2026/06/06 15:23:58 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/db/libdb18.1/libdb18.1-18.1.40-1.tar.xz
+2026/06/06 15:23:59 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/ssmtp/ssmtp-2.64-10.1.tar.xz
+2026/06/06 15:23:59 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/rsync/rsync-3.3.0-1.tar.xz
+2026/06/06 15:23:59 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libssh2/libssh2_1/libssh2_1-1.11.0-1.tar.xz
+2026/06/06 15:23:59 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/cyrus-sasl/libsasl2_3/libsasl2_3-2.1.27-1.tar.xz
+2026/06/06 15:23:59 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssh/openssh-10.3p1-1-x86_64.tar.xz
+2026/06/06 15:24:00 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/perl/perl-5.40.3-1-x86_64.tar.zst
+2026/06/06 15:24:09 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openldap/libopenldap2/libopenldap2-2.6.13-1-x86_64.tar.zst
+2026/06/06 15:24:09 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX/perl-XML-SAX-1.02-5.tar.zst
+2026/06/06 15:24:09 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-URI/perl-URI-5.34-1-noarch.tar.zst
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Path-Class/perl-Path-Class-0.37-6.tar.zst
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-Archive-Zip/perl-Archive-Zip-1.68-4.tar.zst
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/postgresql/libpq5/libpq5-18.4-1-x86_64.tar.xz
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openldap/libopenldap2_4_2/libopenldap2_4_2-2.6.13-1-x86_64.tar.zst
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/curl/libcurl4/libcurl4-8.20.0-1-x86_64.tar.xz
+2026/06/06 15:24:10 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gnupg2/gnupg2-2.5.20-1-x86_64.tar.xz
+2026/06/06 15:24:12 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-SAX-Expat/perl-XML-SAX-Expat-0.51-7.tar.zst
+2026/06/06 15:24:12 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Message/perl-HTTP-Message-7.01-1-noarch.tar.zst
+2026/06/06 15:24:12 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mariadb-connector-c/mariadb-common/mariadb-common-3.0.9-1.tar.xz
+2026/06/06 15:24:12 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/git/git-2.51.0-1-x86_64.tar.zst
+2026/06/06 15:24:23 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/curl/curl-8.20.0-1-x86_64.tar.xz
+2026/06/06 15:24:24 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gpgme/libgpgme11/libgpgme11-1.24.2-1.tar.xz
+2026/06/06 15:24:24 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-XML-Simple/perl-XML-Simple-2.25-5.tar.zst
+2026/06/06 15:24:24 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Daemon/perl-HTTP-Daemon-6.17-1-noarch.tar.zst
+2026/06/06 15:24:24 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mysql/mysql-common/mysql-common-10.3.14-1.tar.xz
+2026/06/06 15:24:25 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/wget/wget-1.25.0-1.tar.xz
+2026/06/06 15:24:25 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mutt/mutt-2.3.2-1-x86_64.tar.xz
+2026/06/06 15:24:26 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mysql/libmysqlclient18/libmysqlclient18-10.1.30-1.tar.xz
+2026/06/06 15:24:27 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libaprutil1/libaprutil1-1.6.1-1.tar.xz
+2026/06/06 15:24:27 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/serf/libserf1_0/libserf1_0-1.3.9-1.tar.xz
+2026/06/06 15:24:27 Extracting from file://C:\GSP64\cygTemp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/subversion/subversion-1.14.2-2-x86_64.tar.xz
+2026/06/06 15:24:27 running: C:\GSP64\bin\dash.exe "/etc/postinstall/0p_000_autorebase.dash"
+2026/06/06 15:24:35 running: C:\GSP64\bin\dash.exe "/etc/postinstall/0p_update-info-dir.dash"
+2026/06/06 15:24:40 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/000-cygwin-post-install.sh"
+2026/06/06 15:24:40 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/coreutils.sh"
+2026/06/06 15:24:41 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/base-files-mketc.sh"
+2026/06/06 15:24:41 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/base-files-profile.sh"
+2026/06/06 15:24:43 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/p11-kit.sh"
+2026/06/06 15:24:43 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/ca-certificates.sh"
+2026/06/06 15:25:19 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/crypto-policies.sh"
+2026/06/06 15:25:24 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/openssl.sh"
+2026/06/06 15:25:24 can't run /etc/postinstall/openssl.sh: No such file
+2026/06/06 15:25:24 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/libsasl2_3.sh"
+2026/06/06 15:25:24 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/openssh.sh"
+2026/06/06 15:25:24 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/mariadb-connector-c.sh"
+2026/06/06 15:25:25 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/mysql.sh"
+2026/06/06 15:25:25 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/libxml2.sh"
+2026/06/06 15:25:26 running: C:\GSP64\bin\dash.exe "/etc/postinstall/openssl10.dash"
+2026/06/06 15:25:26 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/man-db.sh"
+2026/06/06 15:25:26 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/mintty.sh"
+2026/06/06 15:25:26 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/mutt.sh"
+2026/06/06 15:25:26 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/nano.sh"
+2026/06/06 15:25:27 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/screen.sh"
+2026/06/06 15:25:27 running: C:\GSP64\bin\bash.exe --norc --noprofile "/etc/postinstall/wget.sh"
+2026/06/06 15:25:27 running: C:\GSP64\bin\dash.exe "/etc/postinstall/zp_man-db-update-index.dash"
+2026/06/06 15:25:28 Ending cygwin install
+2026/07/10 15:41:35 Starting cygwin install, version 2.937
+2026/07/10 15:41:35 User has backup/restore rights
+2026/07/10 15:41:35 User has symlink creation right
+2026/07/10 15:41:35 Current Directory: C:\OGP64\tmp
+2026/07/10 15:41:38 source: network install
+2026/07/10 15:41:39 root: C:\OGP64 system
+2026/07/10 15:41:39 Changing gid to Administrators
+2026/07/10 15:42:05 root: C:\gsp64 system
+2026/07/10 15:42:05 Changing gid to Administrators
+2026/07/10 15:42:12 root: C:\gsp64 system
+2026/07/10 15:42:12 Changing gid to Administrators
+2026/07/10 15:42:24 Selected local directory: C:\gsp64\tmp
+2026/07/10 15:42:24 mbox : Directory C:\gsp64\tmp does not exist, would you like me to create it?
+2026/07/10 15:42:29 Selected local directory: C:\gsp64\tmp
+2026/07/10 15:42:30 net: Preconfig
+2026/07/10 15:42:31 HTTP status 403 fetching https://cygwin.com/mirrors.lst
+2026/07/10 15:42:33 site: https://cygwin.mirror.constant.com/
+2026/07/10 15:42:36 solving: 0 tasks, update: yes, use test packages: no
+2026/07/10 15:43:39 solving: 11 tasks, update: no, use test packages: no
+2026/07/10 15:43:39 Augmented Transaction List:
+2026/07/10 15:43:39    0 install libgcc1           14.4.0-1
+2026/07/10 15:43:39    1   erase libgcc1           13.4.0-1
+2026/07/10 15:43:39    2 install libssl3           3.5.7-1
+2026/07/10 15:43:39    3   erase libssl3           3.5.6-1
+2026/07/10 15:43:39    4 install mintty            3.8.3-1
+2026/07/10 15:43:39    5   erase mintty            3.8.2-1
+2026/07/10 15:43:39    6 install perl-HTTP-Date    6.07-1
+2026/07/10 15:43:39    7   erase perl-HTTP-Date    6.06-2
+2026/07/10 15:43:39    8 install perl-URI          5.35-1
+2026/07/10 15:43:39    9   erase perl-URI          5.34-1
+2026/07/10 15:43:39   10 install libretls26        3.7.0-1
+2026/07/10 15:43:39   11 install libsodium18       1.0.8-1
+2026/07/10 15:43:39   12 install libbsd0           0.12.2-5
+2026/07/10 15:43:39   13 install libstdc++6        14.4.0-1
+2026/07/10 15:43:39   14   erase libstdc++6        13.4.0-1
+2026/07/10 15:43:39   15 install openssl           3.5.7-1
+2026/07/10 15:43:39   16   erase openssl           3.5.6-1
+2026/07/10 15:43:39   17 install perl-HTTP-Message 7.02-1
+2026/07/10 15:43:39   18   erase perl-HTTP-Message 7.01-1
+2026/07/10 15:43:39   19 install pure-ftpd         1.0.46-1
+2026/07/10 15:43:39   20 install netcat            1.235-1
+2026/07/10 15:43:39   21 install p7zip             15.14.1-1
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libgcc1/libgcc1-14.4.0-1-x86_64.tar.zst
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl3/libssl3-3.5.7-1-x86_64.tar.zst
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mintty/mintty-3.8.3-1-x86_64.tar.xz
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Date/perl-HTTP-Date-6.07-1-noarch.tar.zst
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-URI/perl-URI-5.35-1-noarch.tar.zst
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libretls/libretls26/libretls26-3.7.0-1.tar.xz
+2026/07/10 15:43:50 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libsodium/libsodium18/libsodium18-1.0.8-1.tar.xz
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libbsd/libbsd0/libbsd0-0.12.2-5.tar.xz
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libstdc++6/libstdc++6-14.4.0-1-x86_64.tar.zst
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/openssl-3.5.7-1-x86_64.tar.zst
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Message/perl-HTTP-Message-7.02-1-noarch.tar.zst
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pure-ftpd/pure-ftpd-1.0.46-1.tar.xz
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/netcat/netcat-1.235-1-x86_64.tar.xz
+2026/07/10 15:43:51 Downloaded C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p7zip/p7zip-15.14.1-1.tar.xz
+2026/07/10 15:43:51 Registry value set: HKEY_LOCAL_MACHINE\Software\Cygwin\setup\rootdir = "C:\gsp64"
+2026/07/10 15:43:51 running: C:\gsp64\bin\bash.exe --norc --noprofile "/etc/preremove/openssl.sh"
+2026/07/10 15:43:52 Uninstalling libgcc1
+2026/07/10 15:43:52 Uninstalling libssl3
+2026/07/10 15:43:52 Uninstalling mintty
+2026/07/10 15:43:52 Uninstalling perl-HTTP-Date
+2026/07/10 15:43:52 Uninstalling perl-URI
+2026/07/10 15:43:53 Uninstalling libstdc++6
+2026/07/10 15:43:53 Uninstalling openssl
+2026/07/10 15:43:53 Uninstalling perl-HTTP-Message
+2026/07/10 15:43:53 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libgcc1/libgcc1-14.4.0-1-x86_64.tar.zst
+2026/07/10 15:43:53 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/libssl3/libssl3-3.5.7-1-x86_64.tar.zst
+2026/07/10 15:43:53 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/mintty/mintty-3.8.3-1-x86_64.tar.xz
+2026/07/10 15:43:53 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Date/perl-HTTP-Date-6.07-1-noarch.tar.zst
+2026/07/10 15:43:53 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-URI/perl-URI-5.35-1-noarch.tar.zst
+2026/07/10 15:43:54 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libretls/libretls26/libretls26-3.7.0-1.tar.xz
+2026/07/10 15:43:54 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libsodium/libsodium18/libsodium18-1.0.8-1.tar.xz
+2026/07/10 15:43:54 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/libbsd/libbsd0/libbsd0-0.12.2-5.tar.xz
+2026/07/10 15:43:54 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/gcc/libstdc++6/libstdc++6-14.4.0-1-x86_64.tar.zst
+2026/07/10 15:43:54 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/openssl/openssl-3.5.7-1-x86_64.tar.zst
+2026/07/10 15:43:55 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/noarch/release/perl-HTTP-Message/perl-HTTP-Message-7.02-1-noarch.tar.zst
+2026/07/10 15:43:55 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/pure-ftpd/pure-ftpd-1.0.46-1.tar.xz
+2026/07/10 15:43:55 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/netcat/netcat-1.235-1-x86_64.tar.xz
+2026/07/10 15:43:55 Extracting from file://C:\gsp64\tmp/https%3a%2f%2fcygwin.mirror.constant.com%2f/x86_64/release/p7zip/p7zip-15.14.1-1.tar.xz
+2026/07/10 15:43:55 running: C:\gsp64\bin\dash.exe "/etc/postinstall/0p_000_autorebase.dash"
+2026/07/10 15:44:12 running: C:\gsp64\bin\dash.exe "/etc/postinstall/0p_update-info-dir.dash"
+2026/07/10 15:44:15 running: C:\gsp64\bin\bash.exe --norc --noprofile "/etc/postinstall/openssl.sh"
+2026/07/10 15:44:15 running: C:\gsp64\bin\bash.exe --norc --noprofile "/etc/postinstall/mintty.sh"
+2026/07/10 15:44:15 running: C:\gsp64\bin\dash.exe "/etc/postinstall/zp_man-db-update-index.dash"
+2026/07/10 15:44:34 note: Installation Complete
+2026/07/10 15:44:34 Ending cygwin install

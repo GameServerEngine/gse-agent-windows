@@ -1,0 +1,7 @@
+{
+  "component": "Agent-Windows",
+  "release_version": "0.1.0",
+  "manifest_schema": 1,
+  "generated_by": "tools/build_windows_agent_release.sh",
+  "files": []
+}

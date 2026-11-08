@@ -1,0 +1,314 @@
+<!-- Creator     : groff version 1.24.1 -->
+<!-- CreationDate: Mon Mar 16 21:27:48 2026 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="Content-Style" content="text/css">
+<style type="text/css">
+       p       { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       pre     { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       table   { margin-top: 0; margin-bottom: 0; vertical-align: top }
+       h1      { text-align: center }
+</style>
+<title>webpage-13.html</title>
+
+ <link rel="stylesheet" type="text/css" href="groff.css" >
+</head>
+[ <a href="webpage.html">top</a> ]
+
+
+<h2>NEWS VERSION 1.19.2
+<a name="heading13"></a>
+</h2>
+ <hr><table><tr><td valign="top" width="30%" bgcolor="#eeeeee">
+<a href="webpage-1.html#heading1">License</a><br>
+<a href="webpage-2.html#heading2">README</a><br>
+<a href="webpage-3.html#heading3">Repository and FTP access</a><br>
+<a href="webpage-4.html#heading4">Groff dependencies</a><br>
+<a href="webpage-5.html#heading5">Bug reports</a><br>
+<a href="webpage-6.html#heading6">Mailing lists</a><br>
+<a href="webpage-7.html#heading7">NEWS VERSION 1.22.3</a><br>
+<a href="webpage-8.html#heading8">NEWS VERSION 1.22.2</a><br>
+<a href="webpage-9.html#heading9">NEWS VERSION 1.22.1</a><br>
+<a href="webpage-10.html#heading10">NEWS VERSION 1.21</a><br>
+<a href="webpage-11.html#heading11">NEWS VERSION 1.20.1</a><br>
+<a href="webpage-12.html#heading12">NEWS VERSION 1.20</a><br>
+<a href="webpage-13.html#heading13">NEWS VERSION 1.19.2</a><br>
+<a href="webpage-14.html#heading14">NEWS VERSION 1.19.1</a><br>
+<a href="webpage-15.html#heading15">NEWS VERSION 1.19</a><br>
+<a href="webpage-16.html#heading16">NEWS VERSION 1.18.1</a><br>
+<a href="webpage-17.html#heading17">NEWS VERSION 1.18</a><br>
+
+</td><td valign="top" width="70%">
+
+<p><small>troff</small></p><ul>
+
+<p><small><li>Analogously to the .ft and \f pair, two new
+requests &lsquo;gcolor&rsquo; and &lsquo;fcolor&rsquo;
+(which pair with \m and \M, respectively) have been added to
+set the glyph and background colours.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>A new read-only,
+string-valued register &lsquo;.sty&rsquo; returns the name
+of the current style.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>Two new
+conditional expression operators
+&lsquo;F&nbsp;&lang;name&rang;&rsquo; and
+&lsquo;S&nbsp;&lang;name&rang;&rsquo; have been added.
+&lsquo;F&rsquo; is true if a font &lang;name&rang; exists.
+&lsquo;S&rsquo; is true if a style &lang;name&rang; has been
+registered.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>Cyrillic
+characters have been added to the &lsquo;utf8&rsquo; and
+&lsquo;html&rsquo; output devices. </li></small></p></ul>
+
+<p><small>pic</small></p><ul>
+
+<p><small><li>The &lsquo;by&rsquo; argument in a
+&lsquo;for&rsquo; loop can now be negative if it is
+additive. For the multiplicative case, it must be greater
+than zero. </li></small></p></ul>
+
+<p><small>eqn</small></p><ul>
+
+<p><small><li>The following keywords aren&rsquo;t new but
+haven&rsquo;t been documented previously:</small></p>
+
+
+<p style="margin-left:3%; margin-top: 1em"><small><b>undef</b>
+<i>name</i> (to undefine a macro) <b><br>
+copy &quot;</b><i>file</i><b>&quot;</b> a synonym for
+&lsquo;include&rsquo;) <b><br>
+space</b> <i>n</i> (to modify the vertical spacing before
+and after an equation)</small></p>
+
+<p style="margin-top: 1em"><small></li><li>The following
+macros aren&rsquo;t new but haven&rsquo;t been documented
+previously:</small></p>
+
+
+<p style="margin-left:3%; margin-top: 1em"><small><b>Alpha</b>,
+..., <b>Omega</b> (the same as <b>ALPHA</b>, ...,
+<b>OMEGA</b>) <b><br>
+ldots</b> (three dots on the baseline) <b><br>
+dollar</b> (a dollar glyph)</small></p>
+
+<p style="margin-top: 1em"><small></li><li>The following
+keywords have been extended. Again, this isn&rsquo;t new but
+hasn&rsquo;t been documented previously:</small></p>
+
+
+<p style="margin-left:3%; margin-top: 1em"><small><b>col</b>
+<i>n</i> <b>{</b> ... <b>} <br>
+lcol</b> <i>n</i> <b>{</b> ... <b>} <br>
+rcol</b> <i>n</i> <b>{</b> ... <b>} <br>
+ccol</b> <i>n</i> <b>{</b> ... <b>} <br>
+pile</b> <i>n</i> <b>{</b> ... <b>} <br>
+lpile</b> <i>n</i> <b>{</b> ... <b>} <br>
+rpile</b> <i>n</i> <b>{</b> ... <b>} <br>
+cpile</b> <i>n</i> <b>{</b> ... <b>}</b> <br>
+The above all set the vertical spacing between rows
+to&nbsp;<i>n</i>). </li></small></p></ul>
+
+<p><small>grohtml</small></p><ul>
+
+<p><small><li>This device driver has been raised to beta
+stage; its set of tags should be stable now.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>New command-line
+option &lsquo;&minus;s&rsquo; to set the base point
+size.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>New command-line
+option &lsquo;&minus;S&rsquo; to set the split level while
+generating multiple files. </li></small></p></ul>
+
+<p><small>grotty</small></p><ul>
+
+<p><small><li>Experimental support for zero-width and
+double-width characters. </li></small></p></ul>
+
+<p><small>gxditview</small></p><ul>
+
+<p><small><li>On platforms which have the X&nbsp;Window
+System this program is now built and installed
+automatically. </li></small></p></ul>
+
+<p><small>xtotroff</small></p><ul>
+
+<p><small><li>This program to create font definition files
+for xditview isn&rsquo;t new but hasn&rsquo;t been installed
+previously. </li></small></p></ul>
+
+<p><small>groffer</small></p><ul>
+
+<p><small><li>A security problem (reported as
+CAN-2004-0969) has been fixed. </li></small></p></ul>
+
+<p><small>gdiffmk</small></p><ul>
+
+<p><small><li>A new script contributed by Mike Bianchi. It
+compares two groff, nroff, or troff documents and creates an
+output with added margin characters (using
+&lsquo;.mc&rsquo;) to indicate the differences.
+</li></small></p> </ul>
+
+<p><small>pdfroff</small></p><ul>
+
+<p><small><li>A new wrapper script contributed by Keith
+Marshall to easily create PDF documents with groff.
+</li></small></p> </ul>
+
+<p><small>macro packages</small></p><ul>
+
+<p><small><li>ms.tmac</small></p><ul>
+
+<p><small><li>Support for fractional point sizes: A value
+for the &lsquo;PS&rsquo;, &lsquo;VS&rsquo;,
+&lsquo;FPS&rsquo;, and &lsquo;VPS&rsquo; register larger
+than or equal to 1000 is always divided by 1000. For
+example, &lsquo;.nr&nbsp;PS&nbsp;10250&rsquo; sets the
+document&rsquo;s font size to 10.25 points.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>The
+&lsquo;Ds&rsquo; and &lsquo;De&rsquo; macros provided in ms
+since groff version 1.19 have been removed; the equivalent
+&lsquo;DS&rsquo; and &lsquo;DE&rsquo; macros should be used
+instead. X11 documents which actually use &lsquo;Ds&rsquo;
+and &lsquo;De&rsquo; always load a specific macro file from
+the X11 distribution (&lsquo;macros.t&rsquo;) which provides
+proper definitions for the two macros.</small></p>
+
+<p style="margin-top: 1em"><small></li><li>The following
+registers have been added for improving layout
+control:</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="12%">
+
+
+<p style="margin-top: 1em">PORPHANS</p></td>
+<td width="88%">
+</td></tr>
+</table>
+
+<p style="margin-left:8%;"><small>Defines number of lines
+following &lsquo;LP&rsquo;, &lsquo;PP&rsquo;,
+&lsquo;QP&rsquo;, &lsquo;IP&rsquo; or &lsquo;XP&rsquo; which
+must be kept together, before any automatic page
+break.</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="12%">
+
+
+<p style="margin-top: 1em">HORPHANS</p></td>
+<td width="88%">
+</td></tr>
+</table>
+
+<p style="margin-left:8%;"><small>Sets number of lines of
+following paragraph which must be kept with a heading,
+defined by &lsquo;NH&rsquo; or &lsquo;SH&rsquo;, before any
+automatic page break.</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%">
+
+
+<p style="margin-top: 1em">GROWPS</p></td>
+<td width="91%">
+</td></tr>
+</table>
+
+<p style="margin-left:8%;"><small>Sets the first level of
+heading (set with &lsquo;NH&rsquo;) which keeps the same
+point size as body text.</small></p>
+
+<table width="100%" border="0" rules="none" frame="void"
+       cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="9%">
+
+
+<p style="margin-top: 1em">PSINCR</p></td>
+<td width="91%">
+</td></tr>
+</table>
+
+<p style="margin-left:8%;"><small>Sets the point size
+increment for each level of heading (set with
+&lsquo;NH&rsquo;), below the threshold level set by
+&lsquo;GROWPS&rsquo;; e.g., if \n[PS]&nbsp;=&nbsp;10,
+\n[GROWPS]&nbsp;=&nbsp;3 and \n[PSINCR]&nbsp;=&nbsp;2.0p,
+then &lsquo;.NH&nbsp;1&rsquo; produces 14-point headings,
+&lsquo;.NH&nbsp;2&rsquo; produces 12-point, and all other
+levels remain at 10&nbsp;points (because
+\n[PS]&nbsp;=&nbsp;10).</small></p>
+
+
+<p style="margin-left:8%; margin-top: 1em"><small></li><li>The
+&lsquo;SH&rsquo; macro now accepts a numeric argument, to
+make heading size match that of &lsquo;NH&rsquo; with same
+argument value when the
+&lsquo;GROWPS&rsquo;/&lsquo;PSINCR&rsquo; feature is
+enabled. </li></small></p></ul>
+
+<p style="margin-top: 1em"><small>Please refer to the
+documentation of the ms package for other, minor
+improvements.</small></p>
+
+
+<p style="margin-top: 1em"><small></li><li>me.tmac</small></p>
+
+<p style="margin-top: 1em"><small>The section type set with
+the &lsquo;++&rsquo; request is available in the
+&lsquo;_M&rsquo; register. This isn&rsquo;t new but
+hasn&rsquo;t been documented before.</small></p>
+
+
+<p style="margin-top: 1em"><small></li><li>www.tmac</small></p>
+
+<p style="margin-top: 1em"><small>The &lsquo;HR&rsquo;
+macro no longer causes an empty line for non-HTML
+devices.</small></p>
+
+<p style="margin-top: 1em"><small>A new macro
+&lsquo;HEAD&rsquo; has been added to directly add data to
+the &lt;head&gt;...&lt;/head&gt; block.</small></p>
+
+<p style="margin-top: 1em"><small>New macros
+&lsquo;OLS&rsquo; and &lsquo;OLE&rsquo; to start and end an
+ordered list.</small></p>
+
+<p style="margin-top: 1em"><small>New macros
+&lsquo;DLS&rsquo; and &lsquo;DLE&rsquo; to start and end a
+definition list. </li></small></p></ul>
+
+<p><small>pdfmark</small></p><ul>
+
+<p><small><li>A new macro package contributed by Keith
+Marshall which implements PDF marks. This is in alpha stage
+currently. </li></small></p></ul>
+
+<p><small>miscellaneous</small></p><ul>
+
+<p><small><li>Two new keywords to the DESC file have been
+added which are needed for grohtml:
+&lsquo;image_generator&rsquo; and
+&lsquo;unscaled_charwidths&rsquo;. The former gives the name
+of the program which creates PNG images, and the latter
+makes troff always use unscaled character widths.
+</li></small></p> </ul></td></tr></table><hr>
+[ <a href="webpage.html">top</a> ]

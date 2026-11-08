@@ -1,0 +1,46 @@
+Change history for HTTP-Date
+
+6.07      2026-06-25 15:12:09Z
+
+    - Add test with Time::Zone (GH#25) (Michal Josef Špaček)
+    - Add test with bad Time::Zone string (GH#26) (Michal Josef Špaček)
+    - Add tests with negative time (GH#26) (Michal Josef Špaček)
+    - Replace all instances of \d with [0-9] in regular expressions to
+      reject non-ASCII Unicode digits, with a regression test (GH#27)
+      (Robert Rothenberg)
+    - Reject malformed ISO 8601 timezones with a doubled colon (GH#31)
+      (Olaf Alders)
+    - Document day/month/year ordering for numeric dates (GH#32) (Olaf
+      Alders)
+
+6.06      2023-07-06 22:29:55Z
+    - Use copyright year rather than range (GH#18) (Olaf Alders)
+    - Replace "Test" with "Test::More" (GH#20) (James Raspass)
+    - Remove the executable bit from the test (GH#21) (James Raspass)
+    - Add support for Windows four-digit year format (GH#23) (Grant Street
+      Group)
+
+6.05      2019-11-19 03:02:32Z
+    - Bump minimum version of Time::Local to 1.28 (GH#17) (Olaf Alders)
+
+6.04      2019-11-14 22:22:50Z
+    - Replace vars with our (GH#15) (James Raspass)
+    - Tidy lib and t files (GH#16) (Olaf Alders)
+
+6.03      2019-11-13 14:11:51Z
+    - RT123557 Fix for DST test issues (GH#14) (@pludlamCVL)
+    - Add Travis tests and convert to Dist::Zilla (GH#13) (Olaf Alders)
+
+6.02    2012-03-30
+    - Added support for parsing dates with (faulty) double TZ spec [RT#75150]
+    - Doc tweaks.
+
+6.01    2012-02-15
+    - Restore perl-5.6 compatiblity.  Drop MacOS (classic) support.
+
+6.00    2011-02-25
+    - Initial release of HTTP-Date as a separate distribution. There are no
+      code changes besides incrementing the version number since
+      libwww-perl-5.837.
+
+The HTTP::Date module used to be bundled with the libwww-perl distribution.

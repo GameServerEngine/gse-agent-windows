@@ -1,0 +1,45 @@
+# Required files for a complete GSE Windows Agent offline install source.
+# Paths are relative to the repository/runtime root. Keep this list focused on
+# files needed to bootstrap, configure, validate, and run the Windows service.
+Installer-Agent-Windows.cmd
+Installer-Agent-Windows.ps1
+Install_Agent.bat
+agent_start.bat
+agent_stop.bat
+Cygwin.bat
+AgentScripts/gse_agent.pl
+AgentScripts/GSE/Container/Runtime.pm
+AgentScripts/gsp_screenrc
+AgentScripts/gsp_screenrc_bk
+AgentScripts/agent_launch.sh
+AgentScripts/perl_env.sh
+AgentScripts/agent_conf.sh
+AgentScripts/steamcmd/steamcmd.exe
+AgentScripts/release_version.json
+AgentScripts/release_manifest.json
+AgentScripts/Cfg/Config.pm.default
+AgentScripts/Cfg/Preferences.pm.default
+AgentScripts/Cfg/bash_prefs.cfg.default
+bin/bash.exe
+bin/perl.exe
+usr/share/perl5/5.40/JSON/PP.pm
+lib/perl5/5.40/x86_64-cygwin-threads/Digest/SHA.pm
+usr/share/perl5/vendor_perl/5.40/LWP/UserAgent.pm
+usr/share/perl5/vendor_perl/5.40/LWP.pm
+usr/share/perl5/vendor_perl/5.40/LWP/Protocol.pm
+usr/share/perl5/vendor_perl/5.40/LWP/Protocol/http.pm
+usr/share/perl5/vendor_perl/5.40/LWP/Protocol/https.pm
+usr/share/perl5/vendor_perl/5.40/HTTP/Message.pm
+usr/share/perl5/vendor_perl/5.40/Try/Tiny.pm
+usr/share/perl5/vendor_perl/5.40/Net/HTTP.pm
+usr/share/perl5/vendor_perl/5.40/Net/HTTPS.pm
+usr/share/perl5/vendor_perl/5.40/IO/Socket/SSL.pm
+lib/perl5/vendor_perl/5.40/x86_64-cygwin-threads/HTML/Parser.pm
+lib/perl5/vendor_perl/5.40/x86_64-cygwin-threads/Net/SSLeay.pm
+bin/screen.exe
+bin/pure-pw.exe
+bin/nc.exe
+bin/7z
+bin/cygrunsrv.exe
+usr/sbin/pure-ftpd.exe
+tools/ntrights.exe

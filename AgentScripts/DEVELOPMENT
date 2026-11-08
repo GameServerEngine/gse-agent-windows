@@ -1,0 +1,5 @@
+GSE Agent NOTES:
+
+Before committing code it is recommended to execute perltidy:
+
+$ perltidy -b -gnu gse_agent.pl

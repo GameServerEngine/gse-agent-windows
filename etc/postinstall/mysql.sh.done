@@ -1,0 +1,12 @@
+if [ ! -f /etc/my.cnf.d/mysql-clients.cnf ]
+then
+    /usr/bin/mkdir -p /etc/my.cnf.d
+    /usr/bin/cp /etc/defaults/etc/my.cnf.d/mysql-clients.cnf /etc/my.cnf.d/mysql-clients.cnf
+fi
+
+if [ ! -f /etc/my.cnf.d/server.cnf ]
+then
+    /usr/bin/mkdir -p /etc/my.cnf.d
+    /usr/bin/cp /etc/defaults/etc/my.cnf.d/server.cnf /etc/my.cnf.d/server.cnf
+fi
+

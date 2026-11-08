@@ -1,0 +1,356 @@
+<?xml version="1.0" ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<!-- saved from url=(0017)http://localhost/ -->
+<title>Path::Class::File - Objects representing files</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rev="made" href="mailto:ASSI@walter.nonet" />
+</head>
+
+<body id="_podtop_">
+<table border="0" width="100%" cellspacing="0" cellpadding="3">
+<tr><td class="_podblock_" style="background-color: #cccccc; color: #000" valign="middle">
+<big><strong><span class="_podblock_">&nbsp;Path::Class::File - Objects representing files</span></strong></big>
+</td></tr>
+</table>
+
+
+
+<ul id="index">
+  <li><a href="#NAME">NAME</a></li>
+  <li><a href="#VERSION">VERSION</a></li>
+  <li><a href="#SYNOPSIS">SYNOPSIS</a></li>
+  <li><a href="#DESCRIPTION">DESCRIPTION</a></li>
+  <li><a href="#METHODS">METHODS</a></li>
+  <li><a href="#AUTHOR">AUTHOR</a></li>
+  <li><a href="#SEE-ALSO">SEE ALSO</a></li>
+</ul>
+
+<a href="#_podtop_"><h1 id="NAME">NAME</h1></a>
+
+<p>Path::Class::File - Objects representing files</p>
+
+<a href="#_podtop_"><h1 id="VERSION">VERSION</h1></a>
+
+<p>version 0.37</p>
+
+<a href="#_podtop_"><h1 id="SYNOPSIS">SYNOPSIS</h1></a>
+
+<pre><code>use Path::Class;  # Exports file() by default
+
+my $file = file(&#39;foo&#39;, &#39;bar.txt&#39;);  # Path::Class::File object
+my $file = Path::Class::File-&gt;new(&#39;foo&#39;, &#39;bar.txt&#39;); # Same thing
+
+# Stringifies to &#39;foo/bar.txt&#39; on Unix, &#39;foo\bar.txt&#39; on Windows, etc.
+print &quot;file: $file\n&quot;;
+
+if ($file-&gt;is_absolute) { ... }
+if ($file-&gt;is_relative) { ... }
+
+my $v = $file-&gt;volume; # Could be &#39;C:&#39; on Windows, empty string
+                       # on Unix, &#39;Macintosh HD:&#39; on Mac OS
+
+$file-&gt;cleanup; # Perform logical cleanup of pathname
+$file-&gt;resolve; # Perform physical cleanup of pathname
+
+my $dir = $file-&gt;dir;  # A Path::Class::Dir object
+
+my $abs = $file-&gt;absolute; # Transform to absolute path
+my $rel = $file-&gt;relative; # Transform to relative path</code></pre>
+
+<a href="#_podtop_"><h1 id="DESCRIPTION">DESCRIPTION</h1></a>
+
+<p>The <code>Path::Class::File</code> class contains functionality for manipulating file names in a cross-platform way.</p>
+
+<a href="#_podtop_"><h1 id="METHODS">METHODS</h1></a>
+
+<dl>
+
+<dt id="file-Path::Class::File-new-dir1-dir2-...-file">$file = Path::Class::File-&gt;new( &lt;dir1&gt;, &lt;dir2&gt;, ..., &lt;file&gt; )</dt>
+<dd>
+
+</dd>
+<dt id="file-file-dir1-dir2-...-file">$file = file( &lt;dir1&gt;, &lt;dir2&gt;, ..., &lt;file&gt; )</dt>
+<dd>
+
+<p>Creates a new <code>Path::Class::File</code> object and returns it. The arguments specify the path to the file. Any volume may also be specified as the first argument, or as part of the first argument. You can use platform-neutral syntax:</p>
+
+<pre><code>my $file = file( &#39;foo&#39;, &#39;bar&#39;, &#39;baz.txt&#39; );</code></pre>
+
+<p>or platform-native syntax:</p>
+
+<pre><code>my $file = file( &#39;foo/bar/baz.txt&#39; );</code></pre>
+
+<p>or a mixture of the two:</p>
+
+<pre><code>my $file = file( &#39;foo/bar&#39;, &#39;baz.txt&#39; );</code></pre>
+
+<p>All three of the above examples create relative paths. To create an absolute path, either use the platform native syntax for doing so:</p>
+
+<pre><code>my $file = file( &#39;/var/tmp/foo.txt&#39; );</code></pre>
+
+<p>or use an empty string as the first argument:</p>
+
+<pre><code>my $file = file( &#39;&#39;, &#39;var&#39;, &#39;tmp&#39;, &#39;foo.txt&#39; );</code></pre>
+
+<p>If the second form seems awkward, that&#39;s somewhat intentional - paths like <code>/var/tmp</code> or <code>\Windows</code> aren&#39;t cross-platform concepts in the first place, so they probably shouldn&#39;t appear in your code if you&#39;re trying to be cross-platform. The first form is perfectly fine, because paths like this may come from config files, user input, or whatever.</p>
+
+</dd>
+<dt id="file-stringify">$file-&gt;stringify</dt>
+<dd>
+
+<p>This method is called internally when a <code>Path::Class::File</code> object is used in a string context, so the following are equivalent:</p>
+
+<pre><code>$string = $file-&gt;stringify;
+$string = &quot;$file&quot;;</code></pre>
+
+</dd>
+<dt id="file-volume">$file-&gt;volume</dt>
+<dd>
+
+<p>Returns the volume (e.g. <code>C:</code> on Windows, <code>Macintosh HD:</code> on Mac OS, etc.) of the object, if any. Otherwise, returns the empty string.</p>
+
+</dd>
+<dt id="file-basename">$file-&gt;basename</dt>
+<dd>
+
+<p>Returns the name of the file as a string, without the directory portion (if any).</p>
+
+</dd>
+<dt id="file-components">$file-&gt;components</dt>
+<dd>
+
+<p>Returns a list of the directory components of this file, followed by the basename.</p>
+
+<p>Note: unlike <code>$dir-&gt;components</code>, this method currently does not accept any arguments to select which elements of the list will be returned. It may do so in the future. Currently it throws an exception if such arguments are present.</p>
+
+</dd>
+<dt id="file-is_dir">$file-&gt;is_dir</dt>
+<dd>
+
+<p>Returns a boolean value indicating whether this object represents a directory. Not surprisingly, <code>Path::Class::File</code> objects always return false, and <a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class/Dir.html">Path::Class::Dir</a> objects always return true.</p>
+
+</dd>
+<dt id="file-is_absolute">$file-&gt;is_absolute</dt>
+<dd>
+
+<p>Returns true or false depending on whether the file refers to an absolute path specifier (like <code>/usr/local/foo.txt</code> or <code>\Windows\Foo.txt</code>).</p>
+
+</dd>
+<dt id="file-is_relative">$file-&gt;is_relative</dt>
+<dd>
+
+<p>Returns true or false depending on whether the file refers to a relative path specifier (like <code>lib/foo.txt</code> or <code>.\Foo.txt</code>).</p>
+
+</dd>
+<dt id="file-cleanup">$file-&gt;cleanup</dt>
+<dd>
+
+<p>Performs a logical cleanup of the file path. For instance:</p>
+
+<pre><code>my $file = file(&#39;/foo//baz/./foo.txt&#39;)-&gt;cleanup;
+# $file now represents &#39;/foo/baz/foo.txt&#39;;</code></pre>
+
+</dd>
+<dt id="dir-resolve">$dir-&gt;resolve</dt>
+<dd>
+
+<p>Performs a physical cleanup of the file path. For instance:</p>
+
+<pre><code>my $file = file(&#39;/foo/baz/../foo.txt&#39;)-&gt;resolve;
+# $file now represents &#39;/foo/foo.txt&#39;, assuming no symlinks</code></pre>
+
+<p>This actually consults the filesystem to verify the validity of the path.</p>
+
+</dd>
+<dt id="dir-file-dir">$dir = $file-&gt;dir</dt>
+<dd>
+
+<p>Returns a <code>Path::Class::Dir</code> object representing the directory containing this file.</p>
+
+</dd>
+<dt id="dir-file-parent">$dir = $file-&gt;parent</dt>
+<dd>
+
+<p>A synonym for the <code>dir()</code> method.</p>
+
+</dd>
+<dt id="abs-file-absolute">$abs = $file-&gt;absolute</dt>
+<dd>
+
+<p>Returns a <code>Path::Class::File</code> object representing <code>$file</code> as an absolute path. An optional argument, given as either a string or a <a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class/Dir.html">Path::Class::Dir</a> object, specifies the directory to use as the base of relativity - otherwise the current working directory will be used.</p>
+
+</dd>
+<dt id="rel-file-relative">$rel = $file-&gt;relative</dt>
+<dd>
+
+<p>Returns a <code>Path::Class::File</code> object representing <code>$file</code> as a relative path. An optional argument, given as either a string or a <code>Path::Class::Dir</code> object, specifies the directory to use as the base of relativity - otherwise the current working directory will be used.</p>
+
+</dd>
+<dt id="foreign-file-as_foreign-type">$foreign = $file-&gt;as_foreign($type)</dt>
+<dd>
+
+<p>Returns a <code>Path::Class::File</code> object representing <code>$file</code> as it would be specified on a system of type <code>$type</code>. Known types include <code>Unix</code>, <code>Win32</code>, <code>Mac</code>, <code>VMS</code>, and <code>OS2</code>, i.e. anything for which there is a subclass of <code>File::Spec</code>.</p>
+
+<p>Any generated objects (subdirectories, files, parents, etc.) will also retain this type.</p>
+
+</dd>
+<dt id="foreign-Path::Class::File-new_foreign-type-args">$foreign = Path::Class::File-&gt;new_foreign($type, @args)</dt>
+<dd>
+
+<p>Returns a <code>Path::Class::File</code> object representing a file as it would be specified on a system of type <code>$type</code>. Known types include <code>Unix</code>, <code>Win32</code>, <code>Mac</code>, <code>VMS</code>, and <code>OS2</code>, i.e. anything for which there is a subclass of <code>File::Spec</code>.</p>
+
+<p>The arguments in <code>@args</code> are the same as they would be specified in <code>new()</code>.</p>
+
+</dd>
+<dt id="fh-file-open-mode-permissions">$fh = $file-&gt;open($mode, $permissions)</dt>
+<dd>
+
+<p>Passes the given arguments, including <code>$file</code>, to <code>IO::File-&gt;new</code> (which in turn calls <code>IO::File-&gt;open</code> and returns the result as an <a>IO::File</a> object. If the opening fails, <code>undef</code> is returned and <code>$!</code> is set.</p>
+
+</dd>
+<dt id="fh-file-openr">$fh = $file-&gt;openr()</dt>
+<dd>
+
+<p>A shortcut for</p>
+
+<pre><code>$fh = $file-&gt;open(&#39;r&#39;) or croak &quot;Can&#39;t read $file: $!&quot;;</code></pre>
+
+</dd>
+<dt id="fh-file-openw">$fh = $file-&gt;openw()</dt>
+<dd>
+
+<p>A shortcut for</p>
+
+<pre><code>$fh = $file-&gt;open(&#39;w&#39;) or croak &quot;Can&#39;t write to $file: $!&quot;;</code></pre>
+
+</dd>
+<dt id="fh-file-opena">$fh = $file-&gt;opena()</dt>
+<dd>
+
+<p>A shortcut for</p>
+
+<pre><code>$fh = $file-&gt;open(&#39;a&#39;) or croak &quot;Can&#39;t append to $file: $!&quot;;</code></pre>
+
+</dd>
+<dt id="file-touch">$file-&gt;touch</dt>
+<dd>
+
+<p>Sets the modification and access time of the given file to right now, if the file exists. If it doesn&#39;t exist, <code>touch()</code> will <i>make</i> it exist, and - YES! - set its modification and access time to now.</p>
+
+</dd>
+<dt id="file-slurp">$file-&gt;slurp()</dt>
+<dd>
+
+<p>In a scalar context, returns the contents of <code>$file</code> in a string. In a list context, returns the lines of <code>$file</code> (according to how <code>$/</code> is set) as a list. If the file can&#39;t be read, this method will throw an exception.</p>
+
+<p>If you want <code>chomp()</code> run on each line of the file, pass a true value for the <code>chomp</code> or <code>chomped</code> parameters:</p>
+
+<pre><code>my @lines = $file-&gt;slurp(chomp =&gt; 1);</code></pre>
+
+<p>You may also use the <code>iomode</code> parameter to pass in an IO mode to use when opening the file, usually IO layers (though anything accepted by the MODE argument of <code>open()</code> is accepted here). Just make sure it&#39;s a <i>reading</i> mode.</p>
+
+<pre><code>my @lines = $file-&gt;slurp(iomode =&gt; &#39;:crlf&#39;);
+my $lines = $file-&gt;slurp(iomode =&gt; &#39;&lt;:encoding(UTF-8)&#39;);</code></pre>
+
+<p>The default <code>iomode</code> is <code>r</code>.</p>
+
+<p>Lines can also be automatically split, mimicking the perl command-line option <code>-a</code> by using the <code>split</code> parameter. If this parameter is used, each line will be returned as an array ref.</p>
+
+<pre><code>my @lines = $file-&gt;slurp( chomp =&gt; 1, split =&gt; qr/\s*,\s*/ );</code></pre>
+
+<p>The <code>split</code> parameter can only be used in a list context.</p>
+
+</dd>
+<dt id="file-spew-content">$file-&gt;spew( $content );</dt>
+<dd>
+
+<p>The opposite of <a href="#slurp">&quot;slurp&quot;</a>, this takes a list of strings and prints them to the file in write mode. If the file can&#39;t be written to, this method will throw an exception.</p>
+
+<p>The content to be written can be either an array ref or a plain scalar. If the content is an array ref then each entry in the array will be written to the file.</p>
+
+<p>You may use the <code>iomode</code> parameter to pass in an IO mode to use when opening the file, just like <a href="#slurp">&quot;slurp&quot;</a> supports.</p>
+
+<pre><code>$file-&gt;spew(iomode =&gt; &#39;&gt;:raw&#39;, $content);</code></pre>
+
+<p>The default <code>iomode</code> is <code>w</code>.</p>
+
+</dd>
+<dt id="file-spew_lines-content">$file-&gt;spew_lines( $content );</dt>
+<dd>
+
+<p>Just like <code>spew</code>, but, if $content is a plain scalar, appends $/ to it, or, if $content is an array ref, appends $/ to each element of the array.</p>
+
+<p>Can also take an <code>iomode</code> parameter like <code>spew</code>. Again, the default <code>iomode</code> is <code>w</code>.</p>
+
+</dd>
+<dt id="file-traverse-sub-...-args">$file-&gt;traverse(sub { ... }, @args)</dt>
+<dd>
+
+<p>Calls the given callback on $file. This doesn&#39;t do much on its own, but see the associated documentation in <a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class/Dir.html">Path::Class::Dir</a>.</p>
+
+</dd>
+<dt id="file-remove">$file-&gt;remove()</dt>
+<dd>
+
+<p>This method will remove the file in a way that works well on all platforms, and returns a boolean value indicating whether or not the file was successfully removed.</p>
+
+<p><code>remove()</code> is better than simply calling Perl&#39;s <code>unlink()</code> function, because on some platforms (notably VMS) you actually may need to call <code>unlink()</code> several times before all versions of the file are gone - the <code>remove()</code> method handles this process for you.</p>
+
+</dd>
+<dt id="st-file-stat">$st = $file-&gt;stat()</dt>
+<dd>
+
+<p>Invokes <code>File::stat::stat()</code> on this file and returns a <a href="../../share/perl5/5.40/File/stat.html">File::stat</a> object representing the result.</p>
+
+</dd>
+<dt id="st-file-lstat">$st = $file-&gt;lstat()</dt>
+<dd>
+
+<p>Same as <code>stat()</code>, but if <code>$file</code> is a symbolic link, <code>lstat()</code> stats the link instead of the file the link points to.</p>
+
+</dd>
+<dt id="class-file-dir_class">$class = $file-&gt;dir_class()</dt>
+<dd>
+
+<p>Returns the class which should be used to create directory objects.</p>
+
+<p>Generally overridden whenever this class is subclassed.</p>
+
+</dd>
+<dt id="copy-file-copy_to-dest">$copy = $file-&gt;copy_to( $dest );</dt>
+<dd>
+
+<p>Copies the <code>$file</code> to <code>$dest</code>. It returns a <a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class/File.html">Path::Class::File</a> object when successful, <code>undef</code> otherwise.</p>
+
+</dd>
+<dt id="moved-file-move_to-dest">$moved = $file-&gt;move_to( $dest );</dt>
+<dd>
+
+<p>Moves the <code>$file</code> to <code>$dest</code>, and updates <code>$file</code> accordingly.</p>
+
+<p>It returns <code>$file</code> is successful, <code>undef</code> otherwise.</p>
+
+</dd>
+</dl>
+
+<a href="#_podtop_"><h1 id="AUTHOR">AUTHOR</h1></a>
+
+<p>Ken Williams, kwilliams@cpan.org</p>
+
+<a href="#_podtop_"><h1 id="SEE-ALSO">SEE ALSO</h1></a>
+
+<p><a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class.html">Path::Class</a>, <a href="../../../mnt/share/cygpkgs/perl-Path-Class/perl-Path-Class.noarch/build/blib/lib/Path/Class/Dir.html">Path::Class::Dir</a>, <a>File::Spec</a></p>
+
+<table border="0" width="100%" cellspacing="0" cellpadding="3">
+<tr><td class="_podblock_" style="background-color: #cccccc; color: #000" valign="middle">
+<big><strong><span class="_podblock_">&nbsp;Path::Class::File - Objects representing files</span></strong></big>
+</td></tr>
+</table>
+
+</body>
+
+</html>
+
+

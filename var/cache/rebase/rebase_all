@@ -1,0 +1,12 @@
+/usr/bin/cygbsd-0.dll
+/usr/bin/cygcrypto-3.dll
+/usr/bin/cyggcc_s-seh-1.dll
+/usr/bin/cygsodium-18.dll
+/usr/bin/cygssl-3.dll
+/usr/bin/cygstdc++-6.dll
+/usr/bin/cygtls-26.dll
+/usr/lib/engines-3/capi.dll
+/usr/lib/engines-3/loader_attic.dll
+/usr/lib/engines-3/padlock.dll
+/usr/lib/ossl-modules/legacy.dll
+/usr/lib/p7zip/7z.so

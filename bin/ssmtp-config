@@ -1,0 +1,272 @@
+#!/bin/bash
+
+conffile=/etc/ssmtp/ssmtp.conf
+revaliasfile=/etc/ssmtp/revalias
+
+conffvalue()
+{
+	:
+}
+
+if test -s "${conffile}"
+then
+if awk --version > /dev/null
+then
+conffvalue()
+{
+	awk -F= '/^[\t]*[^#]/ && $1 ~ re {print $2; exit}' \
+	    re="$1" "${conffile}"
+}
+else
+echo "(You seem to be missing awk, so I can't read the values currently"
+echo "stored in ${conffile}; you'll have to re-enter them manually if"
+echo "you want to re-use them.  ${conffile} will not be overwritten"
+echo "unless you confirm the overwrite at the end of the configuration.)"
+echo
+echo
+fi
+fi
+
+echo "Configure sSMTP in Six Easy Steps"
+echo
+echo "(1) mailhub"
+echo "This is the computer responsible for handling your outgoing mail."
+echo "It could be the SMTP server of your ISP, or a departmental mailhub."
+echo "Use the fully-qualified domain name (foo.bar.baz) of the mailhub;"
+echo "if it uses an unusual SMTP port number, use the colon syntax"
+echo "  foo.bar.baz:2525"
+echo "Otherwise sSMTP will use the standard SMTP port number (25)."
+echo "(Note that sSMTP can support a user-dependent mailhub with the"
+echo "'reverse aliases' feature, for which see the man page.)"
+echo
+
+found=$(conffvalue mailhub)
+found=${found:-$SMTPSERVER}
+
+echo -n "Please enter your mailhub [$found]: "
+read -e mailhub
+
+mailhub=${mailhub:-$found}
+
+echo
+echo "(2) FromLineOverride"
+echo "This specifies how sSMTP handles the From: line of outgoing mail."
+echo "If FromLineOverride=YES, sSMTP will leave the From: line alone if"
+echo "it already exists.  If FromLineOverride has any other value, or"
+echo "there is no From: line, sSMTP creates the From: line using your"
+echo "username (or the -f command-line option), and the value of the"
+echo "rewriteDomain option (step (4), below)."
+echo "    If you use a mail user agent (MUA; e.g. mutt, pine) I recommend"
+echo "using YES and having the MUA set the From: line.  (Exception: the"
+echo "'reverse aliases' feature can be used to set up a particular From:"
+echo "address for each user, in which case don't use FromLineOverride=YES."
+echo "See the man page.)"
+echo
+
+found=$(conffvalue FromLineOverride)
+found=${found:-YES}
+
+echo -n "FromLineOverride? [$found]: "
+read -e FromLineOverride
+
+FromLineOverride=${FromLineOverride:-$found}
+
+echo
+echo "(3) hostname"
+echo "sSMTP uses the hostname of your computer to identify itself to the"
+echo "mailhub, and in the Received: headers of the outgoing mail.  This"
+echo "has relatively little effect on how the mail is handled."
+echo "    Use the fully-qualified domain name (FQDN) of your computer"
+echo "(foo.bar.baz).  If it doesn't have a FQDN, use some name for your box."
+echo
+
+found=$(conffvalue hostname)
+##no --fqdn option on Cygwin
+#found=$(found:-`hostname --fqdn`)
+
+echo -n "Hostname of your box [$found]: "
+read -e hostname
+
+hostname=${hostname:-$found}
+
+echo
+echo "(4) rewriteDomain"
+echo "Please enter the mail name of your system."
+echo "sSMTP uses this value to add a domain to unqualified e-mail addresses"
+echo "(addresses without an @-sign)."
+echo "    You probably want to use the domain from your own e-mail address."
+echo "You probably want to set up your MUA to handle unqualified addresses"
+echo "itself, in which case sSMTP will never have to use this.  (Users of"
+echo "cron note that cron always uses unqualified addresses.)"
+echo
+
+found=$(conffvalue rewriteDomain)
+if test -f /etc/mailname
+then found=${found:-`head -1 /etc/mailname`}
+fi
+found=${found:-$hostname}
+
+echo -n "Mail name [$found]: "
+read -e rewriteDomain
+
+rewriteDomain=${rewriteDomain:-$found}
+
+echo
+echo "(5) root"
+echo "If sSMTP finds an unqualified e-mail address among"
+echo "the recipients, and it corresponds to a username on your local"
+echo "machine with a userid less than 1000, then the e-mail is sent to"
+echo "this value instead.  The idea is that mail sent to 'root' should"
+echo "probably go to 'postmaster' instead."
+echo "    If you set up your MUA to do its own handling of unqualified"
+echo "addresses, this is irrelevant.  (But note that cron does use"
+echo "unqualified addresses corresponding to local usernames.)"
+echo "Use your own e-mail address unless you know a better postmaster."
+echo
+
+found=$(conffvalue root)
+found=${found:-postmaster}
+
+echo -n "System users receive mail at [$found]: "
+read -e root
+
+root=${root:-$found}
+
+echo
+echo "(6) link /usr/sbin/sendmail to /usr/sbin/ssmtp?"
+echo "Some programs (e.g. cron) expect /usr/sbin/sendmail to handle mail."
+/usr/sbin/alternatives --install /usr/sbin/sendmail mta /usr/sbin/ssmtp.exe 0 \
+	--slave /usr/lib/sendmail mta-sendmail /usr/sbin/ssmtp.exe \
+	--slave /usr/bin/mailq mta-mailq /usr/sbin/ssmtp.exe \
+	--slave /usr/bin/newaliases mta-newaliases /usr/sbin/ssmtp.exe
+/usr/sbin/alternatives --set mta /usr/sbin/ssmtp.exe
+echo
+
+#
+# Generate revalias file
+#
+if ! test -e "${revaliasfile}"
+then
+  cat > "${revaliasfile}" <<-EOF
+	# sSMTP aliases
+	#
+	# Format:       local_account:outgoing_address:mailhub
+	#
+	# Example: root:your_login@your.domain:mailhub.your.domain[:port]
+	# where [:port] is an optional port number that defaults to 25.
+	EOF
+fi
+
+#
+# Generate configuration file
+#
+if test -s "${conffile}"
+then
+    echo
+    echo
+    echo "Configuration file ${conffile} already exists."
+    echo -n "Reconfigure and lose your previous settings (y/N)? "
+    read -e ans
+
+    if test "$ans" = "y"  -o  "$ans" = "Y"
+    then
+	true
+    else
+	exit 0
+    fi
+fi
+
+cat > "${conffile}" <<EOF
+#
+# /etc/ssmtp/ssmtp.conf -- a config file for sSMTP sendmail.
+#
+
+mailhub=$mailhub
+FromLineOverride=$FromLineOverride
+hostname=$hostname
+rewriteDomain=$rewriteDomain
+root=$root
+
+#UseTLS=YES
+#AuthUser=your_email_login
+#AuthPass=do_you_really_want_to_do_this?
+#UseTLSCert=YES
+#TLSCert=/etc/ssl/certs/ssmtp.pem
+#Debug=YES
+
+# Configure sSMTP in Six Easy Steps (or so)
+# 
+# (1) mailhub
+# This is the computer responsible for handling your outgoing mail.
+# It could be the SMTP server of your ISP, or a departmental mailhub.
+# Use the fully-qualified domain name (foo.bar.baz) of the mailhub;
+# if it uses an unusual SMTP port number, use the colon syntax
+#   foo.bar.baz:2525
+# Otherwise sSMTP will use the standard SMTP port number (25).
+# (Note that sSMTP can support a user-dependent mailhub with the
+# 'reverse aliases' feature, for which see the man page.)
+# 
+# (2) FromLineOverride
+# This specifies how sSMTP handles the From: line of outgoing mail.
+# If FromLineOverride=YES, sSMTP will leave the From: line alone if
+# it already exists.  If FromLineOverride has any other value, or
+# there is no From: line, sSMTP creates the From: line using your
+# username (or the -f command-line option), and the value of the
+# rewriteDomain option (step (4), below).
+#     If you use a mail user agent (MUA; e.g. mutt, pine) I recommend
+# using YES and having the MUA set the From: line.  (Exception: the
+# 'reverse aliases' feature can be used to set up a particular From:
+# address for each user, in which case don't use FromLineOverride=YES.
+# See the man page.)
+# 
+# (3) hostname
+# sSMTP uses the hostname of your computer to identify itself to the
+# mailhub, and in the Received: headers of the outgoing mail.  This
+# has relatively little effect on how the mail is handled.
+#     Use the fully-qualified domain name (FQDN) of your computer
+# (foo.bar.baz).  If it doesn't have a FQDN, use some name for your box.
+# 
+# (4) rewriteDomain
+# Please enter the mail name of your system.
+# sSMTP uses this value to add a domain to unqualified e-mail addresses
+# (addresses without an @-sign).
+#     You probably want to use the domain from your own e-mail address.
+# You probably want to set up your MUA to handle unqualified addresses
+# itself, in which case sSMTP will never have to use this.  (Users of
+# cron note that cron always uses unqualified addresses.)
+# 
+# (5) root
+# If sSMTP finds an unqualified e-mail address among
+# the recipients, and it corresponds to a username on your local
+# machine with a userid less than 1000, then the e-mail is sent to
+# this value instead.  The idea is that mail sent to 'root' should
+# probably go to 'postmaster' instead.
+#     If you set up your MUA to do its own handling of unqualified
+# addresses, this is irrelevant.  (But note that cron does use
+# unqualified addresses corresponding to local usernames.)
+# Use your own e-mail address unless you know a better postmaster.
+# 
+# (6) link /usr/sbin/sendmail to /usr/sbin/ssmtp?
+# Some programs (e.g. cron) expect /usr/sbin/sendmail to handle mail.
+# You may wish to ensure that it is a symbolic link to /usr/sbin/ssmtp.
+#
+# (7) Miscellaneous SSL/TLS configuration
+# Use SSL/TLS to send secure messages to server.
+#	UseTLS=YES
+# Use SSL/TLS certificate to authenticate against smtp host.
+#	UseTLSCert=YES
+# Use this RSA certificate.
+#	TLSCert=/etc/ssl/certs/ssmtp.pem
+#
+# (8) Debugging
+# Get enhanced (*really* enhanced) debugging information in the logs
+# If you want to have debugging of the config file parsing, move this option
+# to the top of the config file and uncomment
+#	Debug=YES
+EOF
+
+echo
+echo
+echo "Please check the configuration file ${conffile} for correctness."
+echo
+echo

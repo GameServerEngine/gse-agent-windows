@@ -1,0 +1,11 @@
+agent_update_metadata_url=https://git.runlevelsystems.com/GSE/Agent-Windows/releases/download/stable/gse-windows-agent-latest.json
+agent_update_patch_url=
+agent_update_patch_sha256=
+agent_update_source_version=
+agent_update_target_version=
+agent_update_manifest_url=
+agent_update_manifest_sha256=
+run_pureftpd=1
+ftp_port=21
+ftp_ip=0.0.0.0
+ftp_pasv_range=
