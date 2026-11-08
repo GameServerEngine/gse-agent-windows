@@ -50,7 +50,7 @@ sub new {
 		executable_exists => $args{executable_exists} // sub { 1 },
 		log             => $args{log}             // sub { },
 		startup_timeout => $args{startup_timeout} // 180,
-		restart_limit   => $args{restart_limit}   // 5,
+		restart_limit   => $args{restart_limit}   // 3,
 		# Failed checks in a row before a RUNNING game counts as crashed (3 checks, so a blip is not a crash).
 		miss_limit      => $args{miss_limit}      // 3,
 		restart_window  => $args{restart_window}  // 1800,
@@ -541,9 +541,8 @@ sub tick {
 # Crash backoff: 30s after the first crash, doubling, capped at 10 minutes.
 sub _backoff {
 	my ($self, $count) = @_;
-	$count = 1 if $count < 1;
-	my $wait = 30 * (2 ** ($count - 1));
-	return $wait > 600 ? 600 : $wait;
+	# No crash delay: a detected crash is restarted at once. Cleanup happens before relaunch.
+	return 0;
 }
 
 sub _crash {
