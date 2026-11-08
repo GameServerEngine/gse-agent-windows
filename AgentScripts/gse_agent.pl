@@ -5860,6 +5860,17 @@ sub start_agent_update
 	return component_update_response(success => 0, status => 'invalid_checksum', message => 'Invalid SHA-256 checksum.') if($checksum !~ /^[0-9a-f]{64}$/);
 	return component_update_response(success => 0, status => 'invalid_version', message => 'Invalid release version.') if($version !~ /^[A-Za-z0-9._\/-]{1,128}$/);
 
+	# Refuse a second update while one is still running (state written in the last 15 minutes).
+	my $state_file = AGENT_UPDATE_STATE_FILE;
+	if (-f $state_file && (time - (stat($state_file))[9]) < 900 && open(my $sfh, '<', $state_file))
+	{
+		local $/;
+		my $raw = <$sfh>;
+		close($sfh);
+		return component_update_response(success => 0, status => 'busy', message => 'An update is already running. Wait for it to finish.')
+			if (defined $raw && $raw =~ /"status"\s*:\s*"running"/);
+	}
+
 	my $stage_dir = Path::Class::Dir->new(AGENT_RUN_DIR, 'agent_update_stage')->stringify;
 	system('rm', '-rf', $stage_dir);
 	mkdir($stage_dir) or return component_update_response(success => 0, status => 'write_failed', message => "Cannot create staging folder: $!");
