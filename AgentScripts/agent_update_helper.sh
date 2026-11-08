@@ -73,7 +73,15 @@ is_preserved() {
 # The agent is a perl process. The PID the caller passes can be a different
 # process from the one that holds the port, so find the real one by command line.
 agent_pids() {
-	pgrep -f "perl .*gse_agent.pl" 2>/dev/null
+	# Scan /proc: Cygwin on the game servers has no pgrep.
+	local d pid
+	for d in /proc/[0-9]*; do
+		pid="${d#/proc/}"
+		[ "$pid" = "$$" ] && continue
+		if { tr '\0' ' ' < "$d/cmdline"; } 2>/dev/null | grep -q 'perl.*gse_agent\.pl'; then
+			echo "$pid"
+		fi
+	done
 }
 
 agent_running() {
@@ -90,13 +98,13 @@ wait_for_agent_up() {
 	local waited=0
 	while [ "$waited" -lt 120 ]; do
 		sleep 5; waited=$((waited + 5))
-		if pgrep -f "perl .*gse_agent.pl" >/dev/null 2>&1; then
+		if [ -n "$(agent_pids)" ]; then
 			local stable=0
 			while [ "$stable" -lt 30 ]; do
 				sleep 5; stable=$((stable + 5))
-				pgrep -f "perl .*gse_agent.pl" >/dev/null 2>&1 || break
+				[ -n "$(agent_pids)" ] || break
 			done
-			pgrep -f "perl .*gse_agent.pl" >/dev/null 2>&1 && return 0
+			[ -n "$(agent_pids)" ] && return 0
 		fi
 	done
 	return 1
@@ -156,6 +164,7 @@ if agent_running; then
 	rm -rf "$STAGE_DIR"
 	exit 1
 fi
+rm -f "$AGENT_DIR/gsp_agent_service.pid" "$AGENT_DIR/gsp_agent.pid" 2>/dev/null || true
 log "Agent stopped"
 
 # 2. Re-check the staged zip.
