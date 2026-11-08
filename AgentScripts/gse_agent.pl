@@ -88,7 +88,14 @@ use constant AGENT_KEY	  => $Cfg::Config{key};
 use constant AGENT_IP	   => $Cfg::Config{listen_ip};
 use constant AGENT_LOG_FILE => $Cfg::Config{logfile};
 use constant AGENT_PORT	 => $Cfg::Config{listen_port};
-use constant AGENT_VERSION  => $Cfg::Config{version};
+# The release tag is written to release_version.txt by the update helper.
+# Cfg/Config.pm is per-install and is not replaced by updates, so it is only a fallback.
+use constant AGENT_VERSION => do {
+	my $vf = AGENT_RUN_DIR . '/release_version.txt';
+	my $v = '';
+	if (open(my $vfh, '<', $vf)) { local $/; $v = <$vfh>; $v = '' unless defined $v; close($vfh); $v =~ s/\s+//g; }
+	$v ne '' ? $v : $Cfg::Config{version};
+};
 use constant AGENT_PROTOCOL_VERSION => 1;
 use constant WEB_ADMIN_API_KEY  => $Cfg::Config{web_admin_api_key};
 use constant WEB_API_URL => $Cfg::Config{web_api_url};

@@ -206,6 +206,7 @@ fi
 	mkdir -p "$AGENT_DIR/$(dirname "$rel")"
 	cp -f "$payload/$rel" "$AGENT_DIR/$rel" || exit 1
 done || fail_and_restore "Copying new files failed"
+printf '%s\n' "$VERSION" > "$AGENT_DIR/release_version.txt.tmp" && mv -f "$AGENT_DIR/release_version.txt.tmp" "$AGENT_DIR/release_version.txt"
 log "New files copied in"
 write_state running "New files installed; starting agent" "$VERSION" false
 
