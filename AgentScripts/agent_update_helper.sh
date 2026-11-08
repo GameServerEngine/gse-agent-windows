@@ -170,6 +170,9 @@ log "Backup of current install written to $BACKUP_DIR"
 # 4. Extract and copy the new files in.
 unzip -q -o "$ZIP" -d "$STAGE_DIR/payload" || fail_and_restore "Could not extract release zip"
 payload="$STAGE_DIR/payload"
+# GitHub tag archives wrap the whole repo in one <repo>-<tag>/ folder; step into it.
+top="$(find "$payload" -mindepth 1 -maxdepth 1 | head -n 2)"
+if [ "$(printf "%s\n" "$top" | grep -c .)" = 1 ] && [ -d "$top" ]; then payload="$top"; fi
 if [ -f "$payload/AgentScripts/gse_agent.pl" ]; then
 	payload="$payload/AgentScripts"
 fi
