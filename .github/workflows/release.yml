@@ -1,0 +1,83 @@
+name: Release
+
+# Creates a GitHub release for a branch whenever its VERSION changes.
+# Runs on pushes to stable, testing and working. A release is tagged <branch>-<version>,
+# so each branch keeps every version it has shipped, and older versions stay installable.
+# If the release for that tag already exists, the job does nothing.
+on:
+  push:
+    branches: [stable, testing, working]
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read and check the version
+        id: version
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          VERSION=$(tr -d '[:space:]' < VERSION)
+          if [ -z "$VERSION" ]; then echo 'VERSION is empty' >&2; exit 1; fi
+          true
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=${BRANCH}-${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Skip when this version is already released
+        id: exists
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Release $TAG already exists; nothing to publish."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build the release archive
+        if: steps.exists.outputs.skip == 'false'
+        shell: bash
+        env:
+          BRANCH: ${{ github.ref_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          NAME="gse-agent-windows-${BRANCH}-${VERSION}"
+          # git archive gives the same layout as GitHub's own archives: one top-level folder, no .git.
+          git archive --format=zip --prefix="${NAME}/" -o "${NAME}.zip" HEAD
+          sha256sum "${NAME}.zip" | awk '{print $1}' > "${NAME}.zip.sha256"
+          ls -l "${NAME}.zip" "${NAME}.zip.sha256"
+
+      - name: Publish the release
+        if: steps.exists.outputs.skip == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.ref_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+          TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          set -euo pipefail
+          NAME="gse-agent-windows-${BRANCH}-${VERSION}"
+          PRE=""
+          if [ "$BRANCH" != "stable" ]; then PRE="--prerelease"; fi
+          gh release create "$TAG" "${NAME}.zip" "${NAME}.zip.sha256" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "${BRANCH} ${VERSION}" \
+            --notes "Built from ${BRANCH} at ${GITHUB_SHA}." \
+            $PRE
