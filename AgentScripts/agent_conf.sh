@@ -281,12 +281,12 @@ done
 		then
 			if [ "${manage_ftp}" == "yes" ]
 			then
-				gspManagesFTP=1
+				managesFTP=1
 			elif [ -z "${manage_ftp}" ]
 			then
-				gspManagesFTP=1
+				managesFTP=1
 			else
-				gspManagesFTP=0
+				managesFTP=0
 			fi
 			break;
 		fi
@@ -295,7 +295,7 @@ done
 
 	echo;
 	# Only ask these install questions if users want GSP to manage FTP accounts
-	if [ "$gspManagesFTP" == "1" ]
+	if [ "$managesFTP" == "1" ]
 	then
 		if [ "$(uname -o)" != "Cygwin" ]; then
 			while [ 1 ]
@@ -571,9 +571,9 @@ done
 	prefs="%Cfg::Preferences = (\n"
 	prefs="${prefs}\tscreen_log_local => '${logLocalCopy}',\n"
 	prefs="${prefs}\tdelete_logs_after => '${deleteLogsAfter}',\n"
-	prefs="${prefs}\tgsp_manages_ftp => '${gspManagesFTP}',\n"
+	prefs="${prefs}\tmanages_ftp => '${managesFTP}',\n"
 	prefs="${prefs}\tftp_method => '${ftpMethod}',\n"
-	prefs="${prefs}\tgsp_autorestart_server => '${autoRestart}',\n"
+	prefs="${prefs}\tautorestart_server => '${autoRestart}',\n"
 	prefs="${prefs}\tprotocol_shutdown_waittime => '10',\n"
 	prefs="${prefs}\twindows_home_acl_isolation => '${windowsHomeAclIsolation}',\n"
 	if [ "X${proftpd}" == "Xyes" ]

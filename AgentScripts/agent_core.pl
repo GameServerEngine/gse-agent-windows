@@ -244,15 +244,15 @@ sub prepare_server_content_runtime_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	foreach my $dir (
-		"$home_path/_game_content",
-		"$home_path/_game_content/hooks",
-		"$home_path/_game_content/generated",
-		"$home_path/_game_content/runtime"
+		game_content_dir($home_path) . "",
+		game_content_dir($home_path) . "/hooks",
+		game_content_dir($home_path) . "/generated",
+		game_content_dir($home_path) . "/runtime"
 	)
 	{
 		mkpath($dir) if(!-d $dir);
 	}
-	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
+	my $pid_file = game_content_dir($home_path) . "/runtime/server_content.pids";
 	if(!-e $pid_file && open(my $fh, '>', $pid_file))
 	{
 		close($fh);
@@ -277,7 +277,7 @@ sub import_legacy_also_run_pids_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	prepare_server_content_runtime_without_decrypt($home_path);
-	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
+	my $pid_file = game_content_dir($home_path) . "/runtime/server_content.pids";
 	my %seen;
 	foreach my $legacy_pid_file ("$home_path/_alsoRun.pid", bsd_glob("$home_path/*/_alsoRun.pid"))
 	{
@@ -344,7 +344,7 @@ sub cleanup_server_content_hooks_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	import_legacy_also_run_pids_without_decrypt($home_path);
-	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
+	my $pid_file = game_content_dir($home_path) . "/runtime/server_content.pids";
 	cleanup_server_content_pid_group_without_decrypt($pid_file, "watchdog");
 	cleanup_server_content_pid_group_without_decrypt($pid_file, "app");
 }
@@ -949,7 +949,7 @@ sub backup_home_log
 sub create_screen_id
 {
 	my ($screen_type, $home_id) = @_;
-	return sprintf("GSP_%s_%09d", $screen_type, $home_id);
+	return sprintf("SCREEN_%s_%09d", $screen_type, $home_id);
 }
 
 sub create_screen_cmd
@@ -1305,9 +1305,21 @@ sub create_screen_cmd_loop
 			  $screen_id, $server_start_batfile_windows);
 }
 
+sub game_content_dir {
+	my ($home_path) = @_;
+	my $new = "$home_path/_game_content";
+	my $old = "$home_path/_gsp_content";
+	return (!-d $new && -d $old) ? $old : $new;
+}
+
 sub replace_Env_Vars{
 	# This function replaces constants from environment variables set in the XML
 	my ($screen_id, $homeid, $homepath, $exec_cmd, $game_key, $management_homepath) = @_;
+	# Accept legacy {GSP_*} token names from older panel templates.
+	if (defined $exec_cmd) {
+		$exec_cmd =~ s/\{GSP_(HOME_[A-Z_]*)\}/"{GAME_$1}"/ge;
+		$exec_cmd =~ s/\{GSP_([A-Z_]+)\}/{$1}/g;
+	}
 
 	# Handle steam specific replacements
 	if(defined $screen_id && $screen_id ne ""){
@@ -4132,13 +4144,13 @@ sub multiline_to_startup_comma_format{
 	my ($multiLineVar) = @_;
 	$multiLineVar =~ s/,//g; # commas are invalid anyways in bash
 	$multiLineVar =~ s/[\r]+//g;
-	$multiLineVar =~ s/[\n]+/{GSPNEWLINE}/g;
+	$multiLineVar =~ s/[\n]+/{NEWLINE_TOKEN}/g;
 	return $multiLineVar;
 }
 
 sub startup_comma_format_to_multiline{
 	my ($multiLineVar) = @_;
-	$multiLineVar =~ s/{GSPNEWLINE}/\r\n/g;
+	$multiLineVar =~ s/{NEWLINE_TOKEN}/\r\n/g;
 	return $multiLineVar;
 }
 
