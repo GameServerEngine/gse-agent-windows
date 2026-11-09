@@ -1,7 +1,7 @@
 #!/bin/bash
-# gse_watchdog_linux.sh - keeps ONE game server running (Linux).
+# watchdog_script_linux.sh - keeps ONE game server running (Linux).
 #
-# Usage: gse_watchdog_linux.sh <server_folder>
+# Usage: watchdog_script_linux.sh <server_folder>
 #
 # The agent writes server.conf in the server folder. This script reads it.
 # Files this script writes in the server folder:

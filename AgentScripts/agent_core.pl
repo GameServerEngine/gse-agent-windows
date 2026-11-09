@@ -41,11 +41,11 @@ use GameManagerWin;   # start/stop/monitor per docs/server-lifecycle.md
 # Prepend the install's own bin directories so these calls resolve regardless of how
 # the agent was launched.
 {
-	my $gsp_root = abs_path("$Bin/..");
-	if(defined($gsp_root) && $gsp_root ne "")
+	my $install_root = abs_path("$Bin/..");
+	if(defined($install_root) && $install_root ne "")
 	{
-		my @gsp_bin_dirs = grep { -d $_ } ("$gsp_root/bin", "$gsp_root/usr/bin", "$gsp_root/usr/sbin");
-		$ENV{PATH} = join(":", @gsp_bin_dirs, ($ENV{PATH} || "")) if(@gsp_bin_dirs);
+		my @bin_dirs = grep { -d $_ } ("$install_root/bin", "$install_root/usr/bin", "$install_root/usr/sbin");
+		$ENV{PATH} = join(":", @bin_dirs, ($ENV{PATH} || "")) if(@bin_dirs);
 	}
 }
 use Frontier::Daemon::GSP::Forking;	# Forking XML-RPC server
@@ -119,7 +119,7 @@ use constant CONTAINER_RUNTIME_DOCKER_BINARY =>
 use constant CONTAINER_DATA_ROOT =>
   defined($Cfg::Preferences{container_data_root}) && $Cfg::Preferences{container_data_root} ne "" ? $Cfg::Preferences{container_data_root} : File::Spec->catdir(AGENT_RUN_DIR, "containers");
 use constant AGENT_PID_FILE =>
-  Path::Class::File->new(AGENT_RUN_DIR, 'gsp_agent.pid');
+  Path::Class::File->new(AGENT_RUN_DIR, 'agent_core.pid');
 use constant AGENT_RSYNC_GENERIC_LOG =>
   Path::Class::File->new(AGENT_RUN_DIR, 'rsync_update_generic.log');
 use constant STEAM_LICENSE_OK => "Accept";
@@ -145,15 +145,15 @@ use constant AGENT_EVENTS_DIR =>
 use constant AGENT_EVENT_QUEUE_FILE =>
 	Path::Class::File->new(AGENT_EVENTS_DIR, 'pending-events.jsonl');
 use constant AGENT_UPDATE_STATE_FILE =>
-	Path::Class::File->new(AGENT_RUN_DIR, 'gsp_agent_update_state.json');
+	Path::Class::File->new(AGENT_RUN_DIR, 'agent_core_update_state.json');
 use constant AGENT_UPDATE_REQUEST_FILE =>
-	Path::Class::File->new(AGENT_RUN_DIR, 'gsp_agent_update_request.json');
+	Path::Class::File->new(AGENT_RUN_DIR, 'agent_core_update_request.json');
 use constant AGENT_UPDATE_LOG_FILE =>
-	Path::Class::File->new(AGENT_RUN_DIR, 'gsp_agent_update.log');
+	Path::Class::File->new(AGENT_RUN_DIR, 'agent_core_update.log');
 use constant SCREENRC_FILE =>
-  Path::Class::File->new(AGENT_RUN_DIR, 'gsp_screenrc');
+  Path::Class::File->new(AGENT_RUN_DIR, 'screen_config');
 use constant SCREENRC_FILE_BK =>
-  Path::Class::File->new(AGENT_RUN_DIR, 'gsp_screenrc_bk');
+  Path::Class::File->new(AGENT_RUN_DIR, 'screen_config_bk');
 use constant SCREEN_TYPE_HOME   => "HOME";
 use constant SCREEN_TYPE_UPDATE => "UPDATE";
 use constant FD_DIR => Path::Class::Dir->new(AGENT_RUN_DIR, 'FastDownload');
@@ -224,7 +224,7 @@ sub agent_event_panel_url
 	if(defined($Cfg::Config{web_api_url}) && $Cfg::Config{web_api_url} ne "")
 	{
 		my $url = $Cfg::Config{web_api_url};
-		$url =~ s/gsp_api\.php(?:\?.*)?$/agent_event_receiver.php/;
+		$url =~ s/api\.php(?:\?.*)?$/agent_event_receiver.php/;
 		return $url if($url =~ /agent_event_receiver\.php$/);
 		$url =~ s/\/+$//;
 		return "$url/agent_event_receiver.php";
@@ -244,15 +244,15 @@ sub prepare_server_content_runtime_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	foreach my $dir (
-		"$home_path/_gsp_content",
-		"$home_path/_gsp_content/hooks",
-		"$home_path/_gsp_content/generated",
-		"$home_path/_gsp_content/runtime"
+		"$home_path/_game_content",
+		"$home_path/_game_content/hooks",
+		"$home_path/_game_content/generated",
+		"$home_path/_game_content/runtime"
 	)
 	{
 		mkpath($dir) if(!-d $dir);
 	}
-	my $pid_file = "$home_path/_gsp_content/runtime/server_content.pids";
+	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
 	if(!-e $pid_file && open(my $fh, '>', $pid_file))
 	{
 		close($fh);
@@ -277,7 +277,7 @@ sub import_legacy_also_run_pids_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	prepare_server_content_runtime_without_decrypt($home_path);
-	my $pid_file = "$home_path/_gsp_content/runtime/server_content.pids";
+	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
 	my %seen;
 	foreach my $legacy_pid_file ("$home_path/_alsoRun.pid", bsd_glob("$home_path/*/_alsoRun.pid"))
 	{
@@ -344,7 +344,7 @@ sub cleanup_server_content_hooks_without_decrypt
 	my ($home_path) = @_;
 	return if(!defined($home_path) || $home_path eq "");
 	import_legacy_also_run_pids_without_decrypt($home_path);
-	my $pid_file = "$home_path/_gsp_content/runtime/server_content.pids";
+	my $pid_file = "$home_path/_game_content/runtime/server_content.pids";
 	cleanup_server_content_pid_group_without_decrypt($pid_file, "watchdog");
 	cleanup_server_content_pid_group_without_decrypt($pid_file, "app");
 }
@@ -955,7 +955,7 @@ sub create_screen_id
 sub create_screen_cmd
 {
 	my ($screen_id, $exec_cmd) = @_;
-	$exec_cmd = replace_GSP_Env_Vars($screen_id, "", "", $exec_cmd);
+	$exec_cmd = replace_Env_Vars($screen_id, "", "", $exec_cmd);
 	return
 	  sprintf('screen -d -m -t "%1$s" -c ' . SCREENRC_FILE . ' -S %1$s %2$s',
 			  $screen_id, $exec_cmd);
@@ -1062,7 +1062,7 @@ sub windows_lifecycle_title_without_decrypt
 sub windows_lifecycle_bot_marker_without_decrypt
 {
 	my ($management_home) = @_;
-	return "GSE_BOT_SUPERVISOR_" . windows_lifecycle_instance_without_decrypt($management_home);
+	return "BOT_SUPERVISOR_" . windows_lifecycle_instance_without_decrypt($management_home);
 }
 
 # Returns PIDs whose verbose task-list window title matches the exact lifecycle
@@ -1221,9 +1221,9 @@ sub create_screen_cmd_loop
 {
 	my ($screen_id, $management_home, $game_file, $game_args, $game_workdir, $game_port, $priority_class, $affinity_mask, $envVars) = @_;
 	my $server_start_batfile = Path::Class::File->new($management_home, 'serverStart.bat');
-	$game_file    = replace_GSP_Env_Vars($screen_id, '', '', $game_file);
-	$game_args    = replace_GSP_Env_Vars($screen_id, '', '', $game_args);
-	$game_workdir = replace_GSP_Env_Vars($screen_id, '', '', $game_workdir);
+	$game_file    = replace_Env_Vars($screen_id, '', '', $game_file);
+	$game_args    = replace_Env_Vars($screen_id, '', '', $game_args);
+	$game_workdir = replace_Env_Vars($screen_id, '', '', $game_workdir);
 
 	my $management_win = clean(`cygpath -wa "$management_home"`);
 	chomp($management_win);
@@ -1305,7 +1305,7 @@ sub create_screen_cmd_loop
 			  $screen_id, $server_start_batfile_windows);
 }
 
-sub replace_GSP_Env_Vars{
+sub replace_Env_Vars{
 	# This function replaces constants from environment variables set in the XML
 	my ($screen_id, $homeid, $homepath, $exec_cmd, $game_key, $management_homepath) = @_;
 
@@ -1322,30 +1322,30 @@ sub replace_GSP_Env_Vars{
 		# If the install file exists, the game can be auto updated, else it will be ignored by the game for improper syntax
 		# To generate the install file, the "Install/Update via Steam" button must be clicked on at least once!
 		if(-e $fullPath){
-			$exec_cmd =~ s/{GSP_STEAM_CMD_DIR}/$windows_steamCMDPath/g;
+			$exec_cmd =~ s/{STEAM_CMD_DIR}/$windows_steamCMDPath/g;
 			$exec_cmd =~ s/{STEAMCMD_INSTALL_FILE}/$steamInsFile/g;
 		}
 	}
 
 	# Handle home directory replacement
 	if(defined $homepath && $homepath ne ""){
-		$exec_cmd =~ s/{GSP_HOME_DIR}/$homepath/g;
+		$exec_cmd =~ s/{GAME_HOME_DIR}/$homepath/g;
 	}
 
 	# Handle windows directory replacement
 	if(defined $homepath && $homepath ne ""){
 		my $windows_home_path = clean(`cygpath -wa "$homepath"`);
-		$exec_cmd =~ s/{GSP_HOME_DIR_WINDOWS}/$windows_home_path/g;
+		$exec_cmd =~ s/{GAME_HOME_DIR_WINDOWS}/$windows_home_path/g;
 	}
 
 	# Under the game-key payload contract, legacy HOME variables continue to
 	# point at game_root. New management-home variables expose the parent home.
 	if(defined $management_homepath && $management_homepath ne ""){
-		$exec_cmd =~ s/{GSP_MANAGEMENT_HOME_DIR}/$management_homepath/g;
-		$exec_cmd =~ s/{GSE_MANAGEMENT_HOME_DIR}/$management_homepath/g;
+		$exec_cmd =~ s/{MANAGEMENT_HOME_DIR}/$management_homepath/g;
+		$exec_cmd =~ s/{MANAGEMENT_HOME_DIR}/$management_homepath/g;
 		my $windows_management_home_path = clean(`cygpath -wa "$management_homepath"`);
-		$exec_cmd =~ s/{GSP_MANAGEMENT_HOME_DIR_WINDOWS}/$windows_management_home_path/g;
-		$exec_cmd =~ s/{GSE_MANAGEMENT_HOME_DIR_WINDOWS}/$windows_management_home_path/g;
+		$exec_cmd =~ s/{MANAGEMENT_HOME_DIR_WINDOWS}/$windows_management_home_path/g;
+		$exec_cmd =~ s/{MANAGEMENT_HOME_DIR_WINDOWS}/$windows_management_home_path/g;
 	}
 
 	# Handle global game shared directory replacement
@@ -1358,7 +1358,7 @@ sub replace_GSP_Env_Vars{
 			logger "Could not create " . $shared_path . " directory $!.", 1;
 		}
 
-		$exec_cmd =~ s/{GSP_GAME_SHARED_DIR}/$shared_path/g;
+		$exec_cmd =~ s/{GAME_SHARED_DIR}/$shared_path/g;
 	}
 
 	return $exec_cmd;
@@ -2201,7 +2201,7 @@ sub protected_windows_process_reason_without_decrypt
 	$info = get_windows_process_info_without_decrypt($pid) unless(ref($info) eq 'HASH');
 	my $name = lc($info->{name} || "");
 	my $command_line = lc($info->{command_line} || "");
-	return "agent Perl process" if($name eq "perl.exe" && $command_line =~ /gse_agent\.pl/);
+	return "agent Perl process" if($name eq "perl.exe" && $command_line =~ /agent_core\.pl/);
 	return "agent launch shell" if(($name eq "bash.exe" || $name eq "sh.exe") && $command_line =~ /agent_(?:launch|service_wrapper)\.sh/);
 	return "Windows service wrapper" if($name eq "cygrunsrv.exe");
 	return "managed screen infrastructure" if($name eq "screen.exe");
@@ -2340,7 +2340,7 @@ sub remove_verified_lifecycle_runtime_files_without_decrypt
 	my ($home_id, $home_path) = @_;
 	if(defined($home_path) && $home_path ne "")
 	{
-		foreach my $runtime_name ("watchdog.pid", "bot.pid", "game.pid", "game.launch_ts", "serverStart.bat", "bot.def", "_serverStart.bat", "_gsp_wmic.out", "_serverStartPid.ps1", "_serverStartupdated.bat")
+		foreach my $runtime_name ("watchdog.pid", "bot.pid", "game.pid", "game.launch_ts", "serverStart.bat", "bot.def", "_serverStart.bat", "_wmic_helpers.out", "_serverStartPid.ps1", "_serverStartupdated.bat")
 		{
 			my $runtime_file = "$home_path/$runtime_name";
 			unlink($runtime_file) if(-e $runtime_file);
@@ -2952,7 +2952,7 @@ sub universal_start_without_decrypt
 		my @prestartenvvars = split /[\r\n]+/, $envVars;
 		my $envVarStr = "";
 		foreach my $line (@prestartenvvars) {
-			$line = replace_GSP_Env_Vars("", $home_id, $game_root, $line, $game_key, $management_home);
+			$line = replace_Env_Vars("", $home_id, $game_root, $line, $game_key, $management_home);
 			if($line ne ""){
 				logger "Configuring environment variable: $line";
 				$envVarStr .= "$line\r\n";
@@ -2970,7 +2970,7 @@ sub universal_start_without_decrypt
 	prepare_server_content_runtime_without_decrypt($management_home);
 
 	# Replace any GSP variables
-	$startup_cmd = replace_GSP_Env_Vars($screen_id, $home_id, $game_root, $startup_cmd, $game_key, $management_home);
+	$startup_cmd = replace_Env_Vars($screen_id, $home_id, $game_root, $startup_cmd, $game_key, $management_home);
 	if(WATCHDOG_MODE)
 	{
 		my $exe_name = defined($server_exe) ? $server_exe : "";
@@ -4098,7 +4098,7 @@ sub run_before_start_commands
 			open  FILE, '>', $prestartcmdfile;
 			print FILE "cd \"$windows_game_root\"\r\n";
 			foreach my $line (@prestartcmdlines) {
-				$line = replace_GSP_Env_Vars("", $server_id, $game_root, $line, $game_key, $management_home);
+				$line = replace_Env_Vars("", $server_id, $game_root, $line, $game_key, $management_home);
 				print FILE "$line\r\n";
 			}
 			print FILE "exit\r\n";
@@ -4113,7 +4113,7 @@ sub run_before_start_commands
 		if (defined $envVars && $envVars ne ""){
 			my @prestartenvvars = split /[\r\n]+/, $envVars;
 			foreach my $line (@prestartenvvars) {
-				$line = replace_GSP_Env_Vars("", $server_id, $game_root, $line, $game_key, $management_home);
+				$line = replace_Env_Vars("", $server_id, $game_root, $line, $game_key, $management_home);
 				if($line ne ""){
 					logger "Configuring environment variable: $line";
 					system($line);
@@ -4908,7 +4908,7 @@ sub mon_stats
 # job directory until the panel reads it. A job whose supervisor is gone and that
 # has no recorded result is reported as 'lost'.
 # ---------------------------------------------------------------------------
-use constant RESTIC_JOB_ROOT    => ($ENV{GSE_RESTIC_JOB_ROOT} || '/cygdrive/c/GSE/Agent/restic-jobs');
+use constant RESTIC_JOB_ROOT    => ($ENV{RESTIC_JOB_ROOT} || '/cygdrive/c/GSE/Agent/restic-jobs');
 use constant RESTIC_HOME_ROOT   => 'C:\\GSE\\Agent\\home\\gameserver';
 use constant RESTIC_OUTPUT_TAIL => 65536;
 
@@ -4953,7 +4953,7 @@ sub restic_job_write_file
 
 sub restic_bin_path
 {
-	return $ENV{GSE_RESTIC_BIN} if ($ENV{GSE_RESTIC_BIN} && -f $ENV{GSE_RESTIC_BIN} && -x $ENV{GSE_RESTIC_BIN});
+	return $ENV{RESTIC_BIN} if ($ENV{RESTIC_BIN} && -f $ENV{RESTIC_BIN} && -x $ENV{RESTIC_BIN});
 	foreach my $candidate ('/usr/bin/restic', '/usr/local/bin/restic', '/cygdrive/c/GSE/Agent/bin/restic.exe')
 	{
 		return $candidate if (-f $candidate && -x $candidate);
@@ -6003,9 +6003,9 @@ sub agent_restart
 			return 1;
 		}
 		chdir AGENT_RUN_DIR;
-		if(-e "gsp_agent_run.pid")
+		if(-e "agent_core_run.pid")
 		{
-			my $init_pid	= `cat gsp_agent_run.pid`;
+			my $init_pid	= `cat agent_core_run.pid`;
 			chomp($init_pid);
 
 			if(kill 0, $init_pid)
@@ -6014,7 +6014,7 @@ sub agent_restart
 				my $rm_pid_file	= "";
 				my $agent_pid = "";
 				my $restart_scr_log = Path::Class::File->new(SCREEN_LOGS_DIR, 'screenlog.agent_restart');
-				my $agent_scr_log = Path::Class::File->new(SCREEN_LOGS_DIR, 'screenlog.gsp_agent');
+				my $agent_scr_log = Path::Class::File->new(SCREEN_LOGS_DIR, 'screenlog.agent_core');
 
 				if(-e $restart_scr_log)
 				{
@@ -6026,10 +6026,10 @@ sub agent_restart
 					unlink $agent_scr_log;
 				}
 
-				if(-e "gsp_agent.pid")
+				if(-e "agent_core.pid")
 				{
-					$rm_pid_file .= " gsp_agent.pid";
-					$agent_pid = `cat gsp_agent.pid`;
+					$rm_pid_file .= " agent_core.pid";
+					$agent_pid = `cat agent_core.pid`;
 					chomp($agent_pid);
 					if( kill 0, $agent_pid )
 					{
@@ -6055,8 +6055,8 @@ sub agent_restart
 							  "while [ -e /proc/$init_pid $or_exist ];do echo -n .;sleep 1;done\n".
 							  "rm -f $rm_pid_file\necho \" [OK]\"\n".
 							  "echo -n \"Starting GSE Agent...\"\n".
-							  "screen -d -m -t \"gsp_agent\" -c \"" . SCREENRC_FILE . "\" -S gsp_agent bash gsp_agent -pidfile /AgentScripts/gsp_agent_run.pid\n".
-							  "while [ ! -e 'gsp_agent.pid' ];do echo -n .;sleep 1;done\n".
+							  "screen -d -m -t \"agent_core\" -c \"" . SCREENRC_FILE . "\" -S agent_core bash agent_core -pidfile /AgentScripts/agent_core_run.pid\n".
+							  "while [ ! -e 'agent_core.pid' ];do echo -n .;sleep 1;done\n".
 							  "echo \" [OK]\"\n".
 							  "rm -f tmp_restart.sh\n".
 							  "exit 0\n";
@@ -6818,7 +6818,7 @@ sub	generate_post_install_scripts
 							 "workshop_status_path=\"$mods_full_path/WorkshopInstallStatus.json\"\n".
 							 "write_workshop_status(){ status=\"\$1\"; message=\"\$2\"; now=\"\$(date '+%Y-%m-%d %H:%M:%S')\"; message_json=\$(printf '%s' \"\$message\"|sed 's/\\\\/\\\\\\\\/g;s/\"/\\\\\"/g'); printf '{\"operation\":\"steam_workshop\",\"home_id\":\"%s\",\"workshop_app_id\":\"%s\",\"status\":\"%s\",\"message\":\"%s\",\"updated_at\":\"%s\"}\\n' \"\$home_id\" \"\$workshop_id\" \"\$status\" \"\$message_json\" \"\$now\" > \"\$workshop_status_path\"; }\n".
 							 "write_workshop_status running \"Workshop install running\"\n".
-							 "trap 'rc=\$?; if [ \$rc -ne 0 ]; then write_workshop_status failed \"Workshop install failed\"; echo GSP_WORKSHOP_INSTALL_FAILED; fi' EXIT\n";
+							 "trap 'rc=\$?; if [ \$rc -ne 0 ]; then write_workshop_status failed \"Workshop install failed\"; echo WORKSHOP_INSTALL_FAILED; fi' EXIT\n";
 	my @workshop_mods = split /,/, $mods_list;
 	my @mod_names = split /,/, $mod_names_list;
 
@@ -6915,7 +6915,7 @@ sub	generate_post_install_scripts
 							 'done'."\n".
 							 'write_workshop_status completed "Workshop install completed"'."\n".
 							 'trap - EXIT'."\n".
-							 'echo GSP_WORKSHOP_INSTALL_COMPLETE'."\n";
+							 'echo WORKSHOP_INSTALL_COMPLETE'."\n";
 	return "$post_install_scripts";
 }
 
@@ -7042,7 +7042,7 @@ sub wd_shell_quote_without_decrypt
 sub watchdog_start_without_decrypt
 {
 	my ($home_id, $mgmt, $run_dir, $startup_cmd, $port, $ip, $game_key) = @_;
-	my $script = WATCHDOG_DIR->file('gse_watchdog.sh')->stringify;
+	my $script = WATCHDOG_DIR->file('watchdog_script.sh')->stringify;
 	if(!-e $script)
 	{
 		logger "Watchdog start refused for HOME ID:$home_id: watchdog script missing at $script.";
@@ -7091,7 +7091,7 @@ sub watchdog_start_without_decrypt
 	}
 	# The restore script calls setsid and bash by name, so the install's Cygwin folders must be on PATH for this call.
 	local $ENV{PATH} = join(';', WD_ROOT_DIR->subdir('bin')->stringify, WD_ROOT_DIR->subdir('usr', 'bin')->stringify, $ENV{PATH} || '');
-	my $rc = system($bash_exe, wd_cygpath_without_decrypt(WATCHDOG_DIR->file('gse_restore.sh')->stringify),
+	my $rc = system($bash_exe, wd_cygpath_without_decrypt(WATCHDOG_DIR->file('restore_script.sh')->stringify),
 		wd_cygpath_without_decrypt($startups), wd_cygpath_without_decrypt(WD_HOMES_DIR->stringify),
 		wd_cygpath_without_decrypt(WATCHDOG_DIR->stringify));
 	logger "Watchdog start requested for HOME ID:$home_id (restore rc=$rc).";

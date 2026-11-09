@@ -44,7 +44,7 @@ is_excluded() {
         .git|.git/*|.devplus|.devplus/*|dist|dist/*) return 0 ;;
         logs|logs/*|backups|backups/*|home|home/*) return 0 ;;
         AgentScripts/Cfg/Config.pm|AgentScripts/Cfg/Preferences.pm|AgentScripts/Cfg/bash_prefs.cfg) return 0 ;;
-        AgentScripts/gsp_agent.log|AgentScripts/*.pid|AgentScripts/gsp_agent_update_request.json|AgentScripts/gsp_agent_update_state.json|AgentScripts/gsp_agent_update.log) return 0 ;;
+        AgentScripts/agent_core.log|AgentScripts/*.pid|AgentScripts/agent_core_update_request.json|AgentScripts/agent_core_update_state.json|AgentScripts/agent_core_update.log) return 0 ;;
         AgentScripts/screenlogs|AgentScripts/screenlogs/*|AgentScripts/startups|AgentScripts/startups/*|AgentScripts/runtime_status|AgentScripts/runtime_status/*) return 0 ;;
         AgentScripts/tmp|AgentScripts/tmp/*|AgentScripts/shared|AgentScripts/shared/*) return 0 ;;
         AgentScripts/steamcmd/linux32|AgentScripts/steamcmd/linux32/*|AgentScripts/steamcmd/steamapps|AgentScripts/steamcmd/steamapps/*) return 0 ;;
@@ -187,7 +187,7 @@ cat > "$patch_metadata_file" <<EOF
   "target_manifest": "AgentScripts/release_manifest.json",
   "deletions": "deletions.txt",
   "files_root": "files",
-  "validation": ["sha256", "perl -c AgentScripts/gse_agent.pl", "bash -n AgentScripts/agent_launch.sh", "release_manifest"],
+  "validation": ["sha256", "perl -c AgentScripts/agent_core.pl", "bash -n AgentScripts/agent_launch.sh", "release_manifest"],
   "rollback": "restore backed-up touched files and remove newly-created files on validation failure",
   "preserved_paths": [
     "AgentScripts/Cfg",

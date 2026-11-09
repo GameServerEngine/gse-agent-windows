@@ -20,7 +20,7 @@ Use the repository-root scripts:
 - `agent_stop.bat` stops only the foreground troubleshooting agent.
 - Windows Services controls production service start, stop, and restart.
 
-Both service and foreground paths run `AgentScripts/agent_launch.sh`, which validates configuration, refuses duplicate PID/lock state, refuses to start when the configured agent port is already in use, and checks `gse_agent.pl` with Perl before launch.
+Both service and foreground paths run `AgentScripts/agent_launch.sh`, which validates configuration, refuses duplicate PID/lock state, refuses to start when the configured agent port is already in use, and checks `agent_core.pl` with Perl before launch.
 
 Queued agent updates are applied in the same launcher before Perl starts. The running agent records `agent_self_update` requests as pending state only; service restarts and `agent_start.bat` foreground starts apply the pending request when `agent_auto_update=1`.
 

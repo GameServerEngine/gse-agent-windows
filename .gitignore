@@ -8,11 +8,11 @@ AgentScripts/Cfg/Preferences.pm
 AgentScripts/Cfg/bash_prefs.cfg
 
 # Runtime Files
-AgentScripts/gsp_agent.log
+AgentScripts/agent_core.log
 AgentScripts/*.pid
-AgentScripts/gsp_agent_run.pid
-AgentScripts/gsp_agent_foreground.pid
-AgentScripts/gsp_agent_service.pid
+AgentScripts/agent_core_run.pid
+AgentScripts/agent_core_foreground.pid
+AgentScripts/agent_core_service.pid
 AgentScripts/GSP.pid
 var/run/*.pid
 

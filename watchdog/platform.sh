@@ -1,12 +1,12 @@
 #!/bin/bash
 # Platform calls for the watchdog. Linux uses ss/pgrep; Windows (Cygwin) uses netstat/ps.
 # Every function prints its result on stdout and returns 0 on success.
-if [[ "$(uname -s)" == CYGWIN* || "$(uname -s)" == MINGW* ]]; then GSE_PLATFORM=windows; else GSE_PLATFORM=linux; fi
+if [[ "$(uname -s)" == CYGWIN* || "$(uname -s)" == MINGW* ]]; then AGENT_PLATFORM=windows; else AGENT_PLATFORM=linux; fi
 
 # port_listening <tcp|udp> <port>  -> exit 0 if something is listening on that port
 port_listening() {
   local proto="$1" port="$2"
-  if [ "$GSE_PLATFORM" = "linux" ]; then
+  if [ "$AGENT_PLATFORM" = "linux" ]; then
     if [ "$proto" = "udp" ]; then ss -lun 2>/dev/null | awk -v p=":$port" '$4 ~ p"$"' | grep -q .
     else ss -ltn 2>/dev/null | awk -v p=":$port" '$4 ~ p"$"' | grep -q .; fi
   else
@@ -18,7 +18,7 @@ port_listening() {
 # port_owner_pid <tcp|udp> <port>  -> prints the pid owning the listening port
 port_owner_pid() {
   local proto="$1" port="$2"
-  if [ "$GSE_PLATFORM" = "linux" ]; then
+  if [ "$AGENT_PLATFORM" = "linux" ]; then
     if [ "$proto" = "udp" ]; then ss -lunp 2>/dev/null | grep ":$port " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1
     else ss -ltnp 2>/dev/null | grep ":$port " | sed -n 's/.*pid=\([0-9]*\).*/\1/p' | head -1; fi
   else
@@ -30,6 +30,6 @@ port_owner_pid() {
 # child_pids <pid>  -> prints direct children of pid
 child_pids() {
   local p="$1"
-  if [ "$GSE_PLATFORM" = "linux" ]; then pgrep -P "$p" 2>/dev/null
+  if [ "$AGENT_PLATFORM" = "linux" ]; then pgrep -P "$p" 2>/dev/null
   else ps -ef 2>/dev/null | awk -v p="$p" '$3 == p {print $2}'; fi
 }

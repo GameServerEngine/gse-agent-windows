@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tests for gse_watchdog_windows.sh on a Windows host (run with Cygwin bash).
+# Tests for watchdog_script_windows.sh on a Windows host (run with Cygwin bash).
 # Usage: test_watchdog_windows.sh <watchdog .sh (Cygwin path)> <start_hidden.ps1 (Cygwin path)> <game .exe (Windows path)>
 WD="$1"
 GAME_WIN="$3"
@@ -12,7 +12,7 @@ check() { if [ "$2" = "ok" ]; then echo "PASS $1"; PASS=$((PASS+1)); else echo "
 count() { grep -c "$2" "$1/watchdog.log" 2>/dev/null || echo 0; }
 alive() { [ -n "$1" ] && tasklist /FI "PID eq $1" 2>/dev/null | tr -d '\r' | grep -q "[[:space:]]$1[[:space:]]"; }
 # Waits up to 20s for a PID file to appear. start_proc can retry once on a
-# launch failure (see gse_watchdog_windows.sh), so the first game.pid write
+# launch failure (see watchdog_script_windows.sh), so the first game.pid write
 # is not guaranteed within the first couple of seconds.
 wait_for_file() { for _ in $(seq 1 45); do [ -s "$1" ] && return 0; sleep 1; done; return 1; }
 mkdir -p "$ROOT"
@@ -26,7 +26,7 @@ start_wd() { # $1 = server folder (Cygwin path). Starts the watchdog hidden.
   # its own redirection setup with a sharing violation before bash.exe ever
   # starts -- silently, since this call's own output is discarded below.
   local outbase="wd_$(basename "$1")"
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$(dirname "$WD")/start_hidden.ps1")" -Exe "C:\\gse-test\\cygwin\\bin\\bash.exe" -Args "/cygdrive/c/gse-test/wd/gse_watchdog_windows.sh $1" -WorkDir "C:\\gse-test\\cygwin\\bin" -OutBase "$outbase" >/dev/null
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$(dirname "$WD")/start_hidden.ps1")" -Exe "C:\\gse-test\\cygwin\\bin\\bash.exe" -Args "/cygdrive/c/gse-test/wd/watchdog_script_windows.sh $1" -WorkDir "C:\\gse-test\\cygwin\\bin" -OutBase "$outbase" >/dev/null
 }
 
 # Test 1: a game that crashes right away is restarted, then the watchdog gives up

@@ -15,8 +15,8 @@ The Panel is authoritative. The Windows agent executes the work the Panel reques
 
 The Windows agent mirrors the Linux queued update contract:
 
-- `agent_self_update(payload)` validates and records a pending update request in `AgentScripts/gsp_agent_update_request.json`
-- `agent_update_status` returns `AgentScripts/gsp_agent_update_state.json`
+- `agent_self_update(payload)` validates and records a pending update request in `AgentScripts/agent_core_update_request.json`
+- `agent_update_status` returns `AgentScripts/agent_core_update_state.json`
 - the running Perl agent does not replace its own files
 - `AgentScripts/agent_launch.sh` applies a pending request before starting Perl in both service and foreground modes
 
@@ -55,7 +55,7 @@ Current compatibility rule:
 - new installs write per-home records under `WorkshopModsInfo/home_<home_id>/`
 - each record stores mod string, Workshop item ID, title, installed folder/path, Workshop App ID, install status, and timestamps
 - the generated job writes `<game_home>/WorkshopInstallStatus.json` as `running`, `completed`, or `failed`
-- the generated job prints `GSP_WORKSHOP_INSTALL_COMPLETE` or `GSP_WORKSHOP_INSTALL_FAILED` so the Panel can avoid stale `Update in progress` displays if the generic update screen lingers
+- the generated job prints `WORKSHOP_INSTALL_COMPLETE` or `WORKSHOP_INSTALL_FAILED` so the Panel can avoid stale `Update in progress` displays if the generic update screen lingers
 
 ## Status validation
 
@@ -63,7 +63,7 @@ The Panel remains the source of truth for assigned ports. The Windows agent vali
 
 Detailed design:
 
-- [`GSE_WINDOWS_AGENT_PORT_VALIDATION.md`](GSE_WINDOWS_AGENT_PORT_VALIDATION.md)
+- [`WINDOWS_AGENT_PORT_VALIDATION.md`](WINDOWS_AGENT_PORT_VALIDATION.md)
 
 ## Agent Operations RPCs
 
@@ -71,7 +71,7 @@ The Windows agent exposes the same per-agent lifecycle operations as the Linux a
 
 - `force_stop_server(home_id, server_ip, server_port, home_path)` removes the matching startup flag, writes home-local `status.stopped`, cleans server-content and legacy helper PIDs through the shared hard-stop path, kills tracked Windows/game PIDs and safe TCP/UDP owners of the assigned game port, verifies session/process/port shutdown, and returns a structured result. It never restarts the game server.
 - `agent_self_update(payload)` records a pending restart-time update request.
-- `agent_update_status` returns the latest `AgentScripts/gsp_agent_update_state.json` content.
+- `agent_update_status` returns the latest `AgentScripts/agent_core_update_state.json` content.
 - `agent_version` returns OS, agent code build version, and install path.
 
 ## Container Capability RPCs
@@ -122,9 +122,9 @@ The current Windows Start contract treats the Panel `home_path` argument as the
 server-ID `management_home`, not the game payload root. Start requires the XML
 `game_key`, validates it as one safe Windows path segment, and launches the game
 from `<management_home>/<game_key>/<run_dir>`. Existing game XML tokens
-`{GSP_HOME_DIR}` and `{GSP_HOME_DIR_WINDOWS}` still resolve to the game payload
+`{GAME_HOME_DIR}` and `{GAME_HOME_DIR_WINDOWS}` still resolve to the game payload
 root for compatibility. New Panel phases should use
-`{GSP_MANAGEMENT_HOME_DIR}` or `{GSE_MANAGEMENT_HOME_DIR}` only when generated
+`{MANAGEMENT_HOME_DIR}` or `{MANAGEMENT_HOME_DIR}` only when generated
 commands intentionally reference lifecycle management files.
 
 Install/update/content RPCs should send `game_key` in the next Panel phase so
@@ -138,10 +138,10 @@ this contract; operators manually rearrange homes.
 
 Windows now mirrors the Linux server-content runtime layout for server-owned sidecars, bots, hooks, and generated content helpers:
 
-- `_gsp_content/hooks/`
-- `_gsp_content/generated/`
-- `_gsp_content/runtime/`
-- `_gsp_content/runtime/server_content.pids`
+- `_game_content/hooks/`
+- `_game_content/generated/`
+- `_game_content/runtime/`
+- `_game_content/runtime/server_content.pids`
 
 Stop and restart clean this runtime before main game process escalation. The main server PID remains tracked through `runtime_status/pid-<home_id>.kv`; `server_content.pids` must only contain server-content watchdog/app PIDs.
 

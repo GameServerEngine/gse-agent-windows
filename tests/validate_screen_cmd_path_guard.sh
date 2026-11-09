@@ -5,21 +5,21 @@ set -euo pipefail
 # cygrunsrv as a non-login bash (cygrunsrv -p /bin/bash -a agent_service_wrapper.sh),
 # so /etc/profile never runs and PATH is whatever the Windows service environment
 # provides, which does not include the install's own Cygwin bin directories. Every
-# `cygpath` backtick call in gse_agent.pl silently returns "" in that environment,
+# `cygpath` backtick call in agent_core.pl silently returns "" in that environment,
 # and create_screen_cmd_loop previously still returned a well-formed screen command
 # built around that empty path: `cmd.exe /c ""`. This asserts the fix stays in place:
 # (1) PATH is repaired at process start so cygpath/screen/wmic/tasklist resolve, and
 # (2) create_screen_cmd_loop refuses to return a command if the batch path is still empty.
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_file="$repo_root/AgentScripts/gse_agent.pl"
+agent_file="$repo_root/AgentScripts/agent_core.pl"
 
 fail() {
     echo "FAIL: $*" >&2
     exit 1
 }
 
-[ -f "$agent_file" ] || fail "missing AgentScripts/gse_agent.pl"
+[ -f "$agent_file" ] || fail "missing AgentScripts/agent_core.pl"
 
 perl -Mstrict -Mwarnings - "$agent_file" <<'PERL' || exit 1
 use strict;
@@ -54,12 +54,12 @@ sub require_order {
 # rather than assuming an inherited login-shell PATH.
 require_order($source, 'use FindBin qw($Bin)', 'abs_path("$Bin/..")', "PATH repair uses FindBin-derived install root");
 require_order($source, 'abs_path("$Bin/..")', 'use constant AGENT_RUN_DIR', "PATH repair runs before config/module loads that may shell out");
-require_text($source, '$ENV{PATH} = join(":", @gsp_bin_dirs, ($ENV{PATH} || ""))', "PATH is prepended with the install's own bin directories, not replaced");
+require_text($source, '$ENV{PATH} = join(":", @bin_dirs, ($ENV{PATH} || ""))', "PATH is prepended with the install's own bin directories, not replaced");
 
 # (2) create_screen_cmd_loop must never return a non-empty screen command built on an
 # empty Windows batch path; the empty-path check must run immediately after the
 # cygpath call and before any other use of $server_start_batfile_windows.
-$source =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_GSP_Env_Vars/s
+$source =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_Env_Vars/s
 	or fail("cannot locate create_screen_cmd_loop body");
 my $loop = $1;
 

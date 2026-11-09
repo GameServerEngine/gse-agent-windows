@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_pl="$repo_root/AgentScripts/gse_agent.pl"
+agent_pl="$repo_root/AgentScripts/agent_core.pl"
 launch_sh="$repo_root/AgentScripts/agent_launch.sh"
 
 fail() {
@@ -38,10 +38,10 @@ if command -v perl >/dev/null 2>&1; then
 	trap 'rm -rf "$tmp_cfg_dir"' EXIT
 	cp "$repo_root/AgentScripts/Cfg/Config.pm.default" "$tmp_cfg_dir/Config.pm"
 	cp "$repo_root/AgentScripts/Cfg/Preferences.pm.default" "$tmp_cfg_dir/Preferences.pm"
-	( cd "$repo_root/AgentScripts" && cp "$tmp_cfg_dir/Config.pm" Cfg/Config.pm && cp "$tmp_cfg_dir/Preferences.pm" Cfg/Preferences.pm && perl -c gse_agent.pl; rc=$?; rm -f Cfg/Config.pm Cfg/Preferences.pm; exit $rc ) \
-		|| fail "gse_agent.pl failed perl -c"
+	( cd "$repo_root/AgentScripts" && cp "$tmp_cfg_dir/Config.pm" Cfg/Config.pm && cp "$tmp_cfg_dir/Preferences.pm" Cfg/Preferences.pm && perl -c agent_core.pl; rc=$?; rm -f Cfg/Config.pm Cfg/Preferences.pm; exit $rc ) \
+		|| fail "agent_core.pl failed perl -c"
 else
-	echo "SKIP: perl is not available for gse_agent.pl -c check"
+	echo "SKIP: perl is not available for agent_core.pl -c check"
 fi
 
 echo "Windows release-update RPC and restart-time wrapper contract validation passed."

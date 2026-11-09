@@ -47,7 +47,7 @@ Status: the `working` branch is in development. Updated behaviour has been commi
 | Path | Purpose |
 | --- | --- |
 | `bin/` | Bundled Cygwin runtime binaries |
-| `AgentScripts/gse_agent.pl` | Core Windows agent Perl service |
+| `AgentScripts/agent_core.pl` | Core Windows agent Perl service |
 | `AgentScripts/agent_launch.sh` | Shared service and foreground launch guard |
 | `AgentScripts/agent_update_helper.sh` | On-demand update helper: stop, verify, back up, copy, start, restore on failure |
 | `AgentScripts/perl_env.sh` | Bundled Perl module search path and preflight |
@@ -117,7 +117,7 @@ From the feature backlog, grouped by area. Nothing here is a committed date.
 ## Known issues
 
 - The installer still asks the restart-time update question, which no longer applies.
-- `AgentScripts/agent_launch.sh` and `tests/validate_offline_installer_contract.sh` still refer to `GSP_AGENT_SKIP_AUTO_UPDATE`, from the removed startup-update path.
+- `AgentScripts/agent_launch.sh` and `tests/validate_offline_installer_contract.sh` still refer to `AGENT_SKIP_AUTO_UPDATE`, from the removed startup-update path.
 - The installer's default archive URL may still point at the old git host. Check before use.
 - The Perl syntax of the agent has not been checked on a Windows host (the Cfg modules are missing in the Linux test environment).
 - Nothing in this branch has been run on a real Windows host yet.

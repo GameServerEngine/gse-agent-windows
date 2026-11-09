@@ -34,7 +34,7 @@ require_file "$ps_file"
 require_file "$cmd_file"
 require_file "$manifest"
 require_file "$repo_root/AgentScripts/perl_env.sh"
-require_file "$repo_root/AgentScripts/gse_agent.pl"
+require_file "$repo_root/AgentScripts/agent_core.pl"
 require_file "$repo_root/AgentScripts/agent_launch.sh"
 
 if git -C "$repo_root" ls-files | grep -q '^GSP/'; then
@@ -43,9 +43,9 @@ if git -C "$repo_root" ls-files | grep -q '^GSP/'; then
 fi
 
 require_count "$manifest" "AgentScripts/perl_env.sh" 1
-require_count "$manifest" "AgentScripts/gse_agent.pl" 1
+require_count "$manifest" "AgentScripts/agent_core.pl" 1
 require_count "$manifest" "AgentScripts/agent_launch.sh" 1
-if grep -Eq '^GSP/(perl_env.sh|gse_agent.pl|agent_launch.sh)$' "$manifest"; then
+if grep -Eq '^GSP/(perl_env.sh|agent_core.pl|agent_launch.sh)$' "$manifest"; then
     fail "manifest still references legacy GSP entry points"
 fi
 
@@ -54,9 +54,9 @@ require_text "$ps_file" 'function New-AgentServiceWrapper'
 require_text "$ps_file" '"exec /bin/bash /AgentScripts/agent_launch.sh service"'
 require_text "$ps_file" '"-p", "/bin/bash"'
 require_text "$ps_file" '"-a", $serviceWrapper'
-require_text "$ps_file" '$cygwinCommand = "cd /AgentScripts && . ./perl_env.sh && gsp_perl_preflight && perl -c ./gse_agent.pl"'
-require_text "$cmd_file" '-PayloadSourcePath "%GSP_SOURCE_PATH%"'
-require_text "$cmd_file" '%GSP_SOURCE_PATH%\AgentScripts\install_payload_manifest.txt'
+require_text "$ps_file" '$cygwinCommand = "cd /AgentScripts && . ./perl_env.sh && perl_preflight && perl -c ./agent_core.pl"'
+require_text "$cmd_file" '-PayloadSourcePath "%SOURCE_PATH%"'
+require_text "$cmd_file" '%SOURCE_PATH%\AgentScripts\install_payload_manifest.txt'
 
 require_text "$ps_file" '$Script:LegacyApplicationDirName = "GSP"'
 require_text "$ps_file" 'Source = Join-Path $appDir $item'

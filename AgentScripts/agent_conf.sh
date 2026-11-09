@@ -175,15 +175,15 @@ done
 	echo "Writing Config file - $cfgfile"
 
 	echo "%Cfg::Config = (
-	logfile => '${agent_home}/gsp_agent.log',
+	logfile => '${agent_home}/agent_core.log',
 	listen_port  => '${port}',
 	listen_ip => '${ip}',
 	version => '${AGENT_VERSION}',
 	key => '${key}',
 	steam_license => '${steam_license}',
 	sudo_password => '${sudo_password}',
-	web_admin_api_key => '{your_admin_gsp_web_api_key_here}',
-	web_api_url => '{your_url_to_gsp_api.php}',
+	web_admin_api_key => '{your_admin_web_api_key_here}',
+	web_api_url => '{your_url_to_api.php}',
 	agent_event_url => '{your_url_to_agent_event_receiver.php}',
 	remote_server_id => '{panel_remote_server_id}',
 	steam_dl_limit => '0',
@@ -491,7 +491,7 @@ done
 								fi
 								ftpd_user=$(grep -oP '^User\s+\K.+' ${proFTPdConfFile})
 								ftpd_group=$(grep -oP '^Group\s+\K.+' ${proFTPdConfFile})
-								agent_user=$(grep -oP 'agent_user=\K.+' /etc/init.d/gsp_agent)
+								agent_user=$(grep -oP 'agent_user=\K.+' /etc/init.d/agent_core)
 								if [ ! -z "$ftpd_user" ] && [ ! -z "$ftpd_group" ] && [ ! -z "$agent_user" ]
 								then
 									if [ "$(groups $agent_user|grep $ftpd_group)" == "" ]

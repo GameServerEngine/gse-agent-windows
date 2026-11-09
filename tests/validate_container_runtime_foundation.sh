@@ -104,7 +104,7 @@ sub create_request
 				]
 			},
 			environment => {
-				GSE_HOME_ID => "42",
+				HOME_ID => "42",
 				SERVER_MODE => "container"
 			},
 			entrypoint => "/entrypoint",
@@ -181,7 +181,7 @@ is_deeply($runner->calls->[1]{argv}, [
 	"--publish", "203.0.113.10:27016:27016/tcp",
 	"--publish", "203.0.113.10:2302:2302/udp",
 	"--publish", "203.0.113.10:2303:2303/udp",
-	"--env", "GSE_HOME_ID=42",
+	"--env", "HOME_ID=42",
 	"--env", "SERVER_MODE=container",
 	"--entrypoint", "/entrypoint",
 	"registry.example/gse/templates/dayz:2026.08.01",

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_file="$repo_root/AgentScripts/gse_agent.pl"
+agent_file="$repo_root/AgentScripts/agent_core.pl"
 preferences_file="$repo_root/AgentScripts/Cfg/Preferences.pm.default"
 
 fail() {
@@ -40,11 +40,11 @@ fi
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
 mkdir -p "$tmp_dir/AgentScripts/Cfg" "$tmp_dir/AgentScripts/GSE/Container"
-cp "$agent_file" "$tmp_dir/AgentScripts/gse_agent.pl"
+cp "$agent_file" "$tmp_dir/AgentScripts/agent_core.pl"
 cp "$repo_root/AgentScripts/GSE/Container/Runtime.pm" "$tmp_dir/AgentScripts/GSE/Container/Runtime.pm"
 cp "$repo_root/AgentScripts/Cfg/Config.pm.default" "$tmp_dir/AgentScripts/Cfg/Config.pm"
 cp "$repo_root/AgentScripts/Cfg/Preferences.pm.default" "$tmp_dir/AgentScripts/Cfg/Preferences.pm"
 
-perl -I "$repo_root/AgentScripts" -c "$tmp_dir/AgentScripts/gse_agent.pl" >/dev/null
+perl -I "$repo_root/AgentScripts" -c "$tmp_dir/AgentScripts/agent_core.pl" >/dev/null
 
 echo "Container RPC boundary validation passed."

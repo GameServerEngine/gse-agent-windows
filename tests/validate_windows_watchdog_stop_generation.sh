@@ -2,14 +2,14 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_file="$repo_root/AgentScripts/gse_agent.pl"
+agent_file="$repo_root/AgentScripts/agent_core.pl"
 
 fail() {
     echo "FAIL: $*" >&2
     exit 1
 }
 
-[ -f "$agent_file" ] || fail "missing AgentScripts/gse_agent.pl"
+[ -f "$agent_file" ] || fail "missing AgentScripts/agent_core.pl"
 
 perl -Mstrict -Mwarnings - "$agent_file" <<'PERL' || exit 1
 use strict;
@@ -20,7 +20,7 @@ open(my $fh, '<', $agent_file) or die "FAIL: cannot read $agent_file: $!\n";
 my $source = do { local $/; <$fh> };
 close($fh);
 my $repo_root = $agent_file;
-$repo_root =~ s{/AgentScripts/gse_agent\.pl\z}{};
+$repo_root =~ s{/AgentScripts/agent_core\.pl\z}{};
 
 sub fail {
 	my ($message) = @_;
@@ -88,7 +88,7 @@ sub batch_model_runtime_branch {
 	return $runtime_seconds < 15 ? "rapid-exit" : "restart";
 }
 
-$source =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_GSP_Env_Vars/s
+$source =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_Env_Vars/s
 	or fail("cannot locate create_screen_cmd_loop body");
 my $loop = $1;
 
@@ -120,7 +120,7 @@ require_text($loop, 'for %%I in (\"%~dp0.\") do set \"INSTANCE=%%~nxI\"', "insta
 require_text($loop, 'set \"WATCHDOG_TITLE=%INSTANCE%_watchdog\"', "watchdog title");
 require_text($loop, 'set \"BOT_TITLE=%INSTANCE%_bot\"', "bot title");
 require_text($loop, 'set \"GAME_TITLE=%INSTANCE%_game\"', "game title");
-require_text($loop, 'set \"BOT_SUPERVISOR_MARKER=GSE_BOT_SUPERVISOR_%INSTANCE%\"', "per-instance BOT supervisor marker");
+require_text($loop, 'set \"BOT_SUPERVISOR_MARKER=BOT_SUPERVISOR_%INSTANCE%\"', "per-instance BOT supervisor marker");
 require_text($loop, 'set \"STOP_FILE=%~dp0status.stopped\"', "stop marker path");
 require_text($loop, 'if /I not \"%~1\"==\"bot-supervisor\" if exist \"%STOP_FILE%\" del \"%STOP_FILE%\"', "old stop marker removal only on fresh main start");
 require_text($loop, 'windows_relative_game_executable_name_without_decrypt($game_file)', "relative game executable derivation");
@@ -130,7 +130,7 @@ require_text($loop, 'set \"GAME_EXECUTABLE=$batch_game_relative_executable\"', "
 require_text($loop, 'set \"GAME_OPTIONS=$batch_game_args\"', "game options assignment");
 require_text($loop, 'set \"GAME_PORT=$batch_game_port\"', "single game port assignment");
 require_text($loop, 'windows_start_priority_switch_without_decrypt($priority_class)', "generator-side priority normalization");
-require_text($loop, 'set \"GSE_GAME_PRIORITY=$batch_priority_switch\"', "normalized priority assignment");
+require_text($loop, 'set \"GAME_PRIORITY=$batch_priority_switch\"', "normalized priority assignment");
 require_text($loop, 'title %WATCHDOG_TITLE%', "watchdog console title");
 require_text($loop, 'if exist \"%~dp0_alsorun.cmd\" set \"ALSO_FILE=%~dp0_alsorun.cmd\"', "current _alsorun.cmd load");
 require_text($loop, 'if not defined ALSO_FILE if exist \"%~dp0_alsoRun.cmd\" set \"ALSO_FILE=%~dp0_alsoRun.cmd\"', "legacy _alsoRun.cmd load");
@@ -147,7 +147,7 @@ require_text($loop, 'cd /d \"%GAME_WORKDIR%\"', "game working-directory change b
 require_text($loop, 'Unable to change to game workdir', "working-directory failure log");
 require_text($loop, 'call :SECONDS_NOW START_SECONDS', "game launch start timestamp");
 require_text($loop, 'if errorlevel 1', "clock failure stop path");
-require_text($loop, 'if defined GSE_GAME_PRIORITY set \"GAME_START_FLAGS=!GAME_START_FLAGS! %GSE_GAME_PRIORITY%\"', "complete priority switch append");
+require_text($loop, 'if defined GAME_PRIORITY set \"GAME_START_FLAGS=!GAME_START_FLAGS! %GAME_PRIORITY%\"', "complete priority switch append");
 require_text($loop, 'start /WAIT \"%GAME_TITLE%\" !GAME_START_FLAGS! %GAME_EXECUTABLE% %GAME_OPTIONS%', "blocking unquoted relative supervised game launch");
 require_text($loop, 'set \"GAME_EXIT_CODE=%ERRORLEVEL%\"', "game exit code capture");
 require_text($loop, 'call :SECONDS_NOW END_SECONDS', "game launch end timestamp");
@@ -227,7 +227,7 @@ reject_text($loop, '&gt;', "HTML-escaped greater-than token");
 reject_regex($loop, qr/(?:^|[^A-Za-z])gt(?:[^A-Za-z]|\z)/, "plain gt comparison token");
 require_text($loop, 'GTR 23', "valid hour GTR comparison");
 require_text($loop, 'GTR 59', "valid minute/second GTR comparison");
-reject_text($loop, '/%GSE_GAME_PRIORITY%', "runtime priority slash prefix");
+reject_text($loop, '/%GAME_PRIORITY%', "runtime priority slash prefix");
 reject_text($loop, '%TIME: =0%', "locale-sensitive TIME runtime clock");
 reject_text($loop, '1%%B', "broken TIME minute arithmetic");
 reject_text($loop, 'echo(!WMIC_TIMESTAMP! | findstr', "timestamp validation pipeline with trailing echoed space");
@@ -369,11 +369,11 @@ foreach my $fixture (
 	require_text($fixture_text, $fixture->{mod}, "$fixture->{description} mod arguments");
 	require_text($fixture_text, $fixture->{options}, "$fixture->{description} exact options");
 	require_text($fixture_text, $fixture->{bot}, "$fixture->{description} BEC path");
-	require_text($fixture_text, 'set "GSE_GAME_PRIORITY=/normal"', "$fixture->{description} normalized priority switch");
-	require_text($fixture_text, 'BOT_SUPERVISOR_MARKER=GSE_BOT_SUPERVISOR_%INSTANCE%', "$fixture->{description} BOT marker");
+	require_text($fixture_text, 'set "GAME_PRIORITY=/normal"', "$fixture->{description} normalized priority switch");
+	require_text($fixture_text, 'BOT_SUPERVISOR_MARKER=BOT_SUPERVISOR_%INSTANCE%', "$fixture->{description} BOT marker");
 	require_text($fixture_text, 'if /I not "%~1"=="bot-supervisor" if exist "%STOP_FILE%" del "%STOP_FILE%"', "$fixture->{description} main-only stop marker removal");
 	require_text($fixture_text, 'cd /d "%GAME_WORKDIR%"', "$fixture->{description} game workdir change");
-	require_text($fixture_text, 'if defined GSE_GAME_PRIORITY set "GAME_START_FLAGS=!GAME_START_FLAGS! %GSE_GAME_PRIORITY%"', "$fixture->{description} priority switch append");
+	require_text($fixture_text, 'if defined GAME_PRIORITY set "GAME_START_FLAGS=!GAME_START_FLAGS! %GAME_PRIORITY%"', "$fixture->{description} priority switch append");
 	require_text($fixture_text, 'start /WAIT "%GAME_TITLE%" !GAME_START_FLAGS! %GAME_EXECUTABLE% %GAME_OPTIONS%', "$fixture->{description} blocking unquoted relative game launch");
 	require_text($fixture_text, 'start "" /B /D "%~dp0" cmd.exe /V:ON /C ""%~f0" bot-supervisor "%BOT_SUPERVISOR_MARKER%""', "$fixture->{description} background BOT supervisor launch");
 	require_text($fixture_text, 'start "" /B /D "%ALSO_WORKDIR%" /WAIT "%ALSO_COMMAND%" %ALSO_OPTIONS%', "$fixture->{description} blocking background BEC launch");

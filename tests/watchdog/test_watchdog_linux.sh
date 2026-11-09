@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tests for gse_watchdog_linux.sh, using the fake game (server-port-test game mode).
+# Tests for watchdog_script_linux.sh, using the fake game (server-port-test game mode).
 # Usage: test_watchdog_linux.sh <path to watchdog> <path to fake game binary>
 WD="$1"
 GAME="$2"

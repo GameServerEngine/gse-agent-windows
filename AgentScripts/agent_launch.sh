@@ -3,21 +3,21 @@
 set -u
 
 MODE="${1:-foreground}"
-AGENT_DIR="${GSP_AGENT_DIR:-/AgentScripts}"
+AGENT_DIR="${AGENT_DIR:-/AgentScripts}"
 CONFIG_FILE="$AGENT_DIR/Cfg/Config.pm"
 PREFS_FILE="$AGENT_DIR/Cfg/bash_prefs.cfg"
-AGENT_FILE="$AGENT_DIR/gse_agent.pl"
+AGENT_FILE="$AGENT_DIR/agent_core.pl"
 PERL_ENV_FILE="$AGENT_DIR/perl_env.sh"
-STATE_FILE="$AGENT_DIR/gsp_agent_update_state.json"
-REQUEST_FILE="$AGENT_DIR/gsp_agent_update_request.json"
-UPDATE_LOG="$AGENT_DIR/gsp_agent_update.log"
-REVISION_FILE="$AGENT_DIR/.gsp_agent_source_revision"
+STATE_FILE="$AGENT_DIR/agent_core_update_state.json"
+REQUEST_FILE="$AGENT_DIR/agent_core_update_request.json"
+UPDATE_LOG="$AGENT_DIR/agent_core_update.log"
+REVISION_FILE="$AGENT_DIR/.agent_core_source_revision"
 BACKUP_ARCHIVE="$AGENT_DIR/agent_restart_update_backup.tar.gz"
 INSTALL_ROOT="$(cd "$AGENT_DIR/.." 2>/dev/null && pwd)"
-FOREGROUND_PIDFILE="$AGENT_DIR/gsp_agent_foreground.pid"
-SERVICE_PIDFILE="$AGENT_DIR/gsp_agent_service.pid"
-LEGACY_RUN_PIDFILE="$AGENT_DIR/gsp_agent_run.pid"
-AGENT_PIDFILE="$AGENT_DIR/gsp_agent.pid"
+FOREGROUND_PIDFILE="$AGENT_DIR/agent_core_foreground.pid"
+SERVICE_PIDFILE="$AGENT_DIR/agent_core_service.pid"
+LEGACY_RUN_PIDFILE="$AGENT_DIR/agent_core_run.pid"
+AGENT_PIDFILE="$AGENT_DIR/agent_core.pid"
 PUREFTPD_PIDFILE="/var/run/pure-ftpd.pid"
 PUREFTPD_PASSWD="/etc/pureftpd.passwd"
 PUREFTPD_DB="/etc/pureftpd.pdb"
@@ -51,7 +51,7 @@ load_perl_env() {
 		return 1
 	}
 	. "$PERL_ENV_FILE" || return 1
-	gsp_configure_bundled_perl || return 1
+	configure_bundled_perl || return 1
 }
 
 load_perl_env || fail "Bundled Perl environment initialization failed."
@@ -349,7 +349,7 @@ refuse_busy_port() {
 
 validate_agent_file() {
 	[ -f "$AGENT_FILE" ] || fail "Missing $AGENT_FILE"
-	gsp_perl_preflight || fail "Bundled Perl module preflight failed for $AGENT_FILE"
+	perl_preflight || fail "Bundled Perl module preflight failed for $AGENT_FILE"
 	perl -c "$AGENT_FILE" || fail "Perl syntax validation failed for $AGENT_FILE"
 }
 

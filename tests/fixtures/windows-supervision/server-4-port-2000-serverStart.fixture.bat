@@ -4,7 +4,7 @@ for %%I in ("%~dp0.") do set "INSTANCE=%%~nxI"
 set "WATCHDOG_TITLE=%INSTANCE%_watchdog"
 set "BOT_TITLE=%INSTANCE%_bot"
 set "GAME_TITLE=%INSTANCE%_game"
-set "BOT_SUPERVISOR_MARKER=GSE_BOT_SUPERVISOR_%INSTANCE%"
+set "BOT_SUPERVISOR_MARKER=BOT_SUPERVISOR_%INSTANCE%"
 set "STOP_FILE=%~dp0status.stopped"
 if /I not "%~1"=="bot-supervisor" if exist "%STOP_FILE%" del "%STOP_FILE%" >nul 2>&1
 set "GAME_WORKDIR=C:\ogp64\home\gameserver\4\arma2"
@@ -12,8 +12,8 @@ set "GAME_COMMAND=C:\ogp64\home\gameserver\4\arma2\arma2oaserver.exe"
 set "GAME_EXECUTABLE=arma2oaserver.exe"
 set "GAME_OPTIONS=-port=2000 -mod=@dayz;@hive -config=C:\ogp64\home\gameserver\4\arma2\server.cfg"
 set "GAME_PORT=2000"
-set "GSE_GAME_PRIORITY=/normal"
-set "GSE_GAME_AFFINITY="
+set "GAME_PRIORITY=/normal"
+set "GAME_AFFINITY="
 set "ALSO_FILE=%~dp0_alsoRun.cmd"
 set "ALSO_WORKDIR=C:\ogp64\home\gameserver\4\BEC"
 set "ALSO_COMMAND=C:\ogp64\home\gameserver\4\BEC\BEC.exe"
@@ -33,8 +33,8 @@ if errorlevel 1 (
     goto SHUTDOWN
 )
 set "GAME_START_FLAGS="
-if defined GSE_GAME_PRIORITY set "GAME_START_FLAGS=!GAME_START_FLAGS! %GSE_GAME_PRIORITY%"
-if defined GSE_GAME_AFFINITY set "GAME_START_FLAGS=!GAME_START_FLAGS! /AFFINITY %GSE_GAME_AFFINITY%"
+if defined GAME_PRIORITY set "GAME_START_FLAGS=!GAME_START_FLAGS! %GAME_PRIORITY%"
+if defined GAME_AFFINITY set "GAME_START_FLAGS=!GAME_START_FLAGS! /AFFINITY %GAME_AFFINITY%"
 start /WAIT "%GAME_TITLE%" !GAME_START_FLAGS! %GAME_EXECUTABLE% %GAME_OPTIONS%
 set "GAME_EXIT_CODE=%ERRORLEVEL%"
 call :SECONDS_NOW END_SECONDS

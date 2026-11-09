@@ -71,7 +71,7 @@ The installer:
 - creates or updates the configured Windows service account
 - prompts for OGP-compatible agent settings
 - writes `AgentScripts/Cfg/Config.pm`, `AgentScripts/Cfg/Preferences.pm`, and `AgentScripts/Cfg/bash_prefs.cfg`
-- validates `AgentScripts/gse_agent.pl` with bundled Cygwin Perl
+- validates `AgentScripts/agent_core.pl` with bundled Cygwin Perl
 - registers the `GSPAgent` Windows service through bundled `cygrunsrv.exe`
 - removes the known legacy `GSP Windows Agent` scheduled task when present
 - sets and verifies Automatic startup, Windows service recovery restart actions, and non-crash failure recovery
@@ -87,7 +87,7 @@ The installer:
 
 Online repair through the CMD bootstrap refreshes the installed release payload from one release ZIP and verifies bundled runtime executables while preserving local config and runtime/customer state. Offline repair or upgrade through the CMD bootstrap activates the validated local payload while preserving configuration, server files, schedules, homes, logs, backups, runtime state, update state, and local credential databases. Direct PowerShell repair operates on the existing installed payload; direct PowerShell reconfigure may use `-PayloadSourcePath` as the validation manifest source without copying payload files. Operations that need missing local files fail instead of going online. Reconfigure rewrites config and service registration. Uninstall removes the service and leaves files in place by default.
 
-During install, repair, and reconfigure, the PowerShell installer resets inherited ACLs only on `AgentScripts\agent_launch.sh`, `AgentScripts\perl_env.sh`, and `AgentScripts\gse_agent.pl`, normalizes those managed scripts to LF line endings, and leaves customer-owned configuration, homes, server files, logs, backups, schedules, and runtime state untouched. Those scripts are interpreter-invoked through Bash and Perl, so the installer and restart-time update validator do not need to mutate executable bits for them.
+During install, repair, and reconfigure, the PowerShell installer resets inherited ACLs only on `AgentScripts\agent_launch.sh`, `AgentScripts\perl_env.sh`, and `AgentScripts\agent_core.pl`, normalizes those managed scripts to LF line endings, and leaves customer-owned configuration, homes, server files, logs, backups, schedules, and runtime state untouched. Those scripts are interpreter-invoked through Bash and Perl, so the installer and restart-time update validator do not need to mutate executable bits for them.
 
 ## Foreground Troubleshooting
 
@@ -124,7 +124,7 @@ agent_stop.bat
 
 ## Restart-Time Updates
 
-The running Windows agent records `agent_self_update` requests as pending state only. It writes `AgentScripts/gsp_agent_update_request.json` and `AgentScripts/gsp_agent_update_state.json`; it does not replace its own files.
+The running Windows agent records `agent_self_update` requests as pending state only. It writes `AgentScripts/agent_core_update_request.json` and `AgentScripts/agent_core_update_state.json`; it does not replace its own files.
 
 On service startup or foreground `agent_start.bat`, `AgentScripts/agent_launch.sh` checks `agent_auto_update` in `AgentScripts/Cfg/bash_prefs.cfg`. When enabled and a pending request exists, the launcher resolves release metadata or uses the explicit patch URL, verifies the patch SHA-256, extracts the patch into a staging directory, applies complete changed/new files plus explicit deletions, validates Perl, shell, and release-manifest checksums, rolls back on apply or validation failure, records `completed`, `failed`, or `rolled_back`, and then starts Perl.
 
@@ -135,18 +135,18 @@ If restart-time updates are disabled, the request remains `pending`. Terminal fa
 Both service and foreground startup run `AgentScripts/agent_launch.sh`. Startup fails before launching Perl when:
 
 - the configured agent port is already listening
-- `gsp_agent.pid`, `gsp_agent_service.pid`, `gsp_agent_foreground.pid`, or legacy `gsp_agent_run.pid` contains a live PID
+- `agent_core.pid`, `agent_core_service.pid`, `agent_core_foreground.pid`, or legacy `agent_core_run.pid` contains a live PID
 - the exact main `key` field in `Config.pm` is blank or still contains a placeholder value
-- `AgentScripts/gse_agent.pl` fails Perl validation
+- `AgentScripts/agent_core.pl` fails Perl validation
 
 ## Logging And Troubleshooting
 
-- Main log: `/AgentScripts/gsp_agent.log`
-- Service stdout: `/AgentScripts/gse_agent_service.out.log`
-- Service stderr: `/AgentScripts/gse_agent_service.err.log`
-- Foreground PID: `/AgentScripts/gsp_agent_foreground.pid`
-- Service PID: `/AgentScripts/gsp_agent_service.pid`
-- Perl daemon PID: `/AgentScripts/gsp_agent.pid`
+- Main log: `/AgentScripts/agent_core.log`
+- Service stdout: `/AgentScripts/agent_core_service.out.log`
+- Service stderr: `/AgentScripts/agent_core_service.err.log`
+- Foreground PID: `/AgentScripts/agent_core_foreground.pid`
+- Service PID: `/AgentScripts/agent_core_service.pid`
+- Perl daemon PID: `/AgentScripts/agent_core.pid`
 - Server readiness uses the `server_status` RPC and validates only ports supplied by the Panel.
 - Port validation settings live in `/AgentScripts/Cfg/Preferences.pm`.
 - Port validation smoke test: `bash /AgentScripts/tests/port_validation_smoke.sh 2302/udp 2303/udp`.

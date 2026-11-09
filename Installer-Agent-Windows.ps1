@@ -398,9 +398,9 @@ function Get-StatePreservationMap {
         "shared",
         "steamcmd",
         "logs",
-        "gsp_agent_update_request.json",
-        "gsp_agent_update_state.json",
-        "gsp_agent_update.log"
+        "agent_core_update_request.json",
+        "agent_core_update_state.json",
+        "agent_core_update.log"
     )
 
     $map = @()
@@ -578,7 +578,7 @@ function Assert-CompletePayloadSource {
         "AgentScripts\install_payload_manifest.txt",
         "AgentScripts\agent_launch.sh",
         "AgentScripts\perl_env.sh",
-        "AgentScripts\gse_agent.pl"
+        "AgentScripts\agent_core.pl"
     )) {
         $path = Join-Path $Root $relativePath
         if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -719,7 +719,7 @@ function Prepare-CygwinLaunchEnvironment {
     $bash = Join-Path $InstallPath "bin\bash.exe"
     $launchScript = Join-Path $InstallPath "AgentScripts\agent_launch.sh"
     $perlEnvScript = Join-Path $InstallPath "AgentScripts\perl_env.sh"
-    $agentFile = Join-Path $InstallPath "AgentScripts\gse_agent.pl"
+    $agentFile = Join-Path $InstallPath "AgentScripts\agent_core.pl"
     if (-not (Test-Path -LiteralPath $bash -PathType Leaf)) { throw "Missing bundled bash.exe at $bash" }
     if (-not (Test-Path -LiteralPath $launchScript -PathType Leaf)) { throw "Missing launcher script at $launchScript" }
     if (-not (Test-Path -LiteralPath $perlEnvScript -PathType Leaf)) { throw "Missing bundled Perl environment script at $perlEnvScript" }
@@ -895,7 +895,7 @@ function Write-AgentConfiguration {
     if ($Script:PanelApiUrlExplicit) {
         $webApiUrl = $PanelApiUrl
     } else {
-        $webApiUrl = Ask-String "Panel API URL, usually https://panel.example.com/gsp_api.php" $PanelApiUrl
+        $webApiUrl = Ask-String "Panel API URL, usually https://panel.example.com/api.php" $PanelApiUrl
     }
 
     if ($Script:RemoteServerIdExplicit) {
@@ -950,7 +950,7 @@ function Write-AgentConfiguration {
 
     $configLines = @(
         "%Cfg::Config = (",
-        "`tlogfile => '/AgentScripts/gsp_agent.log',",
+        "`tlogfile => '/AgentScripts/agent_core.log',",
         "`tlisten_port => '$listenPort',",
         "`tlisten_ip => '$listenIp',",
         "`tversion => 'v1.4',",
@@ -1003,7 +1003,7 @@ function Write-AgentConfiguration {
 function Validate-AgentSyntax {
     $bash = Join-Path $InstallPath "bin\bash.exe"
     if (-not (Test-Path $bash)) { throw "Missing bundled bash.exe at $bash" }
-    $cygwinCommand = "cd /AgentScripts && . ./perl_env.sh && gsp_perl_preflight && perl -c ./gse_agent.pl"
+    $cygwinCommand = "cd /AgentScripts && . ./perl_env.sh && perl_preflight && perl -c ./agent_core.pl"
     Invoke-Checked -FilePath $bash -Arguments @("-lc", $cygwinCommand)
 }
 
@@ -1071,9 +1071,9 @@ function Write-ServiceStartupDiagnostics {
     }
 
     foreach ($relativePath in @(
-        "AgentScripts\gse_agent_service.out.log",
-        "AgentScripts\gse_agent_service.err.log",
-        "AgentScripts\gsp_agent.log"
+        "AgentScripts\agent_core_service.out.log",
+        "AgentScripts\agent_core_service.err.log",
+        "AgentScripts\agent_core.log"
     )) {
         $path = Join-Path $InstallPath $relativePath
         Write-DiagnosticBlock -Title "Tail $relativePath" -Content (Capture-FileTail -Path $path)
@@ -1134,8 +1134,8 @@ function Register-AgentService {
         "-a", $serviceWrapper,
         "-c", "/AgentScripts",
         "-o",
-        "-1", "/AgentScripts/gse_agent_service.out.log",
-        "-2", "/AgentScripts/gse_agent_service.err.log",
+        "-1", "/AgentScripts/agent_core_service.out.log",
+        "-2", "/AgentScripts/agent_core_service.err.log",
         "-e", "CYGWIN=server ntsec",
         "-y", "tcpip"
     )

@@ -111,7 +111,7 @@ sub write_state {
 
 # Logs any time a home's desired state actually changes (not just re-asserted to the
 # same value), naming the calling sub and line via caller(), and this process's pid (two
-# processes can both be writing status files - see gse_agent.pl's scheduler child - so
+# processes can both be writing status files - see agent_core.pl's scheduler child - so
 # the pid says which one), so a flip that should not have happened (e.g. a stale start
 # request reasserting RUNNING) leaves a trace of exactly what wrote it, and from where.
 sub _set_desired {

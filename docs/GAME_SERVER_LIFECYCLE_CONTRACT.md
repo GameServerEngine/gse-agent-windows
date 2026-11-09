@@ -103,7 +103,7 @@ payload:
 | --- | --- |
 | `AgentScripts/startups/<ip>-<port>` | Persistent automatic-start registration only. |
 | `AgentScripts/runtime_status/pid-<home_id>.kv` | Legacy runtime PID metadata compatibility until later phases remove it. |
-| `AgentScripts/screenlogs/screenlog.GSP_HOME_<home_id_9_digits>` | Screen log output. |
+| `AgentScripts/screenlogs/screenlog.GAME_HOME_<home_id_9_digits>` | Screen log output. |
 
 Exactly one desired-state marker may exist in `management_home` at a time:
 
@@ -118,13 +118,13 @@ must be treated as stopped and safe failure.
 The managed game screen name remains:
 
 ```text
-GSP_HOME_<home_id zero-padded to 9 digits>
+GAME_HOME_<home_id zero-padded to 9 digits>
 ```
 
 For example, home ID `42` maps to:
 
 ```text
-GSP_HOME_000000042
+GAME_HOME_000000042
 ```
 
 There must be at most one managed screen session for a home. A Start request
@@ -212,7 +212,7 @@ Start preflight order:
 Windows screen launch target:
 
 ```text
-screen -d -m -t "GSP_HOME_<id>" -c <screenrc> -S GSP_HOME_<id> cmd.exe /c <management_home>\serverStart.bat
+screen -d -m -t "GAME_HOME_<id>" -c <screenrc> -S GAME_HOME_<id> cmd.exe /c <management_home>\serverStart.bat
 ```
 
 No extra generated screen-launch wrapper may be part of the active path.
@@ -226,7 +226,7 @@ Windows screen-survival root cause corrected on 2026-07-28:
 - A CMD hosted inside Cygwin screen does not reliably expose a normal Windows
   window title, so the agent killed the healthy screen, returned failure, and
   let Panel retries create multiple detached game/BOT process pairs.
-- The corrected invariant is the named `GSP_HOME_<home_id>` screen surviving
+- The corrected invariant is the named `GAME_HOME_<home_id>` screen surviving
   launch. The title-based `cmd.exe` PID is useful Stop metadata when available,
   but it is not Start success evidence.
 
@@ -256,7 +256,7 @@ Loop behavior:
    only when workdir and command are usable.
 7. At the top of every pass, go to shutdown when `status.stopped` exists.
 8. Ensure at most one same-file BOT supervisor `cmd.exe` exists for the
-   `GSE_BOT_SUPERVISOR_%INSTANCE%` command-line marker. The BOT supervisor is
+   `BOT_SUPERVISOR_%INSTANCE%` command-line marker. The BOT supervisor is
    launched with `start "" /B` so it does not create a foreground console, uses
    WMIC command-line/executable matching for the configured BOT process, and
    restarts only that BOT while the game remains supervised. The supervised BEC
@@ -353,18 +353,18 @@ Production finding from 2026-07-28:
 
 ## Replacement Tokens
 
-For compatibility with existing game XML, `{GSP_HOME_DIR}` and
-`{GSP_HOME_DIR_WINDOWS}` continue to resolve to `game_root` in Windows Start
+For compatibility with existing game XML, `{GAME_HOME_DIR}` and
+`{GAME_HOME_DIR_WINDOWS}` continue to resolve to `game_root` in Windows Start
 commands, pre-start commands, environment variables, and bot definitions.
 
 The explicit management-home tokens for the next Panel/Linux phases are:
 
 | Token | Meaning |
 | --- | --- |
-| `{GSP_MANAGEMENT_HOME_DIR}` | Cygwin/POSIX management-home path. |
-| `{GSE_MANAGEMENT_HOME_DIR}` | Cygwin/POSIX management-home path. |
-| `{GSP_MANAGEMENT_HOME_DIR_WINDOWS}` | Native Windows management-home path. |
-| `{GSE_MANAGEMENT_HOME_DIR_WINDOWS}` | Native Windows management-home path. |
+| `{MANAGEMENT_HOME_DIR}` | Cygwin/POSIX management-home path. |
+| `{MANAGEMENT_HOME_DIR}` | Cygwin/POSIX management-home path. |
+| `{MANAGEMENT_HOME_DIR_WINDOWS}` | Native Windows management-home path. |
+| `{MANAGEMENT_HOME_DIR_WINDOWS}` | Native Windows management-home path. |
 
 Panel XML and generated commands should use game-root tokens for game files,
 configs, mods, missions, saves, and Workshop/content payload. They should use
@@ -461,7 +461,7 @@ Next Linux phase:
 2. Treat Start `home_path` as `management_home` and resolve `game_root` beneath
    it.
 3. Regenerate `serverStart.sh`, PID files, status markers, and
-   `_gsp_content` only in `management_home`.
+   `_game_content` only in `management_home`.
 4. Resolve Steam, rsync, Workshop, config, mod, mission, and user-content
    payload operations beneath `game_root` when `game_key` is available.
 5. Preserve the same compatibility boundary only for current RPCs that cannot
@@ -475,7 +475,7 @@ home and must not move customer data:
 1. Manually arrange one test home as `<management_home>/<game_key>/`.
 2. Start the test server from the Panel and verify `serverStart.bat`,
    `status.running`, `watchdog.pid`, `game.pid`, optional `bot.pid`,
-   `_gsp_content/`, and `lifecycle.log` are absent from `game_root`.
+   `_game_content/`, and `lifecycle.log` are absent from `game_root`.
 3. Change a user option in the Panel, Start again, and confirm
    `serverStart.bat` was regenerated in `management_home`.
 4. Bind the assigned TCP and UDP port from a process under the test home, then
@@ -534,13 +534,13 @@ adopts structured lifecycle responses everywhere.
 
 ## Current Windows Implementation Map
 
-Current code paths inspected in `AgentScripts/gse_agent.pl`:
+Current code paths inspected in `AgentScripts/agent_core.pl`:
 
 | Concern | Current evidence |
 | --- | --- |
 | Startup and runtime dirs | `GAME_STARTUP_DIR` and `SERVER_RUNTIME_DIR` constants at lines 93-96. |
 | Automatic startup replay | Startup directory read at lines 601-643; skips `status-` and `pid-` marker-like files. |
-| Server Content runtime | `_gsp_content/hooks`, `_gsp_content/generated`, `_gsp_content/runtime`, and `server_content.pids` prepared and cleaned at lines 201-304. |
+| Server Content runtime | `_game_content/hooks`, `_game_content/generated`, `_game_content/runtime`, and `server_content.pids` prepared and cleaned at lines 201-304. |
 | Legacy `_alsoRun.pid` import | Root and one-level-below `_alsoRun.pid` files imported at lines 229-251. |
 | Screen name | `create_screen_id` returns `GSP_<type>_<home_id>` zero-padded to 9 digits at lines 869-873. |
 | Generic screen command | `create_screen_cmd` wraps commands in `screen -d -m ... -S <screen_id>` at lines 875-882. |
@@ -587,12 +587,12 @@ management artifacts:
 | `AgentScripts/startups/<ip>-<port>` | Agent root | Keep as automatic-start registration only. |
 | `AgentScripts/startups/status-<home_id>` | Agent root | Legacy desired-state hint retained only for compatibility reads and cleanup; active lifecycle state uses home markers. |
 | `AgentScripts/runtime_status/pid-<home_id>.kv` | Agent root | Compatibility cleanup/status reader only. |
-| `_gsp_content/hooks` | Current home path | Move to `management_home/_gsp_content/hooks` when game-root split is implemented. |
-| `_gsp_content/generated` | Current home path | Move to `management_home/_gsp_content/generated` when game-root split is implemented. |
-| `_gsp_content/runtime/server_content.pids` | Current home path | Move to `management_home/_gsp_content/runtime/server_content.pids`; cleanup reader only for managed content PIDs. |
-| `screenlogs/screenlog.GSP_HOME_<id>` | Agent root | Keep outside game payload. |
+| `_game_content/hooks` | Current home path | Move to `management_home/_game_content/hooks` when game-root split is implemented. |
+| `_game_content/generated` | Current home path | Move to `management_home/_game_content/generated` when game-root split is implemented. |
+| `_game_content/runtime/server_content.pids` | Current home path | Move to `management_home/_game_content/runtime/server_content.pids`; cleanup reader only for managed content PIDs. |
+| `screenlogs/screenlog.GAME_HOME_<id>` | Agent root | Keep outside game payload. |
 | `SERVER_STOPPED` / `Server_Stopped` | Legacy marker names | Do not generate or read as active lifecycle state. Cleanup may remove stale files only when safe. |
-| `_gsp_wmic.out` | Legacy generated PID helper output | Do not generate. Cleanup may remove stale file only. |
+| `_wmic_helpers.out` | Legacy generated PID helper output | Do not generate. Cleanup may remove stale file only. |
 | `_serverStartPid.ps1` | Legacy generated PowerShell helper | Do not generate. Cleanup may remove stale file only. |
 | `_serverStartupdated.bat` | Legacy generated replacement batch | Do not generate. Cleanup may remove stale file only. |
 | Backup watchdog batches | Legacy generated backups | Do not generate. Cleanup may remove stale files only. |
@@ -621,7 +621,7 @@ Legacy files that can stop being generated immediately in the new active path:
 - `_serverStart.bat`
 - `_alsoRun.cmd`
 - `_alsoRun.bat`
-- `_gsp_wmic.out`
+- `_wmic_helpers.out`
 - `_serverStartPid.ps1`
 - `_serverStartupdated.bat`
 - backup watchdog batches

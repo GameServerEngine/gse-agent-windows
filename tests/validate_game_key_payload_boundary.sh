@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-agent_file="$repo_root/AgentScripts/gse_agent.pl"
+agent_file="$repo_root/AgentScripts/agent_core.pl"
 contract_file="$repo_root/docs/GAME_SERVER_LIFECYCLE_CONTRACT.md"
 process_doc="$repo_root/docs/PROCESS_MANAGEMENT.md"
 panel_doc="$repo_root/docs/PANEL_INTEGRATION.md"
@@ -12,7 +12,7 @@ fail() {
     exit 1
 }
 
-[ -f "$agent_file" ] || fail "missing AgentScripts/gse_agent.pl"
+[ -f "$agent_file" ] || fail "missing AgentScripts/agent_core.pl"
 [ -f "$contract_file" ] || fail "missing docs/GAME_SERVER_LIFECYCLE_CONTRACT.md"
 
 perl -Mstrict -Mwarnings - "$agent_file" "$contract_file" "$process_doc" "$panel_doc" <<'PERL' || exit 1
@@ -93,16 +93,16 @@ require_text($compat, 'resolve_game_payload_root_without_decrypt($management_hom
 require_text($compat, 'temporary Panel compatibility', "temporary compatibility log message");
 require_text($compat, 'return ($management_home, "")', "current RPC fallback to supplied payload path");
 
-$source =~ /sub replace_GSP_Env_Vars\s*\{(.*?)\n\}\n\n# Validates the XML game_key/s
-	or fail("cannot locate replace_GSP_Env_Vars body");
+$source =~ /sub replace_Env_Vars\s*\{(.*?)\n\}\n\n# Validates the XML game_key/s
+	or fail("cannot locate replace_Env_Vars body");
 my $tokens = $1;
-require_text($tokens, '{GSP_HOME_DIR}', "legacy home token remains");
-require_text($tokens, '{GSP_HOME_DIR_WINDOWS}', "legacy Windows home token remains");
+require_text($tokens, '{GAME_HOME_DIR}', "legacy home token remains");
+require_text($tokens, '{GAME_HOME_DIR_WINDOWS}', "legacy Windows home token remains");
 require_text($tokens, 'cygpath -wa "$homepath"', "quoted game-root cygpath conversion");
-require_text($tokens, '{GSP_MANAGEMENT_HOME_DIR}', "new GSP management-home token");
-require_text($tokens, '{GSE_MANAGEMENT_HOME_DIR}', "new GSE management-home token");
-require_text($tokens, '{GSP_MANAGEMENT_HOME_DIR_WINDOWS}', "new Windows GSP management-home token");
-require_text($tokens, '{GSE_MANAGEMENT_HOME_DIR_WINDOWS}', "new Windows GSE management-home token");
+require_text($tokens, '{MANAGEMENT_HOME_DIR}', "new GSP management-home token");
+require_text($tokens, '{MANAGEMENT_HOME_DIR}', "new GSE management-home token");
+require_text($tokens, '{MANAGEMENT_HOME_DIR_WINDOWS}', "new Windows GSP management-home token");
+require_text($tokens, '{MANAGEMENT_HOME_DIR_WINDOWS}', "new Windows GSE management-home token");
 require_text($tokens, 'cygpath -wa "$management_homepath"', "quoted management-home cygpath conversion");
 
 $source =~ /sub universal_start_without_decrypt\s*\{(.*?)\n\}\n\n# Returns the number of CPUs available\./s
@@ -116,7 +116,7 @@ require_text($start, 'resolve_game_payload_child_path_without_decrypt($game_bina
 require_text($start, 'cygpath -wa "$game_binary_dir"', "quoted game working-directory cygpath conversion");
 require_text($start, 'set_desired_state_without_decrypt($management_home, "running")', "running marker in management_home");
 require_text($start, 'prepare_server_content_runtime_without_decrypt($management_home)', "Server Content runtime in management_home");
-require_text($start, 'replace_GSP_Env_Vars($screen_id, $home_id, $game_root, $startup_cmd, $game_key, $management_home)', "startup replacements use game_root plus management_home tokens");
+require_text($start, 'replace_Env_Vars($screen_id, $home_id, $game_root, $startup_cmd, $game_key, $management_home)', "startup replacements use game_root plus management_home tokens");
 require_text($start, 'create_screen_cmd_loop($screen_id, $management_home', "serverStart.bat generated in management_home");
 require_text($start, 'backup_home_log( $home_id, $log_file, $game_root . "/" . $console_log )', "console log backup targets game_root");
 require_text($start, 'run_before_start_commands($home_id, $management_home, $game_root', "pre-start management script targets game_root");

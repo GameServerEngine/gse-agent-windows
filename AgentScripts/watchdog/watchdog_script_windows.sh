@@ -1,9 +1,9 @@
 #!/bin/bash
-# gse_watchdog_windows.sh - keeps ONE game server running (Windows, Cygwin bash).
+# watchdog_script_windows.sh - keeps ONE game server running (Windows, Cygwin bash).
 #
-# Usage: gse_watchdog_windows.sh <server_folder>
+# Usage: watchdog_script_windows.sh <server_folder>
 #
-# Same flow as gse_watchdog_linux.sh. Only the process commands differ:
+# Same flow as watchdog_script_linux.sh. Only the process commands differ:
 # processes start hidden through start_hidden.ps1, and stop with taskkill.
 # server.conf uses Windows paths (C:\...) for GAME_EXE, GAME_ARGS, BOT_EXE, BOT_ARGS.
 #

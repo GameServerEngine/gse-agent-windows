@@ -1,10 +1,10 @@
 #!/bin/bash
 # GSE per-game watchdog (Linux; Windows runs the same file under Cygwin).
-# usage: gse_watchdog.sh <mgmt_dir> <game_dir> <command> <port> <tcp|udp>
+# usage: watchdog_script.sh <mgmt_dir> <game_dir> <command> <port> <tcp|udp>
 # Source of truth: <mgmt_dir>/status.env (state, pids, crash times). Panel and agent only READ it
 # and WRITE the request file (RUNNING|STOPPED).
 MGMT="$1"; GAME="$2"; CMD="$3"; PORT="$4"; PROTO="$5"
-LOOP="${GSE_WD_LOOP:-5}"; LIMIT="${GSE_WD_LIMIT:-3}"; WINDOW="${GSE_WD_WINDOW:-600}"
+LOOP="${WD_LOOP:-5}"; LIMIT="${WD_LIMIT:-3}"; WINDOW="${WD_WINDOW:-600}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/watchdog_lib.sh"
 . "$HERE/platform.sh"
@@ -36,7 +36,7 @@ ensure_bots() {
     id=$(basename "$bd")
     if [ ! -f "$bd/bot.wd.pid" ] || ! kill -0 "$(cat "$bd/bot.wd.pid")" 2>/dev/null; then
       ev "bot $id: starting bot watchdog"
-      setsid bash "$HERE/gse_bot_watchdog.sh" "$MGMT" "$id" >> "$bd/watchdog.out" 2>&1 < /dev/null &
+      setsid bash "$HERE/bot_watchdog.sh" "$MGMT" "$id" >> "$bd/watchdog.out" 2>&1 < /dev/null &
     fi
   done
 }

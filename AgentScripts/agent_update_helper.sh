@@ -65,7 +65,7 @@ is_preserved() {
 		agent_update_backup|agent_update_backup/*) return 0 ;;
 		agent_update_stage|agent_update_stage/*) return 0 ;;
 		Cfg/Preferences.pm|Cfg/bash_prefs.cfg) return 0 ;;
-		gsp_agent_update_state.json|gsp_agent_update_request.json|gsp_agent_update.log) return 0 ;;
+		agent_core_update_state.json|agent_core_update_request.json|agent_core_update.log) return 0 ;;
 	esac
 	return 1
 }
@@ -78,7 +78,7 @@ agent_pids() {
 	for d in /proc/[0-9]*; do
 		pid="${d#/proc/}"
 		[ "$pid" = "$$" ] && continue
-		if { tr '\0' ' ' < "$d/cmdline"; } 2>/dev/null | grep -q 'perl.*gse_agent\.pl'; then
+		if { tr '\0' ' ' < "$d/cmdline"; } 2>/dev/null | grep -q 'perl.*agent_core\.pl'; then
 			echo "$pid"
 		fi
 	done
@@ -131,7 +131,7 @@ fail_and_restore() {
 	if restore_backup; then
 		start_agent
 		if wait_for_agent_up; then
-			write_state rolled_back "$message; previous agent restored and running" "$(cat "$AGENT_DIR/.gsp_agent_source_revision" 2>/dev/null || true)" true
+			write_state rolled_back "$message; previous agent restored and running" "$(cat "$AGENT_DIR/.agent_core_source_revision" 2>/dev/null || true)" true
 		else
 			write_state failed "$message; restore finished but agent did not start" "" true
 		fi
@@ -164,7 +164,7 @@ if agent_running; then
 	rm -rf "$STAGE_DIR"
 	exit 1
 fi
-rm -f "$AGENT_DIR/gsp_agent_service.pid" "$AGENT_DIR/gsp_agent.pid" 2>/dev/null || true
+rm -f "$AGENT_DIR/agent_core_service.pid" "$AGENT_DIR/agent_core.pid" 2>/dev/null || true
 log "Agent stopped"
 
 # 2. Re-check the staged zip.
@@ -195,10 +195,10 @@ payload="$STAGE_DIR/payload"
 # GitHub tag archives wrap the whole repo in one <repo>-<tag>/ folder; step into it.
 top="$(find "$payload" -mindepth 1 -maxdepth 1 | head -n 2)"
 if [ "$(printf "%s\n" "$top" | grep -c .)" = 1 ] && [ -d "$top" ]; then payload="$top"; fi
-if [ -f "$payload/AgentScripts/gse_agent.pl" ]; then
+if [ -f "$payload/AgentScripts/agent_core.pl" ]; then
 	payload="$payload/AgentScripts"
 fi
-[ -f "$payload/gse_agent.pl" ] || fail_and_restore "Release zip does not contain gse_agent.pl"
+[ -f "$payload/agent_core.pl" ] || fail_and_restore "Release zip does not contain agent_core.pl"
 
 ( cd "$payload" && find . -type f ) | while IFS= read -r rel; do
 	rel="${rel#./}"

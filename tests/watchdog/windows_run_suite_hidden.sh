@@ -6,6 +6,6 @@
 export PATH=/usr/bin:/bin:/cygdrive/c/Windows/System32:/cygdrive/c/Windows/System32/WindowsPowerShell/v1.0
 cd /cygdrive/c/gse-test/wd || exit 1
 bash test_watchdog_windows.sh \
-  /cygdrive/c/gse-test/wd/gse_watchdog_windows.sh \
+  /cygdrive/c/gse-test/wd/watchdog_script_windows.sh \
   /cygdrive/c/gse-test/wd/start_hidden.ps1 \
   C:\\gse-test\\tools\\spt-test.exe

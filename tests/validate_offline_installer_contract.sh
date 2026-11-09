@@ -111,9 +111,9 @@ assert_no_legacy_installer_references() {
         fi
     done
 
-    local legacy_gsp_base
-    legacy_gsp_base="$(printf 'Install-%s-WindowsAgent' 'GSP')"
-    for stale_name in "${legacy_gsp_base}.cmd" "${legacy_gsp_base}.ps1"; do
+    local legacy_install_base
+    legacy_install_base="$(printf 'Install-%s-WindowsAgent' 'GSP')"
+    for stale_name in "${legacy_install_base}.cmd" "${legacy_install_base}.ps1"; do
         if matches="$(git -C "$repo_root" grep -nF -- "$stale_name" -- . ':(exclude).devplus/**' ':(exclude)docs/codex-history/**' ':(exclude)docs/agent-modernization-step-1-divergence-report.md' 2>/dev/null)"; then
             printf '%s\n' "$matches" >&2
             fail "stale installer filename remains outside historical records: $stale_name"
@@ -172,7 +172,7 @@ PERL
 }
 
 assert_hardened_startup_contracts() {
-    perl -Mstrict -Mwarnings - "$ps_file" "$launch_file" "$repo_root/AgentScripts/gse_agent.pl" "$repo_root/AgentScripts/Cfg/Config.pm.default" <<'PERL' || fail "Windows service, launcher, config, FTP, and SteamCMD startup contracts regressed"
+    perl -Mstrict -Mwarnings - "$ps_file" "$launch_file" "$repo_root/AgentScripts/agent_core.pl" "$repo_root/AgentScripts/Cfg/Config.pm.default" <<'PERL' || fail "Windows service, launcher, config, FTP, and SteamCMD startup contracts regressed"
 my ($ps_file, $launch_file, $agent_file, $config_default) = @ARGV;
 sub slurp {
     my ($file) = @_;
@@ -199,9 +199,9 @@ for my $required (
     '@("queryex", $ServiceName)',
     '@("qc", $ServiceName)',
     '@("-V", "-Q", $ServiceName)',
-    'AgentScripts\gse_agent_service.out.log',
-    'AgentScripts\gse_agent_service.err.log',
-    'AgentScripts\gsp_agent.log',
+    'AgentScripts\agent_core_service.out.log',
+    'AgentScripts\agent_core_service.err.log',
+    'AgentScripts\agent_core.log',
     '(?i)(:\s*1|:\s*TRUE\b)'
 ) {
     die "missing PS contract $required\n" if index($ps, $required) < 0;
@@ -270,7 +270,7 @@ assert_cygrunsrv_absent_service_handling
 assert_hardened_startup_contracts
 
 launcher_basename="agent_launch.sh"
-agent_basename="gse_agent.pl"
+agent_basename="agent_core.pl"
 managed_chmod_cygwin="chmod +x /AgentScripts/${launcher_basename} /AgentScripts/${agent_basename}"
 managed_chmod_launcher="chmod +x \"\$AGENT_DIR/${launcher_basename}\" \"\$AGENT_FILE\""
 managed_sed_cygwin="sed -i 's/\\r\$//' /AgentScripts/${launcher_basename}"
@@ -286,9 +286,9 @@ done < "$payload_manifest"
 for required in \
     "Installer-Agent-Windows.ps1" \
     "Installer-Agent-Windows.cmd" \
-    "AgentScripts/gse_agent.pl" \
-    "AgentScripts/gsp_screenrc" \
-    "AgentScripts/gsp_screenrc_bk" \
+    "AgentScripts/agent_core.pl" \
+    "AgentScripts/screen_config" \
+    "AgentScripts/screen_config_bk" \
     "AgentScripts/agent_launch.sh" \
     "AgentScripts/perl_env.sh" \
     "AgentScripts/steamcmd/steamcmd.exe" \
@@ -320,7 +320,7 @@ for switch_name in "/InstallPath" "/Offline" "/SourcePath" "/ReleaseZipUrl" "/Mo
     require_text "$cmd_file" "$switch_name"
 done
 
-require_text "$cmd_file" "set \"GSP_RELEASE_ZIP_URL=$default_zip_url\""
+require_text "$cmd_file" "set \"RELEASE_ZIP_URL=$default_zip_url\""
 require_text "$ps_file" "\$Script:DefaultUpdateMetadataUrl = \"$default_metadata_url\""
 require_text "$prefs_template" "agent_update_metadata_url=$default_metadata_url"
 require_text "$release_version_file" "\"component\": \"Agent-Windows\""
@@ -332,26 +332,26 @@ require_absent "$release_builder" "\"component\": \"GSP-Agent-Windows\""
 require_text "$cmd_file" "echo   1. Online current development archive"
 require_text "$cmd_file" "echo   2. Offline local payload path"
 require_text "$cmd_file" "echo   3. Reconfigure existing installed version"
-require_text "$cmd_file" "if /I not \"%GSP_MODE%\"==\"Uninstall\" if \"%GSP_SOURCE_CHOICE%\"==\"3\" set \"GSP_MODE=Reconfigure\""
+require_text "$cmd_file" "if /I not \"%AGENT_MODE%\"==\"Uninstall\" if \"%SOURCE_CHOICE%\"==\"3\" set \"AGENT_MODE=Reconfigure\""
 require_text "$cmd_file" "ERROR: Choose 1 for online current development archive, 2 for offline local payload path, or 3 to reconfigure the existing installed version."
-require_text "$cmd_file" "if /I not \"%GSP_MODE%\"==\"Reconfigure\" goto after_reconfigure"
-require_text "$cmd_file" "echo Reconfiguring existing installation at %GSP_INSTALL_PATH%."
-require_text "$cmd_file" "if \"%GSP_SOURCE_PATH%\"==\"\" if exist \"%GSP_BOOTSTRAP_DIR%Installer-Agent-Windows.ps1\" if exist \"%GSP_BOOTSTRAP_DIR%AgentScripts\\install_payload_manifest.txt\" set \"GSP_SOURCE_PATH=%GSP_BOOTSTRAP_DIR%.\""
+require_text "$cmd_file" "if /I not \"%AGENT_MODE%\"==\"Reconfigure\" goto after_reconfigure"
+require_text "$cmd_file" "echo Reconfiguring existing installation at %INSTALL_PATH%."
+require_text "$cmd_file" "if \"%SOURCE_PATH%\"==\"\" if exist \"%BOOTSTRAP_DIR%Installer-Agent-Windows.ps1\" if exist \"%BOOTSTRAP_DIR%AgentScripts\\install_payload_manifest.txt\" set \"SOURCE_PATH=%BOOTSTRAP_DIR%.\""
 require_text "$cmd_file" "if not exist \"%INSTALLER_PS%\""
-require_absent "$cmd_file" "if not exist \"%GSP_INSTALL_PATH%\\AgentScripts\\install_payload_manifest.txt\""
-require_text "$cmd_file" "if not exist \"%GSP_SOURCE_PATH%\\AgentScripts\\install_payload_manifest.txt\""
-require_text "$cmd_file" "if not exist \"%GSP_INSTALL_PATH%\\AgentScripts\\agent_launch.sh\""
-require_text "$cmd_file" "if not exist \"%GSP_INSTALL_PATH%\\AgentScripts\\gse_agent.pl\""
+require_absent "$cmd_file" "if not exist \"%INSTALL_PATH%\\AgentScripts\\install_payload_manifest.txt\""
+require_text "$cmd_file" "if not exist \"%SOURCE_PATH%\\AgentScripts\\install_payload_manifest.txt\""
+require_text "$cmd_file" "if not exist \"%INSTALL_PATH%\\AgentScripts\\agent_launch.sh\""
+require_text "$cmd_file" "if not exist \"%INSTALL_PATH%\\AgentScripts\\agent_core.pl\""
 require_text "$cmd_file" "goto run_installer"
 require_text "$cmd_file" ":run_installer"
-require_text "$cmd_file" "set \"GSP_DOWNLOAD_WORK=%TEMP%\\gse-agent-unstable-%RANDOM%%RANDOM%\""
-require_text "$cmd_file" "set \"GSP_DOWNLOAD_ZIP=%GSP_DOWNLOAD_WORK%\\unstable.zip\""
-require_text "$cmd_file" "set \"GSP_DOWNLOAD_EXTRACT=%GSP_DOWNLOAD_WORK%\\extract\""
-require_text "$cmd_file" "echo Download URL: %GSP_RELEASE_ZIP_URL%"
-require_text "$cmd_file" "echo Download file: %GSP_DOWNLOAD_ZIP%"
+require_text "$cmd_file" "set \"DOWNLOAD_WORK=%TEMP%\\gse-agent-unstable-%RANDOM%%RANDOM%\""
+require_text "$cmd_file" "set \"DOWNLOAD_ZIP=%DOWNLOAD_WORK%\\unstable.zip\""
+require_text "$cmd_file" "set \"DOWNLOAD_EXTRACT=%DOWNLOAD_WORK%\\extract\""
+require_text "$cmd_file" "echo Download URL: %RELEASE_ZIP_URL%"
+require_text "$cmd_file" "echo Download file: %DOWNLOAD_ZIP%"
 require_text "$cmd_file" "where curl.exe"
 require_text "$cmd_file" "ERROR: curl.exe was not found."
-require_text "$cmd_file" "curl.exe --insecure --fail --location --show-error --progress-bar --retry 3 --connect-timeout 20 --output \"%GSP_DOWNLOAD_ZIP%\" \"%GSP_RELEASE_ZIP_URL%\""
+require_text "$cmd_file" "curl.exe --insecure --fail --location --show-error --progress-bar --retry 3 --connect-timeout 20 --output \"%DOWNLOAD_ZIP%\" \"%RELEASE_ZIP_URL%\""
 require_text "$cmd_file" "set \"CURL_EXIT=%ERRORLEVEL%\""
 require_text "$cmd_file" "echo curl.exe exit code: %CURL_EXIT%"
 require_text "$cmd_file" "echo ZIP extraction exit code: %EXTRACT_EXIT%"
@@ -361,12 +361,12 @@ require_text "$cmd_file" "Test-PayloadRoot"
 require_text "$cmd_file" "Release ZIP did not contain exactly one GSE Windows Agent payload root with Installer-Agent-Windows.cmd and Installer-Agent-Windows.ps1."
 require_text "$cmd_file" "Offline source does not contain Installer-Agent-Windows.cmd"
 require_text "$cmd_file" "Offline source does not contain Installer-Agent-Windows.ps1"
-require_text "$cmd_file" "set \"INSTALLER_PS=%GSP_INSTALL_PATH%\\Installer-Agent-Windows.ps1\""
-require_text "$cmd_file" "set \"INSTALLER_PS=%GSP_SOURCE_PATH%\\Installer-Agent-Windows.ps1\""
-require_text "$cmd_file" "if not exist \"%GSP_SOURCE_PATH%\\AgentScripts\\install_payload_manifest.txt\""
-require_text "$cmd_file" "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%GSP_MODE%\" -InstallPath \"%GSP_INSTALL_PATH%\" -PayloadSourcePath \"%GSP_SOURCE_PATH%\""
-require_text "$cmd_file" "if /I \"%GSP_MODE%\"==\"Reconfigure\" if not \"%GSP_SOURCE_PATH%\"==\"\" powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%GSP_MODE%\" -InstallPath \"%GSP_INSTALL_PATH%\" -PayloadSourcePath \"%GSP_SOURCE_PATH%\""
-require_text "$cmd_file" "if /I \"%GSP_MODE%\"==\"Reconfigure\" if \"%GSP_SOURCE_PATH%\"==\"\" powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%GSP_MODE%\" -InstallPath \"%GSP_INSTALL_PATH%\""
+require_text "$cmd_file" "set \"INSTALLER_PS=%INSTALL_PATH%\\Installer-Agent-Windows.ps1\""
+require_text "$cmd_file" "set \"INSTALLER_PS=%SOURCE_PATH%\\Installer-Agent-Windows.ps1\""
+require_text "$cmd_file" "if not exist \"%SOURCE_PATH%\\AgentScripts\\install_payload_manifest.txt\""
+require_text "$cmd_file" "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%AGENT_MODE%\" -InstallPath \"%INSTALL_PATH%\" -PayloadSourcePath \"%SOURCE_PATH%\""
+require_text "$cmd_file" "if /I \"%AGENT_MODE%\"==\"Reconfigure\" if not \"%SOURCE_PATH%\"==\"\" powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%AGENT_MODE%\" -InstallPath \"%INSTALL_PATH%\" -PayloadSourcePath \"%SOURCE_PATH%\""
+require_text "$cmd_file" "if /I \"%AGENT_MODE%\"==\"Reconfigure\" if \"%SOURCE_PATH%\"==\"\" powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\" -Mode \"%AGENT_MODE%\" -InstallPath \"%INSTALL_PATH%\""
 
 [ "$(count_text "$cmd_file" "curl.exe --insecure --fail --location --show-error --progress-bar --retry 3 --connect-timeout 20 --output")" -eq 1 ] || fail "CMD bootstrap must contain exactly one curl.exe download path"
 require_absent "$cmd_file" "Invoke-WebRequest"
@@ -400,25 +400,25 @@ require_text "$ps_file" "foreach (\$managedFile in @(\$launchScript, \$perlEnvSc
 require_text "$ps_file" "Reset-ManagedFileAcl -Path \$managedFile"
 require_text "$ps_file" "Convert-ToUnixLineEndings -Path \$managedFile"
 require_text "$ps_file" "\$cygwinCommand = \"mkdir -p /tmp /var/run /AgentScripts/tmp\""
-require_text "$ps_file" "\$cygwinCommand = \"cd /AgentScripts && . ./perl_env.sh && gsp_perl_preflight && perl -c ./gse_agent.pl\""
+require_text "$ps_file" "\$cygwinCommand = \"cd /AgentScripts && . ./perl_env.sh && perl_preflight && perl -c ./agent_core.pl\""
 require_text "$ps_file" "Invoke-Checked -FilePath \$bash -Arguments @(\"-lc\", \$cygwinCommand)"
 require_absent "$ps_file" "$managed_sed_cygwin"
 require_absent "$ps_file" "$managed_chmod_cygwin"
 
-work_assign_line="$(line_number "$cmd_file" "set \"GSP_DOWNLOAD_WORK=%TEMP%\\gse-agent-unstable-%RANDOM%%RANDOM%\"")"
-zip_assign_line="$(line_number "$cmd_file" "set \"GSP_DOWNLOAD_ZIP=%GSP_DOWNLOAD_WORK%\\unstable.zip\"")"
-extract_assign_line="$(line_number "$cmd_file" "set \"GSP_DOWNLOAD_EXTRACT=%GSP_DOWNLOAD_WORK%\\extract\"")"
+work_assign_line="$(line_number "$cmd_file" "set \"DOWNLOAD_WORK=%TEMP%\\gse-agent-unstable-%RANDOM%%RANDOM%\"")"
+zip_assign_line="$(line_number "$cmd_file" "set \"DOWNLOAD_ZIP=%DOWNLOAD_WORK%\\unstable.zip\"")"
+extract_assign_line="$(line_number "$cmd_file" "set \"DOWNLOAD_EXTRACT=%DOWNLOAD_WORK%\\extract\"")"
 curl_line="$(line_number "$cmd_file" "curl.exe --insecure --fail --location --show-error --progress-bar --retry 3 --connect-timeout 20 --output")"
-[ -n "$work_assign_line" ] || fail "could not locate GSP_DOWNLOAD_WORK assignment"
-[ -n "$zip_assign_line" ] || fail "could not locate GSP_DOWNLOAD_ZIP assignment"
-[ -n "$extract_assign_line" ] || fail "could not locate GSP_DOWNLOAD_EXTRACT assignment"
+[ -n "$work_assign_line" ] || fail "could not locate DOWNLOAD_WORK assignment"
+[ -n "$zip_assign_line" ] || fail "could not locate DOWNLOAD_ZIP assignment"
+[ -n "$extract_assign_line" ] || fail "could not locate DOWNLOAD_EXTRACT assignment"
 [ -n "$curl_line" ] || fail "could not locate curl download command"
-[ "$work_assign_line" -lt "$curl_line" ] || fail "GSP_DOWNLOAD_WORK must be assigned before curl consumes it"
-[ "$zip_assign_line" -lt "$curl_line" ] || fail "GSP_DOWNLOAD_ZIP must be assigned before curl consumes it"
-[ "$extract_assign_line" -lt "$curl_line" ] || fail "GSP_DOWNLOAD_EXTRACT must be assigned before extraction consumes it"
-assert_no_same_block_percent_reference "$cmd_file" "GSP_DOWNLOAD_WORK"
-assert_no_same_block_percent_reference "$cmd_file" "GSP_DOWNLOAD_ZIP"
-assert_no_same_block_percent_reference "$cmd_file" "GSP_DOWNLOAD_EXTRACT"
+[ "$work_assign_line" -lt "$curl_line" ] || fail "DOWNLOAD_WORK must be assigned before curl consumes it"
+[ "$zip_assign_line" -lt "$curl_line" ] || fail "DOWNLOAD_ZIP must be assigned before curl consumes it"
+[ "$extract_assign_line" -lt "$curl_line" ] || fail "DOWNLOAD_EXTRACT must be assigned before extraction consumes it"
+assert_no_same_block_percent_reference "$cmd_file" "DOWNLOAD_WORK"
+assert_no_same_block_percent_reference "$cmd_file" "DOWNLOAD_ZIP"
+assert_no_same_block_percent_reference "$cmd_file" "DOWNLOAD_EXTRACT"
 
 for forbidden in \
     "ReleaseBaseUrl" \
@@ -455,8 +455,8 @@ metadata_line="$(line_number "$cmd_file" "curl.exe --insecure --fail --location 
 expand_line="$(line_number "$cmd_file" "Expand-Archive")"
 root_line="$(line_number "$cmd_file" "Release ZIP did not contain exactly one")"
 run_line="$(line_number "$cmd_file" "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"%INSTALLER_PS%\"")"
-source_installer_line="$(line_number "$cmd_file" "if /I not \"%GSP_MODE%\"==\"Uninstall\" if /I not \"%GSP_MODE%\"==\"Reconfigure\" set \"INSTALLER_PS=%GSP_SOURCE_PATH%\\Installer-Agent-Windows.ps1\"")"
-reconfigure_line="$(line_number "$cmd_file" "if /I not \"%GSP_MODE%\"==\"Reconfigure\" goto after_reconfigure")"
+source_installer_line="$(line_number "$cmd_file" "if /I not \"%AGENT_MODE%\"==\"Uninstall\" if /I not \"%AGENT_MODE%\"==\"Reconfigure\" set \"INSTALLER_PS=%SOURCE_PATH%\\Installer-Agent-Windows.ps1\"")"
+reconfigure_line="$(line_number "$cmd_file" "if /I not \"%AGENT_MODE%\"==\"Reconfigure\" goto after_reconfigure")"
 reconfigure_goto_line="$(line_number "$cmd_file" "goto run_installer")"
 [ -n "$metadata_line" ] || fail "could not locate online download"
 [ -n "$expand_line" ] || fail "could not locate archive extraction"
@@ -512,20 +512,20 @@ require_text "$start_file" "\"%ROOT%bin\\bash.exe\" -lc \"cd /AgentScripts && ex
 require_text "$launch_file" "ensure_pureftpd()"
 require_text "$launch_file" "PERL_ENV_FILE=\"\$AGENT_DIR/perl_env.sh\""
 require_text "$launch_file" "load_perl_env || fail \"Bundled Perl environment initialization failed.\""
-require_text "$launch_file" "gsp_perl_preflight || fail \"Bundled Perl module preflight failed for \$AGENT_FILE\""
+require_text "$launch_file" "perl_preflight || fail \"Bundled Perl module preflight failed for \$AGENT_FILE\""
 require_text "$launch_file" "is_managed_script_path()"
-require_text "$launch_file" "AgentScripts/agent_launch.sh|AgentScripts/perl_env.sh|AgentScripts/gse_agent.pl) return 0"
+require_text "$launch_file" "AgentScripts/agent_launch.sh|AgentScripts/perl_env.sh|AgentScripts/agent_core.pl) return 0"
 require_text "$launch_file" "cp \"\$patch_root/files/\$rel\" \"\$dest\" || return 1"
 require_text "$launch_file" "cp -p \"\$patch_root/files/\$rel\" \"\$dest\" || return 1"
-require_text "$launch_file" "GSP_AGENT_SKIP_AUTO_UPDATE=1 exec bash \"\$AGENT_DIR/agent_launch.sh\" \"\$MODE\""
+require_text "$launch_file" "AGENT_SKIP_AUTO_UPDATE=1 exec bash \"\$AGENT_DIR/agent_launch.sh\" \"\$MODE\""
 require_absent "$launch_file" "$managed_chmod_launcher"
 require_absent "$launch_file" "git clone"
 require_absent "$launch_file" "git ls-remote"
 
-require_text "$perl_env_file" "gsp_configure_bundled_perl()"
-require_text "$perl_env_file" "gsp_detect_perl_version()"
-require_text "$perl_env_file" "gsp_detect_perl_arch()"
-require_text "$perl_env_file" "gsp_perl_preflight()"
+require_text "$perl_env_file" "configure_bundled_perl()"
+require_text "$perl_env_file" "detect_perl_version()"
+require_text "$perl_env_file" "detect_perl_arch()"
+require_text "$perl_env_file" "perl_preflight()"
 require_text "$perl_env_file" "/usr/share/perl5/vendor_perl/\$version"
 require_text "$perl_env_file" "/lib/perl5/vendor_perl/\$version/\$arch"
 require_text "$perl_env_file" "LWP::UserAgent"
@@ -537,7 +537,7 @@ for preserved in \
     "runtime_status" \
     "steamcmd" \
     "Merged preserved local state over bundled SteamCMD bootstrap" \
-    "gsp_agent_update_state.json" \
+    "agent_core_update_state.json" \
     "etc\\passwd" \
     "etc\\pureftpd.pdb" \
     "home" \
@@ -565,8 +565,8 @@ else
     echo "pwsh not found; skipped PowerShell AST parse."
 fi
 
-require_text "$cmd_file" 'set "GSP_RESTIC_ZIP_SHA256='
-require_text "$cmd_file" 'set "GSP_RESTIC_EXE_SHA256='
+require_text "$cmd_file" 'set "RESTIC_ZIP_SHA256='
+require_text "$cmd_file" 'set "RESTIC_EXE_SHA256='
 require_text "$cmd_file" ':install_restic'
 require_text "$cmd_file" 'call :install_restic'
 if grep -Fq -- '--insecure' <(sed -n '/^:install_restic/,$p' "$cmd_file"); then fail "restic download must not disable TLS verification"; fi

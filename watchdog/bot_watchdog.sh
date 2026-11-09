@@ -1,10 +1,10 @@
 #!/bin/bash
 # Per-bot watchdog. One per bot, started by the game watchdog when the bot is enabled.
-# usage: gse_bot_watchdog.sh <game_mgmt_dir> <bot_id>
+# usage: bot_watchdog.sh <game_mgmt_dir> <bot_id>
 # Reads: <game_mgmt>/status.env (game state) and <game_mgmt>/bots/<id>/bot.env (policy and command).
 # Writes: <game_mgmt>/bots/<id>/status.env and events.log. Never writes into the game folder.
 GM="$1"; BID="$2"; BM="$GM/bots/$BID"
-LOOP="${GSE_WD_LOOP:-5}"; LIMIT="${GSE_WD_LIMIT:-3}"; WINDOW="${GSE_WD_WINDOW:-600}"
+LOOP="${WD_LOOP:-5}"; LIMIT="${WD_LIMIT:-3}"; WINDOW="${WD_WINDOW:-600}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 . "$HERE/watchdog_lib.sh"
 . "$HERE/platform.sh"

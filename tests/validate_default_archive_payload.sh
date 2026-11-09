@@ -20,7 +20,7 @@ command -v unzip >/dev/null 2>&1 || skip "unzip is not available"
 [ -f "$cmd_file" ] || fail "missing CMD bootstrap: $cmd_file"
 
 default_url="$(
-    sed -n 's/.*set "GSP_RELEASE_ZIP_URL=\([^"]*\)".*/\1/p' "$cmd_file" | head -n 1
+    sed -n 's/.*set "RELEASE_ZIP_URL=\([^"]*\)".*/\1/p' "$cmd_file" | head -n 1
 )"
 
 [ "$default_url" = "https://git.runlevelsystems.com/GSE/Agent-Windows/archive/unstable.zip" ] || \
@@ -53,12 +53,12 @@ grep -Fxq "$root/AgentScripts/install_payload_manifest.txt" "$entries" || \
     fail "archive payload root does not contain AgentScripts/install_payload_manifest.txt"
 grep -Fxq "$root/AgentScripts/perl_env.sh" "$entries" || \
     fail "archive payload root does not contain AgentScripts/perl_env.sh"
-grep -Fxq "$root/AgentScripts/gse_agent.pl" "$entries" || \
-    fail "archive payload root does not contain AgentScripts/gse_agent.pl"
+grep -Fxq "$root/AgentScripts/agent_core.pl" "$entries" || \
+    fail "archive payload root does not contain AgentScripts/agent_core.pl"
 grep -Fxq "$root/AgentScripts/agent_launch.sh" "$entries" || \
     fail "archive payload root does not contain AgentScripts/agent_launch.sh"
-if grep -Eq "^$root/GSP/(perl_env.sh|gse_agent.pl|agent_launch.sh)$" "$entries"; then
-    grep -En "^$root/GSP/(perl_env.sh|gse_agent.pl|agent_launch.sh)$" "$entries" >&2
+if grep -Eq "^$root/GSP/(perl_env.sh|agent_core.pl|agent_launch.sh)$" "$entries"; then
+    grep -En "^$root/GSP/(perl_env.sh|agent_core.pl|agent_launch.sh)$" "$entries" >&2
     fail "archive contains legacy GSP application entry points"
 fi
 

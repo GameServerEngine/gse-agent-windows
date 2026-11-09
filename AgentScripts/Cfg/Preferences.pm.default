@@ -1,9 +1,9 @@
 %Cfg::Preferences = (
 	screen_log_local => '1',
 	delete_logs_after => '30',
-	gsp_manages_ftp => '1',
+	manages_ftp => '1',
 	ftp_method => 'PureFTPd',
-	gsp_autorestart_server => '1',
+	autorestart_server => '1',
 	protocol_shutdown_waittime => '10',
 	windows_home_acl_isolation => '1',
 	PortValidationEnabled => '1',

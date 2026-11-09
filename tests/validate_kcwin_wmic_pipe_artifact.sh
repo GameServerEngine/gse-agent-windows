@@ -2,8 +2,8 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-baseline_file="$repo_root/.devplus/kcwin-wmic-trim-fix/gsp_agent.fixed.pl"
-fixed_file="$repo_root/.devplus/kcwin-wmic-pipe-fix/gsp_agent.fixed.pl"
+baseline_file="$repo_root/.devplus/kcwin-wmic-trim-fix/agent_core.fixed.pl"
+fixed_file="$repo_root/.devplus/kcwin-wmic-pipe-fix/agent_core.fixed.pl"
 expected_baseline_hash="62c87377e57c487ab184ed5032c4513baaa5537928efe636231d0e53d6bccd0d"
 
 fail() {
@@ -88,7 +88,7 @@ require_text($baseline, $spaced_pipeline, "known baseline spaced timestamp pipel
 require_text($fixed, $no_space_pipeline, "fixed no-space timestamp pipeline");
 reject_text($fixed, $spaced_pipeline, "spaced timestamp pipeline in fixed artifact");
 
-$fixed =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_GSP_Env_Vars/s
+$fixed =~ /sub create_screen_cmd_loop\s*\{(.*?)\n\}\n\nsub replace_Env_Vars/s
 	or fail("cannot locate production create_screen_cmd_loop body");
 my $loop = $1;
 
@@ -102,8 +102,8 @@ require_text($loop, 'set /A WMIC_MINUTE_NUM=1!WMIC_MINUTE!-100', "leading-zero-s
 require_text($loop, 'set /A WMIC_SECOND_NUM=1!WMIC_SECOND!-100', "leading-zero-safe second arithmetic");
 require_text($loop, 'set /A \"%~1=(WMIC_HOUR_NUM*3600)+(WMIC_MINUTE_NUM*60)+WMIC_SECOND_NUM\"', "seconds since midnight assignment");
 require_text($loop, 'if !RUNTIME_SECONDS! LSS 0 set /A RUNTIME_SECONDS+=86400', "midnight rollover");
-require_text($loop, 'set \"GSE_GAME_PRIORITY=$batch_priority_switch\"', "normalized priority variable");
-require_text($loop, 'if defined GSE_GAME_PRIORITY set \"GAME_START_FLAGS=!GAME_START_FLAGS! %GSE_GAME_PRIORITY%\"', "priority appended as complete START switch");
+require_text($loop, 'set \"GAME_PRIORITY=$batch_priority_switch\"', "normalized priority variable");
+require_text($loop, 'if defined GAME_PRIORITY set \"GAME_START_FLAGS=!GAME_START_FLAGS! %GAME_PRIORITY%\"', "priority appended as complete START switch");
 require_text($loop, 'set \"GAME_EXECUTABLE=$batch_game_relative_executable\"', "safe relative executable assignment");
 require_text($loop, 'cd /d \"%GAME_WORKDIR%\"', "workdir change before launch");
 require_text($loop, 'start /WAIT \"%GAME_TITLE%\" !GAME_START_FLAGS! %GAME_EXECUTABLE% %GAME_OPTIONS%', "blocking relative game launch");
@@ -111,7 +111,7 @@ require_text($loop, 'if exist \"%STOP_FILE%\" goto SHUTDOWN', "stop marker guard
 require_text($loop, 'type nul > \"%STOP_FILE%\"', "rapid-exit stop marker write");
 require_text($loop, 'if !RUNTIME_SECONDS! LSS 15', "rapid-exit protection");
 require_text($loop, 'if exist \"%~dp0_alsorun.cmd\" set \"ALSO_FILE=%~dp0_alsorun.cmd\"', "current BOT definition input");
-require_text($loop, 'set \"BOT_SUPERVISOR_MARKER=GSE_BOT_SUPERVISOR_%INSTANCE%\"', "per-instance BOT marker");
+require_text($loop, 'set \"BOT_SUPERVISOR_MARKER=BOT_SUPERVISOR_%INSTANCE%\"', "per-instance BOT marker");
 require_text($loop, 'wmic process get ProcessId^,ExecutablePath^,CommandLine /FORMAT:LIST', "BOT process identity through WMIC");
 require_text($loop, 'taskkill /F /T /PID !BOT_SUPERVISOR_PID!', "BOT supervisor cleanup");
 require_text($loop, 'netstat -ano ^| findstr /R /C:\"^[ ][ ]*TCP\" /C:\"^[ ][ ]*UDP\"', "TCP and UDP cleanup scan");
@@ -130,7 +130,7 @@ reject_text($loop, 'bot.pid', "BAT-created bot PID file");
 reject_text($loop, '_serverStartPid.ps1', "generated PowerShell PID helper");
 reject_text($loop, 'start \"%GAME_TITLE%\" /D \"%GAME_WORKDIR%\" /WAIT', "full-path /D launch form");
 reject_text($loop, 'start /WAIT \"%GAME_TITLE%\" !GAME_START_FLAGS! \"%GAME_EXECUTABLE%\"', "quoted relative executable launch form");
-reject_text($loop, '/%GSE_GAME_PRIORITY%', "runtime priority slash prefix");
+reject_text($loop, '/%GAME_PRIORITY%', "runtime priority slash prefix");
 reject_text($loop, '%TIME: =0%', "locale-sensitive TIME runtime clock");
 reject_text($loop, 'timeout /T', "interactive timeout wait");
 

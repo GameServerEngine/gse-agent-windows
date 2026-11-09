@@ -7,10 +7,10 @@ Install_Agent.bat
 agent_start.bat
 agent_stop.bat
 Cygwin.bat
-AgentScripts/gse_agent.pl
+AgentScripts/agent_core.pl
 AgentScripts/GSE/Container/Runtime.pm
-AgentScripts/gsp_screenrc
-AgentScripts/gsp_screenrc_bk
+AgentScripts/screen_config
+AgentScripts/screen_config_bk
 AgentScripts/agent_launch.sh
 AgentScripts/perl_env.sh
 AgentScripts/agent_conf.sh
