@@ -1823,10 +1823,12 @@ sub gm {
 		pid_executable_matches => \&GameManagerWin::pid_executable_matches,
 		port_listening  => \&GameManagerWin::port_listening,
 		port_owner_pids => \&GameManagerWin::port_owner_pids,
+		pid_path        => \&GameManagerWin::pid_exe_path,
+		child_pids      => \&GameManagerWin::child_pids,
 		kill_pid        => \&GameManagerWin::kill_pid,
 		launch          => sub { my ($cmd, $wd, $opt) = @_; return GameManagerWin::launch($cmd, $wd, $opt); },
 		log             => sub { logger($_[0]); },
-		startup_timeout => 180,
+		startup_timeout => 300,   # 5 minutes from launch; a server's start_timeout overrides it
 		restart_limit   => 5,
 		restart_window  => 1800,
 	);
