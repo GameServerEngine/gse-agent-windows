@@ -282,6 +282,50 @@ sub find_pid_in_dir {
 }
 
 
+# Executable path of a live PID, or undef if unknown. Uses the same unfiltered wmic listing as
+# find_all_pids_in_dir ("where ProcessId=" does not survive the Cygwin argv path on KCWIN).
+sub pid_exe_path {
+	my ($pid) = @_;
+	return undef unless $pid && $pid =~ /^\d+$/;
+	my ($out, $err) = run_wmic('process', 'get', 'ProcessId,ExecutablePath', '/format:csv');
+	return undef if $err;
+	for my $row (parse_wmic_csv($out)) {
+		return $row->{ExecutablePath} if ($row->{ProcessId} // '') eq $pid && length($row->{ExecutablePath} // '');
+	}
+	return undef;
+}
+
+# Pure parser (tested without Windows): from wmic rows with ProcessId and ParentProcessId,
+# every child, grandchild and so on of root_pid, nearest first.
+sub parse_descendants {
+	my ($root, @rows) = @_;
+	my %kids;
+	for my $row (@rows) {
+		my ($pid, $parent) = ($row->{ProcessId} // '', $row->{ParentProcessId} // '');
+		push @{ $kids{$parent} }, $pid if $pid =~ /^\d+$/ && $parent =~ /^\d+$/;
+	}
+	my (@found, @queue);
+	@queue = ($root);
+	while (@queue) {
+		my $next = shift @queue;
+		for my $kid (@{ $kids{$next} || [] }) {
+			next if $kid == $root || grep { $_ == $kid } @found;
+			push @found, $kid;
+			push @queue, $kid;
+		}
+	}
+	return @found;
+}
+
+# Descendants of a process (the launcher cmd.exe). Empty if wmic could not run.
+sub child_pids {
+	my ($pid) = @_;
+	return () unless $pid && $pid =~ /^\d+$/;
+	my ($out, $err) = run_wmic('process', 'get', 'ProcessId,ParentProcessId', '/format:csv');
+	return () if $err;
+	return parse_descendants($pid, parse_wmic_csv($out));
+}
+
 sub port_owner_pids {
 	my ($port) = @_;
 	my $out = `netstat -ano 2>/dev/null`;

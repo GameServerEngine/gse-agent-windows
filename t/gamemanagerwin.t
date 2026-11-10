@@ -41,4 +41,8 @@ no warnings 'redefine';
 	is(GameManagerWin::port_listening(2302), 0, 'port_listening is 0 when nothing owns the port');
 }
 
+# Descendants of the launcher: children and grandchildren, not the launcher itself or other trees.
+my @rows = ({ ProcessId => 20, ParentProcessId => 10 }, { ProcessId => 30, ParentProcessId => 20 }, { ProcessId => 40, ParentProcessId => 99 });
+is_deeply([ GameManagerWin::parse_descendants(10, @rows) ], [ 20, 30 ], 'parse_descendants finds children and grandchildren only');
+
 done_testing();
