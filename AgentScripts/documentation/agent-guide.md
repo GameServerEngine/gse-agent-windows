@@ -16,7 +16,7 @@ The Windows agent bundles Cygwin, Perl, GNU Screen, and helper scripts so GameSe
 
 The Windows release payload bundles the SteamCMD bootstrap at `AgentScripts/steamcmd/steamcmd.exe`. Startup does not run SteamCMD and does not require internet access. Non-Steam servers can start, stop, update through non-Steam methods, and report status without SteamCMD.
 
-Steam-specific server installs, Steam updates, and Steam Workshop jobs validate `AgentScripts/steamcmd/steamcmd.exe` when the operation starts. SteamCMD may self-update and then download Steam content, so those operations can require outbound internet even though agent install, repair, reconfigure, and startup do not.
+Steam-specific game server installs, Steam updates, and Steam Workshop jobs validate `AgentScripts/steamcmd/steamcmd.exe` when the operation starts. SteamCMD may self-update and then download Steam content, so those operations can require outbound internet even though agent install, repair, reconfigure, and startup do not.
 
 Install and repair preserve the installed `AgentScripts/steamcmd` directory, including `steamapps` and runtime state. If the existing directory is present but missing only the bundled `steamcmd.exe`, repair from a complete payload restores the bootstrap without deleting local SteamCMD state.
 
@@ -85,9 +85,9 @@ The installer:
 .\Installer-Agent-Windows.ps1 -Mode Uninstall
 ```
 
-Online repair through the CMD bootstrap refreshes the installed release payload from one release ZIP and verifies bundled runtime executables while preserving local config and runtime/customer state. Offline repair or upgrade through the CMD bootstrap activates the validated local payload while preserving configuration, server files, schedules, homes, logs, backups, runtime state, update state, and local credential databases. Direct PowerShell repair operates on the existing installed payload; direct PowerShell reconfigure may use `-PayloadSourcePath` as the validation manifest source without copying payload files. Operations that need missing local files fail instead of going online. Reconfigure rewrites config and service registration. Uninstall removes the service and leaves files in place by default.
+Online repair through the CMD bootstrap refreshes the installed release payload from one release ZIP and verifies bundled runtime executables while preserving local config and runtime/customer state. Offline repair or upgrade through the CMD bootstrap activates the validated local payload while preserving configuration, game server files, schedules, homes, logs, backups, runtime state, update state, and local credential databases. Direct PowerShell repair operates on the existing installed payload; direct PowerShell reconfigure may use `-PayloadSourcePath` as the validation manifest source without copying payload files. Operations that need missing local files fail instead of going online. Reconfigure rewrites config and service registration. Uninstall removes the service and leaves files in place by default.
 
-During install, repair, and reconfigure, the PowerShell installer resets inherited ACLs only on `AgentScripts\agent_launch.sh`, `AgentScripts\perl_env.sh`, and `AgentScripts\agent_core.pl`, normalizes those managed scripts to LF line endings, and leaves customer-owned configuration, homes, server files, logs, backups, schedules, and runtime state untouched. Those scripts are interpreter-invoked through Bash and Perl, so the installer and restart-time update validator do not need to mutate executable bits for them.
+During install, repair, and reconfigure, the PowerShell installer resets inherited ACLs only on `AgentScripts\agent_launch.sh`, `AgentScripts\perl_env.sh`, and `AgentScripts\agent_core.pl`, normalizes those managed scripts to LF line endings, and leaves customer-owned configuration, homes, game server files, logs, backups, schedules, and runtime state untouched. Those scripts are interpreter-invoked through Bash and Perl, so the installer and restart-time update validator do not need to mutate executable bits for them.
 
 ## Foreground Troubleshooting
 
