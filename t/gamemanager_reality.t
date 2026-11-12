@@ -153,4 +153,22 @@ for my $action (qw(start stop)) {
 	ok(($text =~ tr/\n//) <= 3, "${action}server.bat is three lines or fewer");
 }
 
+# Agent start (service restart): server 52 is FAILED but its game is live. The first pass after
+# the agent starts must take it over. It must NOT call start(), which frees the port and kills it.
+new_world();
+$gm = make_gm();
+$gm->write_state({ id => 52, state => 'FAILED', ts => 1, reason => 'Failed to Start: max restarts reached', desired => 'RUNNING', port => 2300, command => 'game.exe', workdir => 'C:/g', crashes => '1,2,3', pid => 555 });
+game_up(555, 2300);
+is($gm->agent_start_recover(52), 'RUNNING', 'agent start adopts a live game that the file calls FAILED');
+is(state($gm, 52), 'RUNNING', 'the file now says RUNNING');
+is(scalar(@launched), 0, 'agent start launched nothing');
+is(scalar(@{ $world->{killed} }), 0, 'agent start killed nothing');
+# Same, with a saved PID that is dead while the game runs under another PID.
+new_world();
+$gm = make_gm();
+$gm->write_state({ id => 52, state => 'STOPPED', ts => 1, desired => 'RUNNING', port => 2300, command => 'game.exe', workdir => 'C:/g', pid => 111 });
+game_up(556, 2300);
+is($gm->agent_start_recover(52), 'RUNNING', 'agent start adopts a game running under a different PID');
+is(scalar(@{ $world->{killed} }), 0, 'and kills nothing');
+
 done_testing();

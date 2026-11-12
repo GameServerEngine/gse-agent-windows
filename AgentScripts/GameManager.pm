@@ -545,10 +545,18 @@ sub agent_start_recover {
 	return $h->{state} unless $probe_ok;
 	my $pid_ok = $live_pid ? 1 : 0;
 	my $port_ok = $self->{port_listening}->($h->{port}) ? 1 : 0;
-	if ($pid_ok && $port_ok && $h->{state} eq 'RUNNING') {
-		# Really running already: leave it, but a crash-limited bot still gets a fresh start.
+	if ($pid_ok && $port_ok) {
+		# Really running already, whatever the file says (FAILED, STOPPED...): take it over.
+		# Never start it again: that frees the port and kills the live game.
+		# A crash-limited bot still gets a fresh start.
 		$self->_reset_restart_counter("$id-bot");
-		if ($live_pid != ($h->{pid} // 0)) { $h->{pid} = $live_pid; $self->write_state($h); }
+		if ($h->{state} ne 'RUNNING' || $live_pid != ($h->{pid} // 0)) {
+			my $done = $self->_with_lock($id, $self->{lock_wait}, sub {
+				$self->_set($self->read_state($id), 'RUNNING', pid => $live_pid, crashes => '', attempts => 0, miss => 0, process_running => 1, port_listening => 1, reason => 'adopted the running game');
+				1;
+			});
+			return $self->read_state($id)->{state} unless $done;
+		}
 		return 'RUNNING';
 	}
 	my $result = $self->start($id, command => $h->{command}, workdir => $h->{workdir}, port => $h->{port});
