@@ -35,7 +35,7 @@ use GameManagerWin;   # start/stop/monitor per docs/server-lifecycle.md
 # The Windows service (cygrunsrv -p /bin/bash -a agent_service_wrapper.sh) is launched
 # without a login shell, so /etc/profile never runs and PATH is whatever the Windows
 # service environment provides (typically just system32/etc, with no Cygwin bin dirs).
-# Every `cygpath`/`screen`/`wmic`/`tasklist` backtick call below relies on PATH already
+# Every `cygpath`/`screen`/`tasklist` backtick call below relies on PATH already
 # containing those Cygwin bin directories. Without this, cygpath silently returns "",
 # which previously produced a screen command with an empty batch path (cmd.exe /c "").
 # Prepend the install's own bin directories so these calls resolve regardless of how
@@ -136,6 +136,14 @@ use constant WATCHDOG_MODE => 1;
 use constant WD_ROOT_DIR => (AGENT_RUN_DIR =~ m{[/\\]AgentScripts/?$}i) ? Path::Class::Dir->new(AGENT_RUN_DIR)->parent : Path::Class::Dir->new(AGENT_RUN_DIR);
 use constant WATCHDOG_DIR => WD_ROOT_DIR->subdir('watchdog');
 use constant WD_HOMES_DIR => WD_ROOT_DIR->subdir('home');
+# Windows path of this install's root, the Cygwin root (C:\GSE\Agent for the default install).
+# Game homes, backups and the start/stop scripts are found from it, so a second agent
+# installed in another folder never touches the first agent's servers.
+use constant AGENT_ROOT_WIN => do {
+	my $w = ($^O eq 'cygwin') ? eval { Cygwin::posix_to_win_path(WD_ROOT_DIR->stringify) } : undef;
+	(defined $w && $w ne '') ? ($w =~ s/[\\\/]+$//r) : 'C:\\GSE\\Agent';
+};
+use constant GAME_HOMES_WIN => AGENT_ROOT_WIN . '\\home\\gameserver';
 use constant GAME_STARTUP_DIR =>
   Path::Class::Dir->new(AGENT_RUN_DIR, 'startups');
 use constant SERVER_RUNTIME_DIR =>
@@ -1104,22 +1112,14 @@ sub find_windows_cmd_pids_by_command_marker_without_decrypt
 	return @pids unless(defined($marker) && $marker ne "");
 	$marker =~ s/[\r\n"]//g;
 	my $marker_lc = lc($marker);
-	my $current_command = "";
-	my $output = `wmic process where "name='cmd.exe'" get ProcessId,CommandLine /FORMAT:LIST 2>/dev/null`;
-	foreach my $line (split(/\r?\n/, $output || ""))
+	my $table = GameManagerWin::process_table() || [];
+	foreach my $row (@$table)
 	{
-		if($line =~ /^CommandLine=(.*)$/i)
+		next unless(lc($row->{Name} || "") eq "cmd.exe");
+		my $command = lc($row->{CommandLine} || "");
+		if(index($command, $marker_lc) >= 0 && index($command, "bot-supervisor") >= 0 && index($command, "serverstart.bat") >= 0)
 		{
-			$current_command = lc($1 || "");
-			next;
-		}
-		if($line =~ /^ProcessId=([0-9]+)$/i)
-		{
-			if(index($current_command, $marker_lc) >= 0 && index($current_command, "bot-supervisor") >= 0 && index($current_command, "serverstart.bat") >= 0)
-			{
-				push(@pids, $1);
-			}
-			$current_command = "";
+			push(@pids, $row->{ProcessId});
 		}
 	}
 	my %seen;
@@ -1817,7 +1817,8 @@ sub gm {
 	our $GM;
 	$GM ||= GameManager->new(
 		state_dir       => GAME_STARTUP_DIR,
-		dir_for         => sub { my ($gid) = @_; return "C:\\GSE\\Agent\\home\\gameserver\\$gid"; },
+		dir_for         => sub { my ($gid) = @_; return GAME_HOMES_WIN . "\\$gid"; },
+		agent_dir       => AGENT_ROOT_WIN,
 		now             => sub { time() },
 		pid_alive       => \&GameManagerWin::pid_alive,
 		pid_executable_matches => \&GameManagerWin::pid_executable_matches,
@@ -1859,14 +1860,14 @@ sub gm_status_reply {
 sub gm_monitor_all {
 	# Every home is checked on every scheduler invocation.
 	my $now = time();
-	opendir(my $dh, "C:\\GSE\\Agent\\home\\gameserver") or return;
-	my @ids = map { (/^(\d+)$/ && -e "C:\\GSE\\Agent\\home\\gameserver\\$_\\status") ? $_ : () } readdir($dh);
+	opendir(my $dh, GAME_HOMES_WIN) or return;
+	my @ids = map { (/^(\d+)$/ && -e GAME_HOMES_WIN . "\\$_\\status") ? $_ : () } readdir($dh);
 	closedir $dh;
 	for my $id (sort @ids) {
 		# A server still STARTING after an agent restart is checked on the fast schedule too.
 		$GM_WINDOW{$id} = $now if (!defined $GM_WINDOW{$id} && gm()->read_state($id)->{state} eq 'STARTING');
 		eval { gm()->tick($id); 1 } or logger("Monitor error for HOME ID:$id: $@");
-		my $home_win = "C:\\GSE\\Agent\\home\\gameserver\\$id";
+		my $home_win = GAME_HOMES_WIN . "\\$id";
 		eval { gm()->ensure_bot($id, GameManager::read_bot_config("$home_win\\_alsoRun.cmd"), $home_win); 1 } or logger("Bot monitor error for HOME ID:$id: $@");
 	}
 }
@@ -2167,21 +2168,11 @@ sub find_windows_pids_for_also_run_without_decrypt
 	my @pids;
 	my $definition = read_also_run_definition_without_decrypt($home_path);
 	return @pids unless($definition->{workdir} ne "" && $definition->{command} ne "");
-	my $output = `wmic process get ProcessId,ExecutablePath,CommandLine /FORMAT:LIST 2>/dev/null`;
-	my $current_text = "";
-	foreach my $line (split(/\r?\n/, $output || ""))
+	my $table = GameManagerWin::process_table() || [];
+	foreach my $row (@$table)
 	{
-		if($line =~ /^CommandLine=(.*)$/i || $line =~ /^ExecutablePath=(.*)$/i)
-		{
-			$current_text .= " " . ($1 || "");
-			next;
-		}
-		if($line =~ /^ProcessId=([0-9]+)$/i)
-		{
-			push(@pids, $1) if(process_text_matches_also_run_without_decrypt($current_text, $definition));
-			$current_text = "";
-		}
-		$current_text = "" if($line =~ /^\s*$/);
+		my $text = ($row->{CommandLine} || "") . " " . ($row->{ExecutablePath} || "");
+		push(@pids, $row->{ProcessId}) if(process_text_matches_also_run_without_decrypt($text, $definition));
 	}
 	my %seen;
 	return grep { !$seen{$_}++ } @pids;
@@ -4922,8 +4913,8 @@ sub mon_stats
 # job directory until the panel reads it. A job whose supervisor is gone and that
 # has no recorded result is reported as 'lost'.
 # ---------------------------------------------------------------------------
-use constant RESTIC_JOB_ROOT    => ($ENV{RESTIC_JOB_ROOT} || '/cygdrive/c/GSE/Agent/restic-jobs');
-use constant RESTIC_HOME_ROOT   => 'C:\\GSE\\Agent\\home\\gameserver';
+use constant RESTIC_JOB_ROOT    => ($ENV{RESTIC_JOB_ROOT} || '/restic-jobs');
+use constant RESTIC_HOME_ROOT   => GAME_HOMES_WIN;
 use constant RESTIC_OUTPUT_TAIL => 65536;
 
 # A sub, not a file-scope hash: the RPC daemon serves requests before the
@@ -4968,7 +4959,7 @@ sub restic_job_write_file
 sub restic_bin_path
 {
 	return $ENV{RESTIC_BIN} if ($ENV{RESTIC_BIN} && -f $ENV{RESTIC_BIN} && -x $ENV{RESTIC_BIN});
-	foreach my $candidate ('/usr/bin/restic', '/usr/local/bin/restic', '/cygdrive/c/GSE/Agent/bin/restic.exe')
+	foreach my $candidate ('/usr/bin/restic', '/usr/local/bin/restic', '/bin/restic.exe')
 	{
 		return $candidate if (-f $candidate && -x $candidate);
 	}
@@ -5766,14 +5757,6 @@ sub agent_win_os_name
 	return $ver =~ /(Microsoft Windows[^\[]*)/ ? do { my $n = $1; $n =~ s/\s+$//; $n } : 'Windows';
 }
 
-sub agent_win_wmic_value
-{
-	my ($args, $key) = @_;
-	my $out = `wmic $args /value 2>NUL`;
-	$out = '' unless(defined $out);
-	return $out =~ /^\Q$key\E=(\d+)/m ? $1 : undef;
-}
-
 sub agent_win_cpu_percent
 {
 	my $out = `powershell -NoProfile -Command "(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average" 2>NUL`;
@@ -5783,7 +5766,7 @@ sub agent_win_cpu_percent
 
 sub agent_win_ram_percent
 {
-	my $out = `wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /value 2>NUL`;
+	my ($out) = GameManagerWin::run_ps('$o = Get-CimInstance Win32_OperatingSystem; "FreePhysicalMemory=$($o.FreePhysicalMemory) TotalVisibleMemorySize=$($o.TotalVisibleMemorySize)"');
 	$out = '' unless(defined $out);
 	my ($free) = $out =~ /FreePhysicalMemory=(\d+)/;
 	my ($total) = $out =~ /TotalVisibleMemorySize=(\d+)/;
@@ -5793,10 +5776,10 @@ sub agent_win_ram_percent
 
 sub agent_win_disk_percent
 {
-	my $out = `wmic logicaldisk where "DeviceID='C:'" get FreeSpace,Size /value 2>NUL`;
+	my ($out) = GameManagerWin::run_ps('$d = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID=\'C:\'"; "FreeSpace=$($d.FreeSpace) Size=$($d.Size)"');
 	$out = '' unless(defined $out);
 	my ($free) = $out =~ /FreeSpace=(\d+)/;
-	my ($size) = $out =~ /Size=(\d+)/;
+	my ($size) = $out =~ /\bSize=(\d+)/;
 	return '' unless($free && $size);
 	return sprintf('%d', 100 - (100 * $free / $size));
 }
@@ -6009,11 +5992,14 @@ sub agent_restart
 	my $dec_check = decrypt_param(@_);
 	if ($dec_check eq 'restart')
 	{
-		# Windows agents run as the GSPAgent service. Restart it from a detached
-		# helper so this RPC reply is sent before the service stops.
+		# Windows agents run as a Windows service (GSPAgent unless the installer named it
+		# otherwise in Cfg/Config.pm). Restart it from a detached helper so this RPC reply
+		# is sent before the service stops.
 		if ($^O eq 'MSWin32' || $^O eq 'cygwin')
 		{
-			system('cmd.exe /c start "" /B powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 5; Restart-Service -Name GSPAgent -Force"');
+			my $service = $Cfg::Config{service_name} || 'GSPAgent';
+			$service = 'GSPAgent' unless $service =~ /^[A-Za-z0-9_.-]{1,64}$/;
+			system('cmd.exe /c start "" /B powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 5; Restart-Service -Name ' . $service . ' -Force"');
 			return 1;
 		}
 		chdir AGENT_RUN_DIR;
@@ -7099,7 +7085,7 @@ sub watchdog_start_without_decrypt
 		close($sf);
 	}
 	my $bash_exe = 'bash';
-	for my $cand (WD_ROOT_DIR->file('bin', 'bash.exe')->stringify, '/bin/bash.exe', 'C:/GSE/Agent/bin/bash.exe')
+	for my $cand (WD_ROOT_DIR->file('bin', 'bash.exe')->stringify, '/bin/bash.exe')
 	{
 		if(-e $cand) { $bash_exe = $cand; last; }
 	}

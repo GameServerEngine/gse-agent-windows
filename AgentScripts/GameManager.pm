@@ -5,6 +5,7 @@ package GameManager;
 use strict;
 use warnings;
 use File::Spec;
+use Fcntl qw(:flock);
 
 our $VERSION = '1.0';
 
@@ -73,6 +74,11 @@ sub new {
 		# Failed checks in a row before a RUNNING game counts as crashed (3 checks, so a blip is not a crash).
 		miss_limit      => $args{miss_limit}      // 3,
 		restart_window  => $args{restart_window}  // 1800,
+		# Folder of the agent install. The start and stop scripts written into each server folder point here.
+		agent_dir       => $args{agent_dir}       // 'C:\\GSE\\Agent',
+		# Seconds Start, Stop and Set desired wait for another process that is working on the same server.
+		lock_wait       => $args{lock_wait}       // 60,
+		locked          => {},   # server ids this process already holds the lock for (see _with_lock)
 	};
 	return bless $self, $class;
 }
@@ -306,6 +312,34 @@ sub _reset_restart_counter {
 # A port the panel can really have configured: a whole number above 0.
 sub _port_configured { my ($port) = @_; return (defined $port && $port =~ /^\d+$/ && $port > 0) ? 1 : 0; }
 
+# ---- One worker per server ----
+
+# The panel request (Start, Stop) and the 30 second check run in different processes. Each one
+# takes this server's lock file before it changes anything, so they never act on one server at
+# the same time. (Two launches at once is how a healthy game was once judged FAILED.)
+# $wait is how many seconds to wait for the lock; 0 means do not wait. Returns undef when the
+# lock could not be had. The OS frees the lock when the process ends, so it can never stay stuck.
+sub _with_lock {
+	my ($self, $id, $wait, $work) = @_;
+	# One lock per game: the bot (52-bot) shares the lock of its game (52).
+	my ($game_id) = $id =~ /^(\d+)/;
+	my $key = $game_id // $id;
+	return $work->() if $self->{locked}{$key};   # already ours: tick calls start and stop
+	my $dir = ($self->{dir_for} && defined $game_id) ? $self->{dir_for}->($game_id) : undef;
+	# No server folder to keep a lock file in (unit tests): nothing to lock on.
+	return $work->() unless defined $dir && -d $dir;
+	open(my $fh, '>>', File::Spec->catfile($dir, 'status.lock')) or return $work->();
+	my $got = flock($fh, LOCK_EX | LOCK_NB);
+	for (1 .. $wait) {
+		last if $got;
+		$self->{sleep}->(1);
+		$got = flock($fh, LOCK_EX | LOCK_NB);
+	}
+	return undef unless $got;
+	local $self->{locked}{$key} = 1;
+	return $work->();   # the lock is released when $fh goes out of scope
+}
+
 # Panel Start. Refuses if the server is already up or has no configured port.
 sub start {
 	my ($self, $id, %opt) = @_;
@@ -324,6 +358,13 @@ sub start {
 		}
 		$self->{log}->("$id: GameManager::start called (pid $$) caller chain: " . join(' <- ', @chain));
 	}
+	my $result = $self->_with_lock($id, $self->{lock_wait}, sub { $self->_start($id, %opt) });
+	return $result // { ok => 0, reason => 'busy: another request is working on this server' };
+}
+
+# The Start work. Always called with the server's lock held (see start).
+sub _start {
+	my ($self, $id, %opt) = @_;
 	my $h = $self->read_state($id);
 	$h->{command} = $opt{command} // $h->{command};
 	$h->{workdir} = $opt{workdir} // $h->{workdir};
@@ -357,7 +398,8 @@ sub start {
 		$self->_set($h, 'FAILED', pid => 0, desired => 'RUNNING', reason => $reason);
 		return { ok => 0, reason => $reason };
 	}
-	$self->_set($h, 'STARTING', pid => 0, launcher => 0, attempts => 0, crashes => $h->{crashes}, command => $h->{command}, workdir => $h->{workdir}, port => $h->{port});
+	# launched_at is stamped now, so the check never measures this start against an old launch time.
+	$self->_set($h, 'STARTING', pid => 0, launcher => 0, attempts => 0, launched_at => $self->{now}->(), crashes => $h->{crashes}, command => $h->{command}, workdir => $h->{workdir}, port => $h->{port});
 	return $self->_run_attempts($h);
 }
 
@@ -382,6 +424,32 @@ sub _write_script {
 }
 
 
+# startserver.bat and stopserver.bat in the game folder, for an admin working on the host.
+# They only record what is wanted (RUNNING or STOPPED). The agent's check then launches or stops
+# the game, keeps the status file and the bot right, and restarts the game if it dies. Closing or
+# killing the game by hand does not stop it: while RUNNING is wanted, the agent starts it again.
+sub _has_admin_scripts {
+	my ($self, $h) = @_;
+	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
+	my $dir = ($self->{dir_for} && defined $id) ? $self->{dir_for}->($id) : undef;
+	return 1 unless defined $dir && -d $dir;
+	return (-e File::Spec->catfile($dir, 'startserver.bat') && -e File::Spec->catfile($dir, 'stopserver.bat')) ? 1 : 0;
+}
+
+sub _write_admin_scripts {
+	my ($self, $h) = @_;
+	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
+	my $dir = ($self->{dir_for} && defined $id) ? $self->{dir_for}->($id) : undef;
+	return 0 unless defined $dir && -d $dir;
+	my $ctl = "\"$self->{agent_dir}\\bin\\perl.exe\" \"$self->{agent_dir}\\AgentScripts\\gse_ctl.pl\"";
+	for my $action (qw(start stop)) {
+		open(my $fh, '>', File::Spec->catfile($dir, "${action}server.bat")) or return 0;
+		print $fh "\@echo off\r\nrem $action game server $id, like the panel button. The agent does the work within 30 seconds.\r\n$ctl $action $id\r\n";
+		close $fh;
+	}
+	return 1;
+}
+
 # One launch: free the port, write serverStart.bat, start it. Returns undef on success
 # or the reason it failed. The state becomes STARTING with the launch time.
 sub _launch {
@@ -389,6 +457,7 @@ sub _launch {
 	my $err = $self->_free_port($h);
 	return $err if defined $err;
 	$self->_write_script($h);
+	$self->_write_admin_scripts($h);
 	my $script = $self->_script_path($h);
 	my $exe = $self->_executable_path($h);
 	$self->{log}->("$h->{id}: launching command=[" . ($h->{command} // '') . "] exe=[$exe] workdir=[" . ($h->{workdir} // '')
@@ -450,6 +519,13 @@ sub _start_failed {
 # owner, then confirms the port is free before reporting STOPPED.
 sub stop {
 	my ($self, $id) = @_;
+	my $result = $self->_with_lock($id, $self->{lock_wait}, sub { $self->_stop($id) });
+	return $result // { ok => 0, port_open => 1, reason => 'busy: another request is working on this server' };
+}
+
+# The Stop work. Always called with the server's lock held (see stop).
+sub _stop {
+	my ($self, $id) = @_;
 	my $h = $self->read_state($id);
 	$self->_set_desired($h, 'STOPPED');
 	$self->_kill_all($h);
@@ -477,10 +553,18 @@ sub agent_start_recover {
 	return $h->{state} unless $probe_ok;
 	my $pid_ok = $live_pid ? 1 : 0;
 	my $port_ok = $self->{port_listening}->($h->{port}) ? 1 : 0;
-	if ($pid_ok && $port_ok && $h->{state} eq 'RUNNING') {
-		# Really running already: leave it, but a crash-limited bot still gets a fresh start.
+	if ($pid_ok && $port_ok) {
+		# Really running already, whatever the file says (FAILED, STOPPED...): take it over.
+		# Never start it again: that frees the port and kills the live game.
+		# A crash-limited bot still gets a fresh start.
 		$self->_reset_restart_counter("$id-bot");
-		if ($live_pid != ($h->{pid} // 0)) { $h->{pid} = $live_pid; $self->write_state($h); }
+		if ($h->{state} ne 'RUNNING' || $live_pid != ($h->{pid} // 0)) {
+			my $done = $self->_with_lock($id, $self->{lock_wait}, sub {
+				$self->_set($self->read_state($id), 'RUNNING', pid => $live_pid, crashes => '', attempts => 0, miss => 0, process_running => 1, port_listening => 1, reason => 'adopted the running game');
+				1;
+			});
+			return $self->read_state($id)->{state} unless $done;
+		}
 		return 'RUNNING';
 	}
 	my $result = $self->start($id, command => $h->{command}, workdir => $h->{workdir}, port => $h->{port});
@@ -495,9 +579,23 @@ sub set_desired {
 	my ($self, $id, $desired) = @_;
 	$desired = uc($desired // '');
 	return { ok => 0, reason => 'desired must be RUNNING or STOPPED' } unless $desired eq 'RUNNING' || $desired eq 'STOPPED';
+	my $done = $self->_with_lock($id, $self->{lock_wait}, sub { $self->_save_desired($id, $desired) });
+	return $done // { ok => 0, reason => 'busy: another request is working on this server' };
+}
+
+# Records what is wanted. The next check does the work: it launches, adopts or stops the game.
+sub _save_desired {
+	my ($self, $id, $desired) = @_;
 	my $h = $self->read_state($id);
 	$self->_set_desired($h, $desired);
 	$h->{reason} = 'desired state set to ' . $desired;
+	# A new wish to run starts clean. FAILED and CRASHED would otherwise block the next check.
+	if ($desired eq 'RUNNING' && $h->{state} =~ /^(FAILED|CRASHED)$/) {
+		$h->{state} = 'STOPPED';
+		$h->{ts} = $self->{now}->();
+		$h->{crashes} = '';
+		$h->{attempts} = 0;
+	}
 	$self->write_state($h);
 	return { ok => 1, desired => $desired };
 }
@@ -518,13 +616,14 @@ sub _executable_path {
 sub _probe_pid {
 	my ($self, $h) = @_;
 	my $known = 1;
-	if ($h->{pid}) {
-		return (0, 1) unless $self->{pid_alive}->($h->{pid});
+	if ($h->{pid} && $self->{pid_alive}->($h->{pid})) {
 		my $ours = $self->_pid_is_ours($h, $h->{pid});
 		return ($h->{pid}, 1) if $ours;
 		# A live PID that is not our game is a reused PID number: search again.
 		$known = 0 unless defined $ours;
 	}
+	# The saved PID is gone (or was never saved). The game may still be up under another PID, for
+	# example one started by hand, so look for it by port and folder instead of calling it dead.
 	for my $owner ($self->_port_holders($h)) {
 		return ($owner, 1) unless $self->_belongs_to_other_server($h, $owner);
 	}
@@ -671,14 +770,25 @@ sub _default_log_tail {
 }
 
 # Scheduler tick for one game server. Call every CHECK_INTERVAL_SECONDS.
+# The check is skipped (the state stays as it is) while a Start, a Stop or an earlier check is
+# working on this server; the next check sees the result.
 sub tick {
 	my ($self, $id) = @_;
+	my $state = $self->_with_lock($id, 0, sub { $self->_tick($id) });
+	return $state // $self->read_state($id)->{state};
+}
+
+# The check work. Always called with the server's lock held (see tick).
+sub _tick {
+	my ($self, $id) = @_;
 	my $h = $self->read_state($id);
+	# A home started before the admin scripts existed gets them now, without a game restart.
+	$self->_write_admin_scripts($h) unless $self->_has_admin_scripts($h);
 	my ($live_pid, $probe_ok) = $self->_probe_pid($h);
 	my $pid_ok = $live_pid ? 1 : 0;
 	# Keep the status file's pid pointed at the real running game, including when it was
 	# only found by the directory scan (the recorded pid was lost or never matched).
-	if ($pid_ok && $live_pid != ($h->{pid} // 0)) { $h->{pid} = $live_pid; $self->write_state($h); }
+	if ($pid_ok && $live_pid != ($h->{pid} || 0)) { $h->{pid} = $live_pid; $self->write_state($h); }
 	my $port_raw = $self->{port_listening}->($h->{port});
 	my $port_ok = $port_raw ? 1 : 0;
 	$probe_ok = 0 unless defined $port_raw;
@@ -694,6 +804,13 @@ sub tick {
 		if ($pid_ok || $port_ok) { $self->stop($id); return 'STOPPING'; }
 		$self->_set($h, 'STOPPED', pid => 0, reason => 'desired state STOPPED');
 		return 'STOPPED';
+	}
+	# The game is really up (a live process holding its port) and it is wanted up. Whatever the
+	# file says (FAILED, STOPPED, CRASHED...), it is RUNNING: take it over. This is how a game
+	# started by hand, or left over from a start that was judged FAILED, shows up correctly.
+	if ($pid_ok && $port_ok && ($h->{state} // '') !~ /^(RUNNING|STARTING)$/) {
+		$self->_set($h, 'RUNNING', pid => $live_pid, crashes => '', attempts => 0, miss => 0, process_running => 1, port_listening => 1, reason => 'adopted the running game');
+		return 'RUNNING';
 	}
 	if (($h->{state} // '') eq 'FAILED' && ($h->{reason} // '') =~ /^(restart limit reached|Failed to Start: max restarts reached|port not configured)$/) { return 'FAILED'; }
 	if (($h->{state} // '') eq 'FAILED' && ($h->{reason} // '') =~ /^executable missing:/) { return 'FAILED'; }
@@ -812,6 +929,12 @@ sub _bot_launch {
 }
 
 sub ensure_bot {
+	my ($self, $id, $cfg, $home_win) = @_;
+	return $self->_with_lock($id, 0, sub { $self->_ensure_bot($id, $cfg, $home_win) });
+}
+
+# The bot check work. Always called with the server's lock held (see ensure_bot).
+sub _ensure_bot {
 	my ($self, $id, $cfg, $home_win) = @_;
 	my $game = $self->read_state($id);
 	my $bot  = $self->read_state("$id-bot");

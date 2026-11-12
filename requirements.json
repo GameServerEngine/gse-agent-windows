@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "component": "gse-agent-windows",
+ "title": "GSE Windows Agent",
+ "minimum_os": [
+  {
+   "name": "Windows Server",
+   "minimum": "2016 (build 14393), 64-bit"
+  },
+  {
+   "name": "Windows 10 / 11",
+   "minimum": "version 1607 (build 14393) or newer, 64-bit"
+  }
+ ],
+ "tested_on": [
+  "Windows Server 2022 (10.0.20348)"
+ ],
+ "prerequisites": [
+  {
+   "name": "Windows PowerShell 5.1",
+   "note": "Included with the supported Windows versions. The agent reads the process list and starts games through it (CIM). wmic is no longer used."
+  },
+  {
+   "name": "Administrator rights to install",
+   "note": "The installer requires an elevated session and creates the local agent account (default: gameserver)."
+  },
+  {
+   "name": "Cygwin runtime",
+   "note": "Bundled with the agent. Nothing to install."
+  },
+  {
+   "name": "DirectX End-User Runtime (June 2010)",
+   "note": "Bundled installer, for game servers that need the older DirectX files."
+  }
+ ],
+ "unverified": [
+  "The minimum versions come from the PowerShell 5.1 and CIM requirement. Only Windows Server 2022 has been tested."
+ ]
+}

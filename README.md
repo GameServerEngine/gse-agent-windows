@@ -132,3 +132,7 @@ This README is the main document for the Windows agent. These deeper references 
 - [`docs/WINDOWS_OPERATIONS.md`](docs/WINDOWS_OPERATIONS.md)
 - [`AgentScripts/README.md`](AgentScripts/README.md)
 - [`AgentScripts/documentation/agent-guide.md`](AgentScripts/documentation/agent-guide.md)
+
+## Requirements
+
+`requirements.json` lists the minimum operating system and the prerequisites for this component. The GameServer Engine website reads it, so change that file (not the website) when a requirement changes. `tests/validate_requirements.sh` checks it.
