@@ -89,4 +89,4 @@ jobs:
           NAME="gse-agent-windows-$BRANCH-$NEW"
           git archive --format=zip --prefix="$NAME/" -o "$NAME.zip" HEAD
           sha256sum "$NAME.zip" | awk '{print $1}' > "$NAME.zip.sha256"
-          gh release create "$TAG" "$NAME.zip" "$NAME.zip.sha256" --repo "$GITHUB_REPOSITORY" --target "$SHA" --title "$TITLE" --notes "Built from $BRANCH at $SHA." --prerelease
+          gh release create "$TAG" "$NAME.zip" "$NAME.zip.sha256" gse-agent-windows-install.ps1 --repo "$GITHUB_REPOSITORY" --target "$SHA" --title "$TITLE" --notes "Built from $BRANCH at $SHA." --prerelease

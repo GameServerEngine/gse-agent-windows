@@ -13,7 +13,11 @@ my ($action, $id) = @ARGV;
 my $want = { start => 'RUNNING', stop => 'STOPPED' }->{ lc($action // '') };
 die "Usage: gse_ctl.pl start|stop <server id>\n" unless $want && defined $id && $id =~ /^\d+$/;
 
-my $root = 'C:\\GSE\\Agent\\home\\gameserver';
+# The install root is the folder above AgentScripts (C:\GSE\Agent by default).
+(my $agent_dir = $0) =~ s{[\\/][^\\/]+[\\/][^\\/]+$}{};
+$agent_dir = 'C:\\GSE\\Agent' if $agent_dir eq $0 || $agent_dir eq '';
+$agent_dir =~ tr{/}{\\};
+my $root = "$agent_dir\\home\\gameserver";
 my $gm   = GameManager->new(state_dir => $root, dir_for => sub { "$root\\$_[0]" });
 
 my $r = $gm->set_desired($id, $want);
