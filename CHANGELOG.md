@@ -2,6 +2,12 @@
 
 Each fixed issue gets an entry under the version that shipped it: a one-line title, then the cause and the fix in plain language, written so a customer can follow it.
 
+## 1.5.3
+- **Status follows the real game:** A game that was running could show Stopped or Failed in the Panel (server 52 showed "Failed to Start: max restarts reached" while players were on it). The agent now takes over a game that is really up (its process holding its port) and wanted RUNNING, whatever the status file says. A saved process ID that has died no longer hides a game that is still running under another ID, so a game started by hand is no longer killed as a stray.
+- **One action at a time per server:** The Panel Start and the 30 second check ran in separate processes with no lock, so the check could judge a fresh start "hung" (it used an old launch time) and launch a second copy. Start, Stop, Set desired and the check now take a per-server lock, the launch time is stamped when Start begins, and a new Start clears FAILED.
+- **Start and stop on the host:** Each server folder now gets `startserver.bat` and `stopserver.bat`. They only record RUNNING or STOPPED (through `gse_ctl.pl`) and wait for the agent to confirm, so an admin can start and stop a game on the host and the Panel shows the truth. A game closed by hand while RUNNING is wanted is still restarted; use `stopserver.bat`.
+- **wmic replaced by PowerShell (CIM):** The process list, launching games and the memory and disk readings no longer use wmic, which is removed from new Windows. One process list is read per check and shared by all servers. Needs Windows 10 or Windows Server 2016 or newer.
+
 ## 1.5.2
 - **Game port freed before launch:** A game still holding its port could block the next start. The agent now frees the port first and saves the game's process ID. Commit `8beb0e3c`.
 - **Hang timeout set to 5 minutes:** The agent uses a 5 minute hang timeout for game processes. Commit `8beb0e3c`.

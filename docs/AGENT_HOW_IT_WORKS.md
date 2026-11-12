@@ -30,7 +30,11 @@ Each managed server has a state file with these fields: `status`, `pid`, `port`,
 `crashes`, `reason`, `command`, `workdir`, `desired`, `launcher`, `updated_at`.
 
 - `desired` is `RUNNING` or `STOPPED`. Panel Start sets it to RUNNING; Panel Stop sets
-  it to STOPPED (`start()`, `stop()`, `set_desired()`).
+  it to STOPPED (`start()`, `stop()`, `set_desired()`). The state file is only an intent plus
+  a record: what is running is decided by the real process and port on every check.
+- Start, Stop, Set desired and the 30 second check (and the bot check) each take the server's
+  lock (`status.lock` in the server folder) before changing anything, so they never overlap.
+  The check skips a server that is busy and sees the result on the next pass.
 - `status` is the observed state (STOPPED, STARTING, RUNNING, FAILED, ...).
 - `launcher` is the PID of the cmd.exe that was launched. `pid` is the game's own PID,
   saved once the game is found. Use `pid` and `port` together to check a server.
@@ -48,6 +52,16 @@ Each managed server has a state file with these fields: `status`, `pid`, `port`,
    and a Failed to Start crash ticket is opened from the Panel side.
 
 ## 5. Watchdog and status
+
+- A game that is really up (a live process holding its port) while `desired` is RUNNING is
+  adopted as RUNNING, whatever the state file says (FAILED, STOPPED, CRASHED). It is never
+  killed or launched a second time. A saved PID that has died does not hide it: the game is
+  looked for by port and by folder.
+- On the host an admin uses `startserver.bat` and `stopserver.bat` in the server folder. They
+  call `AgentScripts\gse_ctl.pl`, which only records RUNNING or STOPPED and waits for the agent
+  to confirm; the agent's check then launches, adopts or stops the game and keeps the status
+  file and the bot right. Closing or killing the game by hand while RUNNING is wanted gets it
+  restarted: use `stopserver.bat`. `serverStart.bat` is the agent's own launcher, not for hand use.
 
 - A periodic check (`tick()`) runs on the agent's scheduler and reads each home's
   state. The cadence is reported as every 30 seconds; confirm in the scheduler code
@@ -93,7 +107,11 @@ error instead of killing it.
 
 - PowerShell is allowed for the Windows agent and its deployment only so the Windows
   agent stays close to the Linux agent. Starting and managing game servers on Windows
-  uses the command prompt (cmd), not PowerShell.
+  uses the command prompt (cmd): the game is started by `cmd.exe /c serverStart.bat`.
+  PowerShell (CIM) is used only to read the process list (`GameManagerWin::process_table`,
+  one call shared by all servers for a few seconds) and to create that cmd.exe process
+  (`Win32_Process Create`, so the game is not a child of the agent service). wmic is no longer
+  used; Windows 10 or Windows Server 2016 or newer is required.
 - Use `taskkill /F /T /PID <pid>` for known PID-tree termination (per the lifecycle contract).
 - Check game processes by executable name, by listening port (`netstat -ano`), and by
   saved PID. Do not check only one process name: the Arma 2 servers run as

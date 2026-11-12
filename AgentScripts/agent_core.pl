@@ -35,7 +35,7 @@ use GameManagerWin;   # start/stop/monitor per docs/server-lifecycle.md
 # The Windows service (cygrunsrv -p /bin/bash -a agent_service_wrapper.sh) is launched
 # without a login shell, so /etc/profile never runs and PATH is whatever the Windows
 # service environment provides (typically just system32/etc, with no Cygwin bin dirs).
-# Every `cygpath`/`screen`/`wmic`/`tasklist` backtick call below relies on PATH already
+# Every `cygpath`/`screen`/`tasklist` backtick call below relies on PATH already
 # containing those Cygwin bin directories. Without this, cygpath silently returns "",
 # which previously produced a screen command with an empty batch path (cmd.exe /c "").
 # Prepend the install's own bin directories so these calls resolve regardless of how
@@ -1104,22 +1104,14 @@ sub find_windows_cmd_pids_by_command_marker_without_decrypt
 	return @pids unless(defined($marker) && $marker ne "");
 	$marker =~ s/[\r\n"]//g;
 	my $marker_lc = lc($marker);
-	my $current_command = "";
-	my $output = `wmic process where "name='cmd.exe'" get ProcessId,CommandLine /FORMAT:LIST 2>/dev/null`;
-	foreach my $line (split(/\r?\n/, $output || ""))
+	my $table = GameManagerWin::process_table() || [];
+	foreach my $row (@$table)
 	{
-		if($line =~ /^CommandLine=(.*)$/i)
+		next unless(lc($row->{Name} || "") eq "cmd.exe");
+		my $command = lc($row->{CommandLine} || "");
+		if(index($command, $marker_lc) >= 0 && index($command, "bot-supervisor") >= 0 && index($command, "serverstart.bat") >= 0)
 		{
-			$current_command = lc($1 || "");
-			next;
-		}
-		if($line =~ /^ProcessId=([0-9]+)$/i)
-		{
-			if(index($current_command, $marker_lc) >= 0 && index($current_command, "bot-supervisor") >= 0 && index($current_command, "serverstart.bat") >= 0)
-			{
-				push(@pids, $1);
-			}
-			$current_command = "";
+			push(@pids, $row->{ProcessId});
 		}
 	}
 	my %seen;
@@ -2167,21 +2159,11 @@ sub find_windows_pids_for_also_run_without_decrypt
 	my @pids;
 	my $definition = read_also_run_definition_without_decrypt($home_path);
 	return @pids unless($definition->{workdir} ne "" && $definition->{command} ne "");
-	my $output = `wmic process get ProcessId,ExecutablePath,CommandLine /FORMAT:LIST 2>/dev/null`;
-	my $current_text = "";
-	foreach my $line (split(/\r?\n/, $output || ""))
+	my $table = GameManagerWin::process_table() || [];
+	foreach my $row (@$table)
 	{
-		if($line =~ /^CommandLine=(.*)$/i || $line =~ /^ExecutablePath=(.*)$/i)
-		{
-			$current_text .= " " . ($1 || "");
-			next;
-		}
-		if($line =~ /^ProcessId=([0-9]+)$/i)
-		{
-			push(@pids, $1) if(process_text_matches_also_run_without_decrypt($current_text, $definition));
-			$current_text = "";
-		}
-		$current_text = "" if($line =~ /^\s*$/);
+		my $text = ($row->{CommandLine} || "") . " " . ($row->{ExecutablePath} || "");
+		push(@pids, $row->{ProcessId}) if(process_text_matches_also_run_without_decrypt($text, $definition));
 	}
 	my %seen;
 	return grep { !$seen{$_}++ } @pids;
@@ -5766,14 +5748,6 @@ sub agent_win_os_name
 	return $ver =~ /(Microsoft Windows[^\[]*)/ ? do { my $n = $1; $n =~ s/\s+$//; $n } : 'Windows';
 }
 
-sub agent_win_wmic_value
-{
-	my ($args, $key) = @_;
-	my $out = `wmic $args /value 2>NUL`;
-	$out = '' unless(defined $out);
-	return $out =~ /^\Q$key\E=(\d+)/m ? $1 : undef;
-}
-
 sub agent_win_cpu_percent
 {
 	my $out = `powershell -NoProfile -Command "(Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average" 2>NUL`;
@@ -5783,7 +5757,7 @@ sub agent_win_cpu_percent
 
 sub agent_win_ram_percent
 {
-	my $out = `wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /value 2>NUL`;
+	my ($out) = GameManagerWin::run_ps('$o = Get-CimInstance Win32_OperatingSystem; "FreePhysicalMemory=$($o.FreePhysicalMemory) TotalVisibleMemorySize=$($o.TotalVisibleMemorySize)"');
 	$out = '' unless(defined $out);
 	my ($free) = $out =~ /FreePhysicalMemory=(\d+)/;
 	my ($total) = $out =~ /TotalVisibleMemorySize=(\d+)/;
@@ -5793,10 +5767,10 @@ sub agent_win_ram_percent
 
 sub agent_win_disk_percent
 {
-	my $out = `wmic logicaldisk where "DeviceID='C:'" get FreeSpace,Size /value 2>NUL`;
+	my ($out) = GameManagerWin::run_ps('$d = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID=\'C:\'"; "FreeSpace=$($d.FreeSpace) Size=$($d.Size)"');
 	$out = '' unless(defined $out);
 	my ($free) = $out =~ /FreeSpace=(\d+)/;
-	my ($size) = $out =~ /Size=(\d+)/;
+	my ($size) = $out =~ /\bSize=(\d+)/;
 	return '' unless($free && $size);
 	return sprintf('%d', 100 - (100 * $free / $size));
 }
