@@ -171,4 +171,14 @@ game_up(556, 2300);
 is($gm->agent_start_recover(52), 'RUNNING', 'agent start adopts a game running under a different PID');
 is(scalar(@{ $world->{killed} }), 0, 'and kills nothing');
 
+# A home that was already running before the admin scripts existed gets them on the next check.
+new_world();
+$gm = make_gm();
+$gm->write_state({ id => 49, state => 'RUNNING', ts => 1, desired => 'RUNNING', port => 2000, command => 'game.exe', workdir => 'C:/g', pid => 77 });
+game_up(77, 2000);
+ok(!-e File::Spec->catfile($root, 49, 'startserver.bat'), 'no admin script yet');
+$gm->tick(49);
+ok(-e File::Spec->catfile($root, 49, 'startserver.bat') && -e File::Spec->catfile($root, 49, 'stopserver.bat'), 'the check writes startserver.bat and stopserver.bat for a running home');
+is(scalar(@launched), 0, 'and does not touch the game');
+
 done_testing();

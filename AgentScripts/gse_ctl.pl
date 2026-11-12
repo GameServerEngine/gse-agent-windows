@@ -5,8 +5,8 @@
 # and keeps the status file right, then this script reports what it sees.
 use strict;
 use warnings;
-use FindBin;
-use lib $FindBin::Bin;
+# The folder of this script, taken from $0 (it is called with a Windows path, C:\...\gse_ctl.pl).
+use lib do { (my $d = $0) =~ tr{\\}{/}; $d =~ s{/[^/]*$}{}; $d eq $0 ? '.' : $d };
 use GameManager;
 
 my ($action, $id) = @ARGV;

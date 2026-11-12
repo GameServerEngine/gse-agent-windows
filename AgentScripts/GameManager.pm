@@ -428,6 +428,14 @@ sub _write_script {
 # They only record what is wanted (RUNNING or STOPPED). The agent's check then launches or stops
 # the game, keeps the status file and the bot right, and restarts the game if it dies. Closing or
 # killing the game by hand does not stop it: while RUNNING is wanted, the agent starts it again.
+sub _has_admin_scripts {
+	my ($self, $h) = @_;
+	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
+	my $dir = ($self->{dir_for} && defined $id) ? $self->{dir_for}->($id) : undef;
+	return 1 unless defined $dir && -d $dir;
+	return (-e File::Spec->catfile($dir, 'startserver.bat') && -e File::Spec->catfile($dir, 'stopserver.bat')) ? 1 : 0;
+}
+
 sub _write_admin_scripts {
 	my ($self, $h) = @_;
 	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
@@ -774,6 +782,8 @@ sub tick {
 sub _tick {
 	my ($self, $id) = @_;
 	my $h = $self->read_state($id);
+	# A home started before the admin scripts existed gets them now, without a game restart.
+	$self->_write_admin_scripts($h) unless $self->_has_admin_scripts($h);
 	my ($live_pid, $probe_ok) = $self->_probe_pid($h);
 	my $pid_ok = $live_pid ? 1 : 0;
 	# Keep the status file's pid pointed at the real running game, including when it was
