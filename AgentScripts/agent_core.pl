@@ -62,7 +62,7 @@ use LWP::UserAgent; # Used for fetching URLs
 use MIME::Base64;	# Used to ensure data travelling right through the network.
 use Getopt::Long;	# Used for command line params.
 use Path::Class::File;	# Used to handle files and directories.
-use File::Glob qw(bsd_glob GLOB_NOSORT);
+use File::Glob qw(bsd_glob GLOB_NOSORT GLOB_NOCASE GLOB_QUOTE);
 use File::Path qw(mkpath);
 use Archive::Extract;	 # Used to handle archived files.
 use File::Find;
@@ -3305,6 +3305,7 @@ sub resolve_latest_log_match
 	$pattern =~ s{^\./+}{};
 	return undef if $pattern =~ /\0/;
 	return undef if $pattern =~ m{^/};
+	return undef if $pattern =~ m{^[A-Za-z]:};
 	return undef if $pattern =~ m{(^|/)\.\.(?:/|$)};
 
 	my $home_abs = abs_path($home_path);
@@ -3313,7 +3314,10 @@ sub resolve_latest_log_match
 	return undef unless defined($regex);
 	my $glob_pattern = $pattern;
 	$glob_pattern =~ s/\[([^\]]+)\]/\*/g;
-	my @matches = bsd_glob("$home_path/$glob_pattern", GLOB_NOSORT);
+	# Escape glob characters in the home path itself; the pattern is matched case-insensitively.
+	my $home_glob = $home_path;
+	$home_glob =~ s/([\\*?\[\]{}~])/\\$1/g;
+	my @matches = bsd_glob("$home_glob/$glob_pattern", GLOB_NOSORT | GLOB_NOCASE | GLOB_QUOTE);
 	my @candidates = ();
 	foreach my $candidate (@matches)
 	{
