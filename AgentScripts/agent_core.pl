@@ -3622,6 +3622,9 @@ sub force_stop_server
 sub force_stop_server_without_decrypt
 {
 	my ($home_id, $server_ip, $server_port, $home_path) = @_;
+	# STOPPED is recorded in the game manager first, or its next check would start the game again.
+	$GM_WINDOW{$home_id} = time();
+	gm()->stop($home_id);
 	my $result = lifecycle_hard_stop_without_decrypt($home_id, $server_ip, $server_port, $home_path, {
 		remove_startup => 1,
 		clean_content => 1,
