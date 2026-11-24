@@ -3,6 +3,7 @@
 Each fixed issue gets an entry under the version that shipped it: a one-line title, then the cause and the fix in plain language, written so a customer can follow it.
 
 ## Unreleased
+- **Container commands report their real result:** Docker commands run by the opt-in `container_*` RPCs were always reported as failed, because the agent ignores child exits and so lost each command's exit code. The command runner in `GSE/Container/Runtime.pm` now reads the real exit code. The Linux agent now has the same RPCs and the same file.
 - **Agent update works:** a release download that worked was reported as "Could not download the release archive", because the agent read the download's exit code wrongly. It now reads the real one.
 - **Force Stop stays stopped:** Force Stop wrote the old `status.stopped` marker, which the game manager does not read, so the next check started the game again. It now records STOPPED in the game manager first.
 - **Stop is verified by the panel:** after Stop the status file kept `process_running=1` and `port_listening=1` from the last check, so the panel reported the stop as failed. Both now show what is true after the stop.
