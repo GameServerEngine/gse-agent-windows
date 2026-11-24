@@ -3,6 +3,7 @@
 Each fixed issue gets an entry under the version that shipped it: a one-line title, then the cause and the fix in plain language, written so a customer can follow it.
 
 ## Unreleased
+- **Agent update works:** a release download that worked was reported as "Could not download the release archive", because the agent read the download's exit code wrongly. It now reads the real one.
 - **Force Stop stays stopped:** Force Stop wrote the old `status.stopped` marker, which the game manager does not read, so the next check started the game again. It now records STOPPED in the game manager first.
 - **Stop is verified by the panel:** after Stop the status file kept `process_running=1` and `port_listening=1` from the last check, so the panel reported the stop as failed. Both now show what is true after the stop.
 - **Restart without a wait:** Restart starts the game right after the stop. The 60 second wait outlived the panel's request, so the start never ran and the server was left stopped.

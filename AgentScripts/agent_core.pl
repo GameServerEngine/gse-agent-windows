@@ -5855,6 +5855,9 @@ sub write_agent_update_state
 sub start_agent_update
 {
 	my (%cfg) = @_;
+	# The RPC process ignores child signals, so system() would return -1 for a download that
+	# worked ("Could not download the release archive"). Real exit codes are needed here.
+	local $SIG{CHLD} = 'DEFAULT';
 	my $component = $cfg{component} || 'windows_agent';
 	my $archive_url = $cfg{archive_url} || '';
 	my $checksum = lc($cfg{checksum} || '');
