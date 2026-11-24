@@ -549,10 +549,14 @@ sub _stop {
 	my $port_open = $self->_wait_port_free($h) ? 0 : 1;
 	# Keep the PID only if that process is still alive, so the status file never holds a stale PID.
 	my $alive = ($h->{pid} && $self->{pid_alive}->($h->{pid})) ? $h->{pid} : 0;
+	# The live process and port fields are set from what is true now, not left from the last
+	# healthy check, so the panel can verify the stop.
 	if ($port_open) {
-		$self->_set($h, 'STOPPING', pid => $alive, reason => "stop requested, port $h->{port} still in use");
+		$self->_set($h, 'STOPPING', pid => $alive, process_running => ($alive ? 1 : 0), port_listening => 1,
+			reason => "stop requested, port $h->{port} still in use");
 	} else {
-		$self->_set($h, 'STOPPED', pid => $alive, launcher => 0, reason => 'stop requested');
+		$self->_set($h, 'STOPPED', pid => $alive, launcher => 0, process_running => ($alive ? 1 : 0), port_listening => 0,
+			reason => 'stop requested');
 	}
 	return { ok => !$port_open, port_open => $port_open };
 }
