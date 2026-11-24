@@ -76,6 +76,17 @@ sub new {
 		restart_window  => $args{restart_window}  // 1800,
 		# Folder of the agent install. The start and stop scripts written into each server folder point here.
 		agent_dir       => $args{agent_dir}       // 'C:\\GSE\\Agent',
+		# Platform settings. The defaults are Windows; the Linux agent passes its own.
+		# script_ext: serverStart, startserver and stopserver files in each server folder.
+		# write_script / write_admin_script: write those files ($self, $h, $dir[, $action]); undef = batch files.
+		# launcher_image: the process that runs serverStart (its tree is the game). shell_images: launcher
+		# helpers that are never the game. fold_case: compare folder paths without case (Windows).
+		script_ext      => $args{script_ext}      // '.bat',
+		write_script    => $args{write_script},
+		write_admin_script => $args{write_admin_script},
+		launcher_image  => $args{launcher_image}  // 'cmd.exe',
+		shell_images    => $args{shell_images}    // ['cmd.exe', 'conhost.exe'],
+		fold_case       => $args{fold_case}       // 1,
 		# Seconds Start, Stop and Set desired wait for another process that is working on the same server.
 		lock_wait       => $args{lock_wait}       // 60,
 		locked          => {},   # server ids this process already holds the lock for (see _with_lock)
@@ -171,19 +182,19 @@ sub _set {
 
 # ---- Folders: which processes belong to this server, which to another one ----
 
-# Lower-case, forward-slash form of a path, so Windows and test paths compare the same way.
+# Forward-slash form of a path, lower-case when $fold (Windows), so paths compare the same way.
 sub _norm_path {
-	my ($path) = @_;
+	my ($path, $fold) = @_;
 	return '' unless defined $path;
 	$path =~ s{\\}{/}g;
 	$path =~ s{/+$}{};
-	return lc($path);
+	return ($fold // 1) ? lc($path) : $path;
 }
 
 sub _path_inside {
-	my ($path, $dir) = @_;
-	$path = _norm_path($path);
-	$dir  = _norm_path($dir);
+	my ($path, $dir, $fold) = @_;
+	$path = _norm_path($path, $fold);
+	$dir  = _norm_path($dir, $fold);
 	return 0 if $path eq '' || $dir eq '';
 	return substr($path, 0, length($dir) + 1) eq "$dir/" ? 1 : 0;
 }
@@ -205,8 +216,8 @@ sub _belongs_to_other_server {
 	return 0 unless defined $dir;
 	(my $all_servers = $dir) =~ s{[\\/][^\\/]+$}{};
 	my $path = $self->{pid_path}->($pid);
-	return 0 unless _path_inside($path, $all_servers);
-	return _path_inside($path, $dir) ? 0 : 1;
+	return 0 unless _path_inside($path, $all_servers, $self->{fold_case});
+	return _path_inside($path, $dir, $self->{fold_case}) ? 0 : 1;
 }
 
 # Short name of a PID's executable, for log and error text.
@@ -230,7 +241,7 @@ sub _port_holders {
 sub _pid_is_ours {
 	my ($self, $h, $pid) = @_;
 	return 1 if grep { $_ == $pid } $self->_port_holders($h);
-	return 1 if _path_inside($self->{pid_path}->($pid), $self->_server_dir($h));
+	return 1 if _path_inside($self->{pid_path}->($pid), $self->_server_dir($h), $self->{fold_case});
 	return $self->{pid_executable_matches}->($pid, $self->_executable_path($h));
 }
 
@@ -250,8 +261,8 @@ sub _kill_all {
 		push @{ $self->{killed} }, "$what $pid";
 		$self->{log}->("$h->{id}: killed $what pid $pid");
 	};
-	# The cmd.exe that launched the batch file: taskkill /T on it also ends the game it started.
-	if ($h->{launcher} && $self->{pid_alive}->($h->{launcher}) && $self->{pid_executable_matches}->($h->{launcher}, 'cmd.exe')) {
+	# The launcher (cmd.exe running the batch file): killing its tree also ends the game it started.
+	if ($h->{launcher} && $self->{pid_alive}->($h->{launcher}) && $self->{pid_executable_matches}->($h->{launcher}, $self->{launcher_image})) {
 		$kill->($h->{launcher}, 'launcher');
 	}
 	if ($h->{pid} && $self->{pid_alive}->($h->{pid}) && !$self->_belongs_to_other_server($h, $h->{pid})) {
@@ -407,7 +418,7 @@ sub _start {
 sub _script_path {
 	my ($self, $h) = @_;
 	return undef unless $self->{dir_for};
-	return File::Spec->catfile($self->{dir_for}->($h->{id}), 'serverStart.bat');
+	return File::Spec->catfile($self->{dir_for}->($h->{id}), "serverStart$self->{script_ext}");
 }
 
 # serverStart.bat in the game folder: cd to the run folder, then run the game command.
@@ -417,6 +428,7 @@ sub _write_script {
 	my $wd = $h->{workdir} // '';
 	my $dir = $self->{dir_for} ? $self->{dir_for}->($h->{id}) : $wd;
 	return 0 unless defined $dir && -d $dir;
+	return $self->{write_script}->($self, $h, $dir) if $self->{write_script};
 	open(my $fh, '>', File::Spec->catfile($dir, 'serverStart.bat')) or return 0;
 	print $fh "\@echo off\r\necho %date% %time% start > \"%~dp0last-start.txt\"\r\ncd /d \"$wd\"\r\n$h->{command}\r\necho %date% %time% exit %errorlevel% >> \"%~dp0last-start.txt\"\r\n";
 	close $fh;
@@ -433,7 +445,8 @@ sub _has_admin_scripts {
 	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
 	my $dir = ($self->{dir_for} && defined $id) ? $self->{dir_for}->($id) : undef;
 	return 1 unless defined $dir && -d $dir;
-	return (-e File::Spec->catfile($dir, 'startserver.bat') && -e File::Spec->catfile($dir, 'stopserver.bat')) ? 1 : 0;
+	my $ext = $self->{script_ext};
+	return (-e File::Spec->catfile($dir, "startserver$ext") && -e File::Spec->catfile($dir, "stopserver$ext")) ? 1 : 0;
 }
 
 sub _write_admin_scripts {
@@ -441,6 +454,10 @@ sub _write_admin_scripts {
 	my ($id) = ($h->{id} // '') =~ /^(\d+)/;
 	my $dir = ($self->{dir_for} && defined $id) ? $self->{dir_for}->($id) : undef;
 	return 0 unless defined $dir && -d $dir;
+	if ($self->{write_admin_script}) {
+		for my $action (qw(start stop)) { $self->{write_admin_script}->($self, $id, $dir, $action) or return 0; }
+		return 1;
+	}
 	my $ctl = "\"$self->{agent_dir}\\bin\\perl.exe\" \"$self->{agent_dir}\\AgentScripts\\gse_ctl.pl\"";
 	for my $action (qw(start stop)) {
 		open(my $fh, '>', File::Spec->catfile($dir, "${action}server.bat")) or return 0;
@@ -635,7 +652,7 @@ sub _probe_pid {
 }
 
 # A descendant of the launcher that is the game: the expected executable first, otherwise
-# the first one that is not just cmd.exe or conhost.exe. Returns 0 if there is none.
+# the first one that is not a launcher helper (shell_images). Returns 0 if there is none.
 sub _launcher_child {
 	my ($self, $h, $expected_exe) = @_;
 	return 0 unless $h->{launcher} && $self->{pid_alive}->($h->{launcher});
@@ -645,7 +662,7 @@ sub _launcher_child {
 	}
 	for my $kid (@kids) {
 		my $name = lc $self->_pid_exe_name($kid);
-		return $kid unless $name eq 'unknown' || $name eq 'cmd.exe' || $name eq 'conhost.exe';
+		return $kid unless $name eq 'unknown' || grep { $name eq lc $_ } @{ $self->{shell_images} };
 	}
 	return 0;
 }
@@ -897,7 +914,8 @@ sub read_bot_config {
 	my $dir = $file;
 	$dir =~ s/[\\\/][^\\\/]+$//;
 	# The bot is its own batch file (_alsoRun.cmd), which changes into the bot's folder itself.
-	return { script => $file, workdir => $dir, executable => 'C:\\Windows\\System32\\cmd.exe', arguments => "/c \"$file\"" };
+	return { script => $file, workdir => $dir, executable => 'C:\\Windows\\System32\\cmd.exe', arguments => "/c \"$file\"",
+		command => "C:\\Windows\\System32\\cmd.exe /c $file" };
 }
 
 
@@ -911,8 +929,9 @@ sub _bot_launch {
 		# which stays alive for as long as the bot runs, so the bot is tracked by that PID.
 		my $script = $cfg->{script};
 		my $wd = $cfg->{workdir} // $home_win;
-		my ($pid, $reason) = $self->{launch}->("cmd.exe /c $script", $wd, { script => $script, foreground => 0 });
-		if ($pid) { $self->_set($bot, 'STARTING', pid => $pid, command => "C:\\Windows\\System32\\cmd.exe /c $script", workdir => $wd, reason => ''); }
+		my $command = $cfg->{command} // "C:\\Windows\\System32\\cmd.exe /c $script";
+		my ($pid, $reason) = $self->{launch}->($command, $wd, { script => $script, foreground => 0 });
+		if ($pid) { $self->_set($bot, 'STARTING', pid => $pid, command => $command, workdir => $wd, reason => ''); }
 		else { $self->_set($bot, 'CRASHED', pid => 0, reason => 'bot launch failed: ' . ($reason // '')); }
 		return;
 	}
