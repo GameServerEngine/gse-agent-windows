@@ -36,11 +36,11 @@ server. Example:
 <agent server root>/ServerFiles/<home_id>
 ```
 
-`game_root` is a child directory under `management_home` named exactly from the
-validated XML `game_key`:
+`game_root` is the `gamefiles` child of `management_home`. The XML `game_key`
+is still validated:
 
 ```text
-<management_home>/<validated game_key>
+<management_home>/gamefiles
 ```
 
 The `game_key` must be validated before path construction. It must be a single
@@ -60,7 +60,7 @@ Current Windows implementation detail:
 
 - Start treats the RPC `home_path` as `management_home`.
 - Start requires a valid XML `game_key` and resolves `game_root` as
-  `management_home/<game_key>`.
+  `management_home/gamefiles`.
 - Start rejects missing or unsafe `game_key` values instead of launching from
   `management_home`.
 - Existing homes must be manually rearranged by the operator before Start is

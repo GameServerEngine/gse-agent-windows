@@ -2,6 +2,12 @@
 
 Each fixed issue gets an entry under the version that shipped it: a one-line title, then the cause and the fix in plain language, written so a customer can follow it.
 
+## Unreleased
+- **Force Stop stays stopped:** Force Stop wrote the old `status.stopped` marker, which the game manager does not read, so the next check started the game again. It now records STOPPED in the game manager first.
+- **Stop is verified by the panel:** after Stop the status file kept `process_running=1` and `port_listening=1` from the last check, so the panel reported the stop as failed. Both now show what is true after the stop.
+- **Restart without a wait:** Restart starts the game right after the stop. The 60 second wait outlived the panel's request, so the start never ran and the server was left stopped.
+- **One GameManager for both agents:** `GameManager.pm` has platform settings (script extension and writers, launcher name, path case) with the Windows values as defaults, so the Linux agent uses the same file.
+
 ## 1.5.3
 - **One-file installer:** `gse-agent-windows-install.ps1` (attached to every release) is put in the agent folder (C:\GSE by default) and run as Administrator. It asks for the panel address, the agent key from the panel's Servers page and the agent user's password; gets the server's settings and the release (with the bundled Cygwin) from the panel; unpacks it to `<folder>\Agent`, creates the user (an existing user's password is only checked, never changed), writes the configuration, registers and starts the service and tells the panel the agent is ready.
 - **Two agents on one machine:** the agent found game folders, backups and the start/stop scripts under the fixed path `C:\GSE\Agent`, and its restart action always restarted the `GSPAgent` service, so a second agent installed elsewhere would have managed the first agent's games. Both now come from the agent's own install folder and the service name in its configuration.

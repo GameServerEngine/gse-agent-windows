@@ -181,4 +181,15 @@ $gm->tick(49);
 ok(-e File::Spec->catfile($root, 49, 'startserver.bat') && -e File::Spec->catfile($root, 49, 'stopserver.bat'), 'the check writes startserver.bat and stopserver.bat for a running home');
 is(scalar(@launched), 0, 'and does not touch the game');
 
+# After Stop the status file says nothing is running, so the panel can verify the stop.
+new_world();
+$gm = make_gm();
+$gm->write_state({ id => 52, state => 'RUNNING', ts => 1, desired => 'RUNNING', port => 2300, pid => 555,
+	process_running => 1, port_listening => 1, command => 'game.exe', workdir => 'C:/g' });
+game_up(555, 2300);
+$gm->stop(52);
+my $after_stop = $gm->read_state(52);
+is($after_stop->{state}, 'STOPPED', 'Stop: STOPPED');
+is($after_stop->{process_running} . $after_stop->{port_listening}, '00', 'Stop: process_running and port_listening are 0');
+
 done_testing();

@@ -78,7 +78,7 @@ The server-ID directory supplied by the Panel as `home_path` is the
 resolves the game payload root as:
 
 ```text
-<management_home>/<game_key>
+<management_home>/gamefiles
 ```
 
 The validator rejects empty keys, traversal, separators, drive or stream
