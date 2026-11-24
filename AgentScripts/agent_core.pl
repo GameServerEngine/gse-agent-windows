@@ -1601,7 +1601,7 @@ sub container_capabilities_without_decrypt
 			health_monitoring => JSON::PP::false()
 		},
 		proof_gates => {
-			live_windows_docker_poc => JSON::PP::false(),
+			live_docker_poc => JSON::PP::false(),
 			steamcmd_outbound_networking => JSON::PP::false(),
 			resource_enforcement => JSON::PP::false(),
 			port_allocation_enforcement => JSON::PP::false(),

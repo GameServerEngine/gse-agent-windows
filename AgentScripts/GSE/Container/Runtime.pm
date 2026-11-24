@@ -503,6 +503,8 @@ sub run
 	return { exit_code => 127, stdout => "", stderr => "command argv must be a non-empty array", timed_out => 0 }
 		unless(ref($argv) eq "ARRAY" && @$argv);
 
+	# The agent's RPC processes ignore SIGCHLD, which makes waitpid lose the exit code.
+	local $SIG{CHLD} = 'DEFAULT';
 	my ($stdin, $stdout);
 	my $stderr = gensym();
 	my $pid = eval { open3($stdin, $stdout, $stderr, @$argv) };
