@@ -5308,8 +5308,8 @@ sub restart_server_without_decrypt
                                     $server_port, $control_protocol,
                                     $control_password, $control_type, $home_path) == 0)
     {
-        logger "Waiting 60 seconds before starting the server again.";
-        sleep 60;
+        # Stop has confirmed the port is free; GameManager frees it again before launch. No wait:
+        # a 60 second wait outlived the panel's request, and the start was then never run.
         if (universal_start_without_decrypt($home_id, $home_path, $server_exe, $run_dir,
                                             $cmd, $server_port, $server_ip, $cpu, $nice, $preStart, $envVars, $game_key, $console_log) == 1)
         {
