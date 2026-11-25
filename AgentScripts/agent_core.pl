@@ -792,6 +792,7 @@ my $d = Frontier::Daemon::GSP::Forking->new(
 				 uncompress_file				=> \&uncompress_file,
 				 discover_ips					=> \&discover_ips,
 				 mon_stats						=> \&mon_stats,
+				 status_sample						=> \&status_sample,
 				 exec							=> \&exec,
 				 clone_home						=> \&clone_home,
 				 remove_home					=> \&remove_home,
@@ -4883,6 +4884,166 @@ sub discover_ips
 	logger "IPlist is $iplist";
 	chop $iplist;
 	return "$iplist";
+}
+
+# ---------------------------------------------------------------------------
+# status_sample: one reading for the panel's status history (modules/status_history/README.md).
+# Machine totals are cumulative counters, so the panel works out rates and percentages from the
+# change between samples. Per-process CPU is measured over a one-second window and is a share of
+# the whole machine (all cores). Cygwin's /proc/stat provides the machine counters; process data
+# comes from Get-Process, network totals from netstat -e, storage from the drive that holds the homes.
+# ---------------------------------------------------------------------------
+sub status_read_cpu_totals
+{
+	my ($total, $idle, $cores) = (0, 0, 0);
+	open(my $fh, '<', '/proc/stat') or return (0, 0, 0);
+	while (my $line = <$fh>)
+	{
+		if ($line =~ /^cpu\s+(.*)$/)
+		{
+			my @f = split /\s+/, $1;
+			my $last = $#f < 7 ? $#f : 7;
+			foreach my $i (0 .. $last) { $total += $f[$i] || 0; }
+			$idle = ($f[3] || 0) + ($f[4] || 0);
+		}
+		elsif ($line =~ /^cpu\d+\s/)
+		{
+			$cores++;
+		}
+	}
+	close($fh);
+	$cores = $ENV{NUMBER_OF_PROCESSORS} || 1 unless ($cores);
+	return ($total, $idle, $cores);
+}
+
+# Cumulative CPU seconds, working set (bytes) and name for every process, from Get-Process.
+sub status_win_proc_snapshot
+{
+	my $ps = q{powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f $_.Id, $_.ProcessName, $_.TotalProcessorTime.TotalSeconds, $_.WorkingSet64 }" 2>nul};
+	my (%cpu, %ws, %name);
+	my $out = `$ps`;
+	foreach my $line (split(/\r?\n/, defined $out ? $out : ''))
+	{
+		my @f = split(/\|/, $line, 4);
+		next unless (@f == 4 && $f[0] =~ /^\d+$/);
+		$cpu{$f[0]}  = $f[2] + 0;
+		$ws{$f[0]}   = $f[3] + 0;
+		$name{$f[0]} = $f[1];
+	}
+	return (\%cpu, \%ws, \%name);
+}
+
+sub status_top_five
+{
+	my ($hash, $name, $scale) = @_;
+	my @rows = sort { $b->[1] <=> $a->[1] } grep { $_->[1] > 0 } map { [$_, $hash->{$_}] } keys %$hash;
+	my @out;
+	foreach my $row (@rows[0 .. ($#rows < 4 ? $#rows : 4)])
+	{
+		last unless defined $row;
+		my $pid = $row->[0];
+		my $label = defined $name->{$pid} ? $name->{$pid} : '?';
+		$label =~ s/[|\r\n]//g;
+		push @out, sprintf("%d|%s|%s", $pid, substr($label, 0, 60), $scale ? sprintf("%.2f", $row->[1] * $scale) : $row->[1]);
+	}
+	return @out;
+}
+
+sub status_read_netstat_bytes
+{
+	my $out = `netstat -e 2>nul`;
+	return (0, 0) unless (defined $out && $out =~ /^Bytes\s+(\d+)\s+(\d+)/m);
+	return ($1, $2);
+}
+
+sub status_sample
+{
+	return "Bad Encryption Key" unless(decrypt_param(pop(@_)) eq "Encryption checking OK");
+	my ($status_sample) = decrypt_params(@_);
+	if (!defined $status_sample || $status_sample ne "status_sample")
+	{
+		logger("Invalid parameter '" . (defined $status_sample ? $status_sample : '') . "' given for status_sample function.");
+		return -1;
+	}
+
+	require Time::HiRes;
+	my ($total1, $idle1, $cores) = status_read_cpu_totals();
+
+	# Two process snapshots one second apart. Each is timed from before to after the call, and the
+	# midpoint stands for the moment it was read, so the Get-Process run time does not skew the window.
+	my $t0 = Time::HiRes::time();
+	my ($cpu_a, $ws_a, $name_a) = status_win_proc_snapshot();
+	my $t1 = Time::HiRes::time();
+	Time::HiRes::usleep(1000000);
+	my $t2 = Time::HiRes::time();
+	my ($cpu_b, $ws_b, $name_b) = status_win_proc_snapshot();
+	my $t3 = Time::HiRes::time();
+	my $elapsed = (($t2 + $t3) / 2) - (($t0 + $t1) / 2);
+	my ($total2, $idle2) = status_read_cpu_totals();
+
+	my $machine_seconds = $elapsed * ($cores || 1);
+	my %cpu_delta;
+	if ($machine_seconds > 0)
+	{
+		foreach my $pid (keys %$cpu_b)
+		{
+			next unless exists $cpu_a->{$pid};
+			my $d = $cpu_b->{$pid} - $cpu_a->{$pid};
+			$cpu_delta{$pid} = $d if $d > 0;
+		}
+	}
+	my @top_cpu = status_top_five(\%cpu_delta, $name_b, $machine_seconds > 0 ? 100 / $machine_seconds : 0);
+	my @top_ram = status_top_five($ws_b, $name_b, 0);
+
+	my $uptime = 0;
+	if (open(my $fh, '<', '/proc/uptime')) { my $l = <$fh>; close($fh); $uptime = (defined $l && $l =~ /^(\d+)/) ? $1 : 0; }
+
+	my ($rx, $tx) = status_read_netstat_bytes();
+
+	my %mem;
+	if (open(my $fh, '<', '/proc/meminfo'))
+	{
+		while (my $line = <$fh>) { $mem{$1} = $2 if ($line =~ /^(\w+):\s+(\d+)\s+kB/); }
+		close($fh);
+	}
+	my $mem_total = ($mem{MemTotal} || 0) * 1024;
+	my $mem_avail = defined $mem{MemAvailable}
+		? $mem{MemAvailable} * 1024
+		: (($mem{MemFree} || 0) + ($mem{Buffers} || 0) + ($mem{Cached} || 0)) * 1024;
+	my $mem_used = $mem_total - $mem_avail;
+	$mem_used = 0 if $mem_used < 0;
+
+	# Storage: the drive that holds the game homes (df reports 1K blocks on Cygwin).
+	my ($drive) = (GAME_HOMES_WIN =~ /^([A-Za-z]:)/);
+	my ($disk_total, $disk_used) = (0, 0);
+	if (defined $drive && open(my $df, "df -lP 2>/dev/null |"))
+	{
+		while (my $line = <$df>)
+		{
+			next unless ($line =~ /^\Q$drive\E\s+/i);
+			my @f = split(/\s+/, $line);
+			next unless (@f >= 4);
+			($disk_total, $disk_used) = (($f[1] || 0) * 1024, ($f[2] || 0) * 1024);
+			last;
+		}
+		close($df);
+	}
+
+	my $out = "1;\n";
+	$out .= "cores=$cores\n";
+	$out .= "uptime=$uptime\n";
+	$out .= "load1=\n";
+	$out .= "cpu_total=$total2\n";
+	$out .= "cpu_idle=$idle2\n";
+	$out .= "net_rx=$rx\n";
+	$out .= "net_tx=$tx\n";
+	$out .= "mem_total=$mem_total\n";
+	$out .= "mem_used=$mem_used\n";
+	$out .= "disk_total=$disk_total\n";
+	$out .= "disk_used=$disk_used\n";
+	for my $i (1 .. scalar(@top_cpu)) { $out .= "proc_cpu.$i=$top_cpu[$i - 1]\n"; }
+	for my $i (1 .. scalar(@top_ram)) { $out .= "proc_ram.$i=$top_ram[$i - 1]\n"; }
+	return $out;
 }
 
 ### Return -1 In case of invalid param
