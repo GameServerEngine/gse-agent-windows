@@ -5,9 +5,9 @@ name: Release
 # testing release (BREAKING CHANGE or type! -> major, feat -> minor, anything else -> fix),
 # commits the new VERSION back with [skip ci], and publishes testing-<version>.
 # The bump commit uses GITHUB_TOKEN, which does not start another workflow run.
+# Manual only: this never runs on a push. Start it from the Actions tab with Run workflow.
 on:
-  push:
-    branches: [working, testing]
+  workflow_dispatch:
 
 concurrency:
   group: release-${{ github.ref_name }}
