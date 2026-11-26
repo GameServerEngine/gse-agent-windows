@@ -3,6 +3,8 @@
 Each fixed issue gets an entry under the version that shipped it: a one-line title, then the cause and the fix in plain language, written so a customer can follow it.
 
 ## Unreleased
+- **Console logs are read safely (security):** reading a server's console log passed the file name to a shell and followed links, so a file name could run commands on the machine. Logs are now read without a shell and links are refused.
+- **Container runtime matches Linux:** the opt-in container runtime now has the same safety checks as the Linux agent (approved images, no system-folder mounts, no extra rights, limits).
 - **Container commands report their real result:** Docker commands run by the opt-in `container_*` RPCs were always reported as failed, because the agent ignores child exits and so lost each command's exit code. The command runner in `GSE/Container/Runtime.pm` now reads the real exit code. The Linux agent now has the same RPCs and the same file.
 - **Agent update works:** a release download that worked was reported as "Could not download the release archive", because the agent read the download's exit code wrongly. It now reads the real one.
 - **Force Stop stays stopped:** Force Stop wrote the old `status.stopped` marker, which the game manager does not read, so the next check started the game again. It now records STOPPED in the game manager first.
