@@ -76,7 +76,7 @@ The bootstrap asks for the install directory (default `C:\GSE\Agent`) and whethe
 Installer-Agent-Windows.cmd /Offline /SourcePath "D:\Install Media\Agent-Windows" /InstallPath "C:\GSE\Agent"
 ```
 
-Install and repair validate the source in a staging step, stop and remove the existing `GSPAgent` service before activation, preserve customer and runtime state, and move any existing `AgentScripts` folder aside. During install, repair and reconfigure, the installer resets inherited ACLs only on the managed script files.
+Install and repair validate the source in a staging step, stop and remove the existing `GSE-Agent` service before activation, preserve customer and runtime state, and move any existing `AgentScripts` folder aside. During install, repair and reconfigure, the installer resets inherited ACLs only on the managed script files.
 
 Repair, reconfigure and uninstall work on an installed payload:
 

@@ -11,7 +11,7 @@ pushd "%ROOT%" >nul 2>&1
 set "PATH=%ROOT%bin;%ROOT%usr\sbin;%PATH%"
 set "CYGWIN=server ntsec"
 set "SHELL=/bin/bash"
-set "SERVICE_NAME=GSPAgent"
+set "SERVICE_NAME=GSE-Agent"
 
 echo Checking Windows service %SERVICE_NAME%...
 

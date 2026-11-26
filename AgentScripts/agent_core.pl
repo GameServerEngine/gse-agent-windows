@@ -6207,13 +6207,13 @@ sub agent_restart
 	my $dec_check = decrypt_param(@_);
 	if ($dec_check eq 'restart')
 	{
-		# Windows agents run as a Windows service (GSPAgent unless the installer named it
+		# Windows agents run as a Windows service (GSE-Agent unless the installer named it
 		# otherwise in Cfg/Config.pm). Restart it from a detached helper so this RPC reply
 		# is sent before the service stops.
 		if ($^O eq 'MSWin32' || $^O eq 'cygwin')
 		{
-			my $service = $Cfg::Config{service_name} || 'GSPAgent';
-			$service = 'GSPAgent' unless $service =~ /^[A-Za-z0-9_.-]{1,64}$/;
+			my $service = $Cfg::Config{service_name} || 'GSE-Agent';
+			$service = 'GSE-Agent' unless $service =~ /^[A-Za-z0-9_.-]{1,64}$/;
 			system('cmd.exe /c start "" /B powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Sleep -Seconds 5; Restart-Service -Name ' . $service . ' -Force"');
 			return 1;
 		}

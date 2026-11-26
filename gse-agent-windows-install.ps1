@@ -202,8 +202,8 @@ if (-not (Get-LocalGroupMember -Group $adminGroup | Where-Object { $_.SID -eq $u
 & icacls.exe $AgentDir /grant "${AgentUser}:(OI)(CI)F" /T /C /Q | Out-Null
 
 # ---------- configuration ----------
-$ServiceName = "GSPAgent"
-if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) { $ServiceName = "GSPAgent-$ServerId" }
+$ServiceName = "GSE-Agent"
+if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) { $ServiceName = "GSE-Agent-$ServerId" }
 if (Get-Service -Name $ServiceName -ErrorAction SilentlyContinue) { Fail "A Windows service named $ServiceName already exists." }
 function PerlQuote([string]$Text) { return $Text.Replace('\', '\\').Replace("'", "\'") }
 function WriteLf([string]$File, [string[]]$Lines) {
