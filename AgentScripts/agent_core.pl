@@ -3242,6 +3242,42 @@ sub quick_chk
 	return 0;
 }
 
+# A log may be read only when it is a regular file (not a symlink) whose real path stays
+# inside the server's management home or the agent's screen-log folder.
+sub log_file_is_safe_without_decrypt
+{
+	my ($log_file, $home_path) = @_;
+	return (0, "log path is empty") unless(defined($log_file) && $log_file ne "");
+	return (0, "log path contains a control character") if($log_file =~ /[\x00-\x1f\x7f]/);
+	return (0, "log path is a symlink") if(-l $log_file);
+	return (0, "log path is not a regular file") unless(-f $log_file);
+	my $real = Cwd::abs_path($log_file);
+	return (0, "log path cannot be resolved") unless(defined($real) && $real ne "");
+	foreach my $root ($home_path, "" . SCREEN_LOGS_DIR)
+	{
+		next unless(defined($root) && $root ne "");
+		my $root_real = Cwd::abs_path($root);
+		next unless(defined($root_real) && $root_real ne "" && $root_real ne "/");
+		return (1, "") if(index(lc($real), lc("$root_real/")) == 0);
+	}
+	return (0, "log path is outside the server folder");
+}
+
+# Returns the last lines of a log without a shell.
+sub read_log_tail_without_decrypt
+{
+	my ($log_file, $lines) = @_;
+	open(my $fh, '<', $log_file) or return ();
+	my @tail;
+	while(my $line = <$fh>)
+	{
+		push(@tail, $line);
+		shift(@tail) if(@tail > $lines);
+	}
+	close($fh);
+	return @tail;
+}
+
 sub log_path_has_wildcards
 {
 	my ($path) = @_;
@@ -3339,42 +3375,6 @@ sub resolve_latest_log_match
 	return undef unless scalar(@candidates) > 0;
 	@candidates = sort { $b->[1] <=> $a->[1] || $b->[0] cmp $a->[0] } @candidates;
 	return $candidates[0]->[0];
-}
-
-# A log may be read only when it is a regular file (not a symlink) whose real path stays
-# inside the server's management home or the agent's screen-log folder.
-sub log_file_is_safe_without_decrypt
-{
-	my ($log_file, $home_path) = @_;
-	return (0, "log path is empty") unless(defined($log_file) && $log_file ne "");
-	return (0, "log path contains a control character") if($log_file =~ /[\x00-\x1f\x7f]/);
-	return (0, "log path is a symlink") if(-l $log_file);
-	return (0, "log path is not a regular file") unless(-f $log_file);
-	my $real = Cwd::abs_path($log_file);
-	return (0, "log path cannot be resolved") unless(defined($real) && $real ne "");
-	foreach my $root ($home_path, "" . SCREEN_LOGS_DIR)
-	{
-		next unless(defined($root) && $root ne "");
-		my $root_real = Cwd::abs_path($root);
-		next unless(defined($root_real) && $root_real ne "" && $root_real ne "/");
-		return (1, "") if(index(lc($real), lc("$root_real/")) == 0);
-	}
-	return (0, "log path is outside the server folder");
-}
-
-# Returns the last lines of a log without a shell.
-sub read_log_tail_without_decrypt
-{
-	my ($log_file, $lines) = @_;
-	open(my $fh, '<', $log_file) or return ();
-	my @tail;
-	while(my $line = <$fh>)
-	{
-		push(@tail, $line);
-		shift(@tail) if(@tail > $lines);
-	}
-	close($fh);
-	return @tail;
 }
 
 ### Return -10 If home path is not found.
