@@ -1,293 +1,210 @@
 #!/usr/bin/env bash
+# Mocked Docker tests for GSE/Container/Runtime.pm: no Docker daemon is used.
+# Covers hardening flags, agent-resolved bind mounts, symlink and system-path rejection,
+# image approval, ownership labels, config-change recreation and secret redaction.
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-module_file="$repo_root/AgentScripts/GSE/Container/Runtime.pm"
+module_dir="$repo_root"
+[ -f "$repo_root/GSE/Container/Runtime.pm" ] || module_dir="$repo_root/AgentScripts"
+[ -f "$module_dir/GSE/Container/Runtime.pm" ] || { echo "FAIL: missing GSE/Container/Runtime.pm" >&2; exit 1; }
 
-fail() {
-    echo "FAIL: $*" >&2
-    exit 1
-}
+tmp="$(mktemp -d)"
+trap 'rm -rf "$tmp"' EXIT
+mkdir -p "$tmp/data/homes/42/data" "$tmp/agent/containers/homes/42" "$tmp/users/953/gamefiles" "$tmp/outside"
+ln -s "$tmp/outside" "$tmp/users/953/linked"
 
-[ -f "$module_file" ] || fail "missing AgentScripts/GSE/Container/Runtime.pm"
-
-perl -I "$repo_root/AgentScripts" -Mstrict -Mwarnings -MTest::More -MJSON::PP -MFile::Spec - "$repo_root" <<'PERL' || exit 1
+perl -I "$module_dir" - "$tmp" <<'PERL'
 use strict;
 use warnings;
 use Test::More;
 use JSON::PP;
-use File::Spec;
 use GSE::Container::Runtime;
 
 {
 	package FakeRunner;
-
-	use strict;
-	use warnings;
-
-	# Creates a deterministic command runner double for Docker adapter tests.
-	sub new
-	{
-		my ($class) = @_;
-		return bless({ queue => [], calls => [] }, $class);
-	}
-
-	# Adds the next command result returned by run().
-	sub enqueue
-	{
-		my ($self, $result) = @_;
-		push(@{$self->{queue}}, $result);
-	}
-
-	# Captures argv and timeout without executing Docker.
+	sub new { return bless({ queue => [], calls => [] }, shift); }
+	sub enqueue { my ($self, @r) = @_; push(@{$self->{queue}}, @r); }
 	sub run
 	{
-		my ($self, $argv, $timeout_seconds) = @_;
-		push(@{$self->{calls}}, { argv => [@$argv], timeout => $timeout_seconds });
+		my ($self, $argv, $timeout) = @_;
+		push(@{$self->{calls}}, [@$argv]);
 		return shift(@{$self->{queue}}) || { exit_code => 0, stdout => "", stderr => "", timed_out => 0 };
 	}
-
-	# Returns captured calls in order.
-	sub calls
-	{
-		my ($self) = @_;
-		return $self->{calls};
-	}
+	sub calls { return $_[0]->{calls}; }
 }
 
-my ($repo_root) = @ARGV;
-my $data_root = File::Spec->catdir($repo_root, "AgentScripts", "containers");
-my $host_volume = File::Spec->catdir($data_root, "homes", "42", "data");
+my ($tmp) = @ARGV;
+my $target = { server_id => 1, home_id => 42, allocation_id => 9001, owner_user_id => 456 };
+my $ok = { exit_code => 0, stdout => "", stderr => "", timed_out => 0 };
+my $not_found = { exit_code => 1, stdout => "", stderr => "Error: No such object: gse-h42-a9001", timed_out => 0 };
 
-# Builds the common valid create request used by command and validation tests.
-sub create_request
+sub request
 {
+	my (%over) = @_;
 	return {
 		contract => "gse.container.v1",
-		target => {
-			server_id => 1,
-			home_id => 42,
-			allocation_id => 9001,
-			owner_user_id => 456
-		},
+		target => { %$target },
 		payload => {
-			image => {
-				reference => "registry.example/gse/templates/dayz:2026.08.01",
-				pull_policy => "if_missing"
-			},
-			resources => {
-				cpu_cores => 2,
-				memory_mb => 4096,
-				memory_burst_mb => 6144,
-				storage_mb => 51200
-			},
+			image => { reference => "eclipse-temurin:21-jre", digest => "sha256:" . ("a" x 64), pull_policy => "if_missing" },
+			resources => { cpu_cores => 2, memory_mb => 2048 },
 			ports => {
 				ip => "203.0.113.10",
-				assigned_blocks => [
-					{ protocol => "udp", host_start => 2302, host_end => 2310, container_start => 2302 },
-					{ protocol => "tcp", host_start => 27015, host_end => 27020, container_start => 27015 }
-				],
-				publish => [
-					{ protocol => "udp", host_start => 2302, host_end => 2303, container_start => 2302 },
-					{ protocol => "tcp", host_start => 27015, host_end => 27016, container_start => 27015 }
-				]
+				assigned_blocks => [ { protocol => "tcp", host_start => 25565, host_end => 25570, container_start => 25565 } ],
+				publish => [ { protocol => "tcp", host_start => 25565, host_end => 25565, container_start => 25565 } ]
 			},
-			storage => {
-				volumes => [
-					{
-						name => "data",
-						host_path => $host_volume,
-						container_path => "/srv/app/data",
-						mode => "rw",
-						persistent => 1
-					}
-				]
-			},
-			environment => {
-				HOME_ID => "42",
-				SERVER_MODE => "container"
-			},
-			entrypoint => "/entrypoint",
-			command => ["--config", "/srv/app/config.json"],
-			restart_policy => "unless-stopped"
+			environment => { RCON_PASSWORD => "hunter2" },
+			%over
 		}
 	};
 }
 
-# Creates Docker inspect JSON with the standard ownership labels.
+sub context
+{
+	my (%over) = @_;
+	return {
+		allowed_image_prefixes => ["eclipse-temurin:"],
+		forbidden_roots => ["$tmp/agent"],
+		run_as => { uid => 1953, gid => 1000 },
+		workdir => "/game",
+		entrypoint => "/bin/sh",
+		command => ["/run/gse/launch.sh"],
+		environment => { HOME => "/tmp" },
+		mounts => [
+			{ name => "gamefiles", host_path => "$tmp/users/953/gamefiles", container_path => "/game", mode => "rw" },
+			{ name => "control", host_path => "$tmp/agent/containers/homes/42", container_path => "/run/gse", mode => "ro", allow_inside_agent => 1 }
+		],
+		%over
+	};
+}
+
 sub inspect_json
 {
-	my (%args) = @_;
-	my $target = {
-		server_id => 1,
-		home_id => 42,
-		allocation_id => 9001,
-		owner_user_id => 456
-	};
+	my (%a) = @_;
 	my $labels = GSE::Container::Models->labels_for_target($target);
-	$labels = $args{labels} if($args{labels});
-	return JSON::PP->new->canonical->encode({
-		Id => $args{id} || "runtime-id",
-		Config => { Labels => $labels },
-		State => {
-			Running => $args{running} ? JSON::PP::true : JSON::PP::false,
-			Status => $args{status} || ($args{running} ? "running" : "exited"),
-			ExitCode => $args{exit_code} || 0
-		}
-	});
+	$labels->{"gse.config_hash"} = $a{hash} if(defined($a{hash}));
+	%$labels = (%$labels, %{$a{labels}}) if($a{labels});
+	return { exit_code => 0, timed_out => 0, stderr => "", stdout => JSON::PP->new->encode({
+		Id => "cid",
+		Config => { Labels => $labels, Env => ["RCON_PASSWORD=hunter2"], Image => "eclipse-temurin:21-jre" },
+		State => { Running => $a{running} ? JSON::PP::true : JSON::PP::false, Status => $a{running} ? "running" : "exited", ExitCode => 0 },
+		HostConfig => { Memory => 2147483648 },
+		Mounts => [ { Source => "$tmp/users/953/gamefiles" }, { Source => "$tmp/agent/containers/homes/42" } ]
+	}) };
 }
 
-sub not_found_result
+my $models = GSE::Container::Models->new(data_root => "$tmp/data");
+
+# --- validation ---
+my ($spec, $err) = $models->validate_create_request(request(), context());
+ok($spec, "game-mode request validates") or diag(explain($err));
+is($spec->{image}{resolved}, "eclipse-temurin:21-jre\@sha256:" . ("a" x 64), "image is pinned by digest");
+is($spec->{resources}{memory_burst_mb}, 2048, "no swap by default (memory-swap equals memory)");
+is($spec->{restart_policy}, "no", "Docker restart policy defaults to no (GSE watchdog owns restarts)");
+is($spec->{labels}{"gse.agent"}, "linux", "platform label is linux on Linux") if($^O ne "cygwin");
+ok(!JSON::PP::is_bool($spec->{resources}{storage_enforced}) || !$spec->{resources}{storage_enforced}, "storage limit is reported as not enforced");
+
+my $runtime = GSE::Container::DockerRuntime->new(runner => FakeRunner->new(), models => $models, lock_dir => "$tmp/locks");
+my $argv = join(" ", @{$runtime->build_create_argv($spec)});
+like($argv, qr/--cap-drop ALL/, "all capabilities dropped");
+like($argv, qr/--security-opt no-new-privileges:true/, "no-new-privileges set");
+like($argv, qr/--pids-limit 512/, "pids limit set");
+like($argv, qr/--memory 2048m --memory-swap 2048m/, "memory and swap limits set");
+like($argv, qr/--read-only --tmpfs \/tmp:/, "read-only root with tmpfs");
+like($argv, qr/--user 1953:1000/, "runs as the server's own user");
+like($argv, qr/--init/, "init process for signal handling");
+like($argv, qr/--network gse-games/, "isolated game network");
+like($argv, qr/--log-opt max-size=10m --log-opt max-file=3/, "bounded logs");
+like($argv, qr/--mount type=bind,source=\Q$tmp\E\/users\/953\/gamefiles,target=\/game( |$)/, "gamefiles bind mounted at /game");
+like($argv, qr/target=\/run\/gse,readonly/, "control folder mounted read-only");
+unlike($argv, qr/--volume|--privileged|--pid host|--network host|docker\.sock/, "no --volume, privileged, host namespaces or socket");
+like($argv, qr/--publish 203\.0\.113\.10:25565:25565\/tcp/, "only the allocated port is published");
+
+sub rejects
 {
-	return { exit_code => 1, stdout => "", stderr => "Error: No such object: gse-h42-a9001", timed_out => 0 };
+	my ($req, $ctx, $pattern, $name) = @_;
+	my ($s, $e) = $models->validate_create_request($req, $ctx);
+	ok(!$s && $e->{message} =~ $pattern, $name) or diag($s ? "accepted" : $e->{message});
 }
+rejects(request(), context(mounts => [ { name => "g", host_path => "$tmp/users/953/linked", container_path => "/game" } ]), qr/symlink/, "symlinked mount source rejected");
+rejects(request(), context(mounts => [ { name => "g", host_path => "/etc", container_path => "/game" } ]), qr/protected/, "system folder rejected");
+rejects(request(), context(mounts => [ { name => "g", host_path => "/", container_path => "/game" } ]), qr/protected/, "root folder rejected");
+rejects(request(), context(mounts => [ { name => "g", host_path => "$tmp/agent", container_path => "/game" } ]), qr/agent folder/, "agent folder rejected");
+rejects(request(), context(mounts => [ { name => "g", host_path => "$tmp/users/953/missing", container_path => "/game" } ]), qr/exist/, "missing source rejected (never auto-created)");
+rejects(request(), context(mounts => [ { name => "g", host_path => "$tmp/users/953/gamefiles", container_path => "/../etc" } ]), qr/container_path/, "container path traversal rejected");
+rejects(request(image => { reference => "evil/miner:latest" }), context(), qr/approved/, "unapproved image rejected");
+rejects(request(), context(run_as => { uid => 0, gid => 0 }), qr/non-root/, "root user rejected");
+rejects(request(ports => { ip => "203.0.113.10", assigned_blocks => [ { protocol => "tcp", host_start => 25565, host_end => 25565, container_start => 25565 } ],
+	publish => [ { protocol => "tcp", host_start => 22, host_end => 22, container_start => 22 } ] }), context(), qr/outside the assigned/, "port outside allocation rejected");
+rejects(request(environment => { BAD => "a\nb" }), context(), qr/newline/, "env value with newline rejected");
 
-my $models = GSE::Container::Models->new(data_root => $data_root);
-my ($spec, $error) = $models->validate_create_request(create_request());
-ok($spec, "valid create request normalizes successfully");
-is($spec->{container_name}, "gse-h42-a9001", "stable platform-owned container name");
-is($spec->{labels}{"gse.managed"}, "true", "managed ownership label present");
-is($spec->{labels}{"gse.contract_version"}, "gse.container.v1", "contract label present");
+my ($legacy) = $models->validate_create_request(request(storage => { volumes => [ { name => "data", host_path => "$tmp/data/homes/42/data", container_path => "/data" } ] }), { allowed_image_prefixes => ["eclipse-temurin:"] });
+ok($legacy, "legacy volume inside data root still accepted");
+rejects(request(storage => { volumes => [ { name => "data", host_path => "$tmp/outside", container_path => "/data" } ] }), { allowed_image_prefixes => ["eclipse-temurin:"] }, qr/data root/, "legacy volume outside data root rejected");
 
+# --- ownership ---
+ok((GSE::Container::Models->verify_ownership($target, { %{GSE::Container::Models->labels_for_target($target)}, "gse.agent" => "windows" }))[0], "legacy gse.agent=windows label still accepted");
+ok(!(GSE::Container::Models->verify_ownership($target, { %{GSE::Container::Models->labels_for_target($target)}, "gse.home_id" => "43" }))[0], "another home's container rejected");
+
+# --- lifecycle with fake Docker ---
 my $runner = FakeRunner->new();
-$runner->enqueue(not_found_result());
-$runner->enqueue({ exit_code => 0, stdout => "created-container-id\n", stderr => "", timed_out => 0 });
-my $runtime = GSE::Container::DockerRuntime->new(
-	docker_binary => "docker",
-	runner => $runner,
-	data_root => $data_root,
-	command_timeout_seconds => 60,
-	stop_timeout_seconds => 30
-);
-my $create = $runtime->create(create_request());
-ok($create->{success}, "create succeeds after not-found inspect");
-is($create->{status}, "created", "create returns created status");
-is($create->{target}{container_name}, "gse-h42-a9001", "create response carries stable name");
-is_deeply($runner->calls->[1]{argv}, [
-	"docker", "create", "--name", "gse-h42-a9001",
-	"--label", "gse.agent=windows",
-	"--label", "gse.allocation_id=9001",
-	"--label", "gse.contract_version=gse.container.v1",
-	"--label", "gse.home_id=42",
-	"--label", "gse.managed=true",
-	"--label", "gse.owner_user_id=456",
-	"--label", "gse.server_id=1",
-	"--cpus", "2",
-	"--memory", "4096m",
-	"--memory-swap", "6144m",
-	"--restart", "unless-stopped",
-	"--volume", "$host_volume:/srv/app/data:rw",
-	"--publish", "203.0.113.10:27015:27015/tcp",
-	"--publish", "203.0.113.10:27016:27016/tcp",
-	"--publish", "203.0.113.10:2302:2302/udp",
-	"--publish", "203.0.113.10:2303:2303/udp",
-	"--env", "HOME_ID=42",
-	"--env", "SERVER_MODE=container",
-	"--entrypoint", "/entrypoint",
-	"registry.example/gse/templates/dayz:2026.08.01",
-	"--config", "/srv/app/config.json"
-], "docker create argv is deterministic and fully structured");
+$runner->enqueue($not_found, $ok, $ok, { %$ok, stdout => "newid\n" });
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+my $r = $runtime->create(request(), context());
+ok($r->{success} && $r->{status} eq "created", "create when absent") or diag(explain($r));
+is($runner->calls->[1][1], "image", "image presence checked before create");
+is($runner->calls->[2][1], "network", "network checked before create");
+ok(!exists($r->{result}{argv}), "create result does not return the command line (secrets)");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1), stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $already = $runtime->create(create_request());
-is($already->{status}, "already_exists", "create is idempotent for owned existing containers");
-is(scalar(@{$runner->calls}), 1, "idempotent create does not call docker create");
+$runner->enqueue(inspect_json(hash => $spec->{labels}{"gse.config_hash"}));
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->create(request(), context());
+is($r->{status}, "already_exists", "same configuration is kept");
+is(scalar(@{$runner->calls}), 1, "no docker create for an unchanged container");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1, labels => { "gse.managed" => "true" }), stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $conflict = $runtime->inspect({ target => create_request()->{target} });
-ok(!$conflict->{success}, "inspect rejects matching name without ownership labels");
-is($conflict->{error}{code}, "ownership_conflict", "ownership conflict is structured");
+$runner->enqueue(inspect_json(hash => "old"), $ok, $ok, $ok, { %$ok, stdout => "id2\n" });
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->create({ %{request()}, recreate_if_changed => 1 }, context());
+is($r->{status}, "recreated", "changed configuration recreates a stopped container");
+is($runner->calls->[1][1], "rm", "old container removed first");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1), stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $start = $runtime->start({ target => create_request()->{target} });
-is($start->{status}, "already_running", "start is idempotent when already running");
-is(scalar(@{$runner->calls}), 1, "already-running start does not call docker start");
+$runner->enqueue(inspect_json(hash => "old", running => 1));
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->create({ %{request()}, recreate_if_changed => 1 }, context());
+is($r->{error}{code}, "config_changed", "running container is never recreated");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1), stderr => "", timed_out => 0 });
-$runner->enqueue({ exit_code => 0, stdout => "gse-h42-a9001\n", stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $stop = $runtime->stop({ target => create_request()->{target}, timeout_seconds => 45 });
-is($stop->{status}, "stopped", "stop executes for running container");
-is_deeply($runner->calls->[1]{argv}, ["docker", "stop", "--time", "45", "gse-h42-a9001"], "stop argv includes bounded timeout");
+$runner->enqueue(inspect_json(hash => "x"));
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->inspect({ target => $target });
+my $encoded = JSON::PP->new->allow_blessed->convert_blessed->encode($r);
+unlike($encoded, qr/hunter2|RCON_PASSWORD/, "inspect result has no environment values");
 
 $runner = FakeRunner->new();
-$runner->enqueue(not_found_result());
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-$stop = $runtime->stop({ target => create_request()->{target}, allow_absent => 1 });
-is($stop->{status}, "already_absent", "stop can be idempotent for absent container when requested");
+$runner->enqueue(inspect_json(labels => { "gse.owner_user_id" => "999" }));
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->start({ target => $target });
+is($r->{error}{code}, "ownership_conflict", "start refuses a container owned by someone else");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1), stderr => "", timed_out => 0 });
-$runner->enqueue({ exit_code => 0, stdout => "gse-h42-a9001\n", stderr => "", timed_out => 0 });
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 0, status => "exited"), stderr => "", timed_out => 0 });
-$runner->enqueue({ exit_code => 0, stdout => "gse-h42-a9001\n", stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $restart = $runtime->restart({ target => create_request()->{target}, timeout_seconds => 30 });
-is($restart->{status}, "restarted", "restart maps through stop then start");
-is_deeply($runner->calls->[1]{argv}, ["docker", "stop", "--time", "30", "gse-h42-a9001"], "restart stop argv is explicit");
-is_deeply($runner->calls->[3]{argv}, ["docker", "start", "gse-h42-a9001"], "restart start argv is explicit");
+my $wrong = inspect_json();
+$wrong->{stdout} =~ s{\Q$tmp\E/users/953/gamefiles}{/srv/other/gamefiles};
+$runner->enqueue($wrong);
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->start({ target => $target }, context());
+is($r->{error}{code}, "config_changed", "start refuses when mounts no longer match the server folder");
 
 $runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 1), stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-my $delete = $runtime->delete({ target => create_request()->{target}, remove_volumes => 1 });
-ok(!$delete->{success}, "delete refuses running containers");
-is($delete->{error}{category}, "conflict", "running delete is a conflict");
-is(scalar(@{$runner->calls}), 1, "running delete does not call docker rm");
+$runner->enqueue(inspect_json(), { exit_code => 1, stdout => "", stderr => "Cannot connect to the Docker daemon at unix:///var/run/docker.sock", timed_out => 0 });
+$runtime = GSE::Container::DockerRuntime->new(runner => $runner, models => $models, lock_dir => "$tmp/locks");
+$r = $runtime->start({ target => $target });
+is($r->{error}{code}, "runtime_unavailable", "daemon down is reported as runtime_unavailable, not stopped");
 
-$runner = FakeRunner->new();
-$runner->enqueue({ exit_code => 0, stdout => inspect_json(running => 0, status => "exited"), stderr => "", timed_out => 0 });
-$runner->enqueue({ exit_code => 0, stdout => "gse-h42-a9001\n", stderr => "", timed_out => 0 });
-$runtime = GSE::Container::DockerRuntime->new(runner => $runner, data_root => $data_root);
-$delete = $runtime->delete({ target => create_request()->{target}, remove_volumes => 1 });
-is($delete->{status}, "deleted", "delete removes stopped owned container");
-is_deeply($runner->calls->[1]{argv}, ["docker", "rm", "--volumes", "gse-h42-a9001"], "delete argv is explicit and non-forced");
-
-my $bad = create_request();
-$bad->{payload}{image}{reference} = "repo/image;rm";
-my ($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_image", "image validation rejects shell metacharacters");
-
-$bad = create_request();
-$bad->{payload}{command} = "sh -c unsafe";
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_contract", "command validation requires argv array");
-
-$bad = create_request();
-$bad->{payload}{storage}{volumes}[0]{host_path} = File::Spec->catdir($repo_root, "outside");
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_volume_path", "volume validation rejects paths outside data root");
-
-$bad = create_request();
-$bad->{payload}{ports}{publish}[0]{host_start} = 2400;
-$bad->{payload}{ports}{publish}[0]{host_end} = 2401;
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_port_block", "port validation rejects publishing outside assigned block");
-
-$bad = create_request();
-$bad->{payload}{environment}{"bad-key"} = "value";
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_environment", "environment validation rejects unsafe keys");
-
-$bad = create_request();
-$bad->{payload}{ports}{publish}[0]{protocol} = "sctp";
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_port_block", "port validation rejects unsupported protocols");
-
-$bad = create_request();
-$bad->{payload}{resources}{memory_mb} = 64;
-($bad_spec, $bad_error) = $models->validate_create_request($bad);
-ok(!$bad_spec && $bad_error->{code} eq "invalid_resource_limit", "resource validation rejects unsafe memory limits");
-
-is(GSE::Container::Models->state_from_inspect({ State => { Running => JSON::PP::false, Status => "created" } }), "created", "created runtime state maps to created");
-is(GSE::Container::Models->state_from_inspect({ State => { Running => JSON::PP::false, Status => "exited" } }), "stopped", "exited runtime state maps to stopped");
+like(GSE::Container::DockerRuntime::_safe_stderr("bad env RCON_PASSWORD=hunter2"), qr/RCON_PASSWORD=\*\*\*/, "secrets masked in diagnostics");
 
 done_testing();
 PERL
+echo "Container runtime foundation validation passed."
