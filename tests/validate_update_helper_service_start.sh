@@ -19,13 +19,17 @@
 #   W3  sc start fails                          -> started directly
 #   W4  sc.exe is not available                 -> started directly
 #   W5  the service says RUNNING with no agent  -> stopped, then started through the service
-#   W6  the agent passed no service name        -> started directly (an older agent)
+#   W6  the agent passed no service name        -> an older agent: the helper uses the default, GSE-Agent
+#   W7  no service name and no such service    -> started directly
+#   W8  Cfg/Config.pm names another service     -> started through that service
+#   W9  the update ships a different agent_update_helper.sh, so the helper replaces itself while it runs:
+#       every stage must still run exactly once (bash reads a script as it goes)
 
 set -u
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 HELPER="${HELPER_UNDER_TEST:-$REPO/AgentScripts/agent_update_helper.sh}"
-ONLY="${ONLY:-W1 W2 W3 W4 W5 W6}"
+ONLY="${ONLY:-W1 W2 W3 W4 W5 W6 W7 W8 W9}"
 
 for tool in python3 unzip perl ps sha256sum find pgrep setsid timeout; do
 	command -v "$tool" >/dev/null 2>&1 || { echo "SKIP: $tool is not installed"; exit 0; }
@@ -118,13 +122,16 @@ make_sandbox() {	# name
 	echo "$dir"
 }
 
-make_release() {	# name, dir
+make_release() {	# name, dir, [a helper file to ship, changed so that its lines move]
 	local zip="$TMP/$1/release.zip"
-	python3 - "$zip" "$2" <<'PY'
-import sys, zipfile
-zip_path, agent_dir = sys.argv[1], sys.argv[2]
+	python3 - "$zip" "$2" "${3:-}" <<'PY'
+import os, sys, zipfile
+zip_path, agent_dir, helper = sys.argv[1], sys.argv[2], sys.argv[3]
 top = "gse-agent-windows-testing-9.9.9/AgentScripts/"
 with zipfile.ZipFile(zip_path, "w") as z:
+    if helper:
+        src = open(helper).read().split("\n")
+        z.writestr(top + "agent_update_helper.sh", "\n".join([src[0]] + ["# shipped by the test release (line %d)" % i for i in range(1, int(os.environ.get("HELPER_SHIFT_LINES", "15")) + 1)] + src[1:]))
     z.writestr(top + "CODE_VERSION", "v2\n")
     for name in ("agent_core.pl", "agent_launch.sh"):
         with open(agent_dir + "/" + name) as f:
@@ -155,7 +162,7 @@ run_helper() {	# name, dir, zip, sha, extra helper args..., with PATHDIRS in env
 	local name="$1" dir="$2" zip="$3" sha="$4"; shift 4
 	( cd "$dir" && PATH="$PATH_SHIMS:$PATH" SC_LOG="$TMP/$name/sc.log" SC_MODE_DIR="$TMP/$name/mode" AGENT_DIR="$dir" \
 		GSE_UPDATE_SETTLE_SECONDS=1 GSE_UPDATE_POLL_SECONDS=1 GSE_UPDATE_STABLE_SECONDS=3 \
-		timeout 200 bash "$HELPER" --agent-dir "$dir" --zip "$zip" --sha256 "$sha" --version testing-9.9.9 --agent-pid 0 \
+		timeout 200 bash "${HELPER_TO_RUN:-$HELPER}" --agent-dir "$dir" --zip "$zip" --sha256 "$sha" --version testing-9.9.9 --agent-pid 0 \
 		--launcher "$dir/agent_launch.sh" "$@" --state-file "$dir/update_state.json" --log-file "$dir/update.log" >> "$dir/helper.out" 2>&1 )
 }
 
@@ -172,7 +179,7 @@ scenario() {
 	dir="$(make_sandbox "$name")"
 	start_original_agent "$dir"
 	wait_for_starts "$dir" 1 15; check $? "$name: the fake agent started (v1)"
-	[ -n "$setup" ] && "$setup" "$TMP/$name/mode"
+	[ -n "$setup" ] && "$setup" "$TMP/$name/mode" "$dir"
 	zip="$(make_release "$name" "$dir")"
 	sha="$(sha256sum "$zip" | cut -d' ' -f1)"
 	run_helper "$name" "$dir" "$zip" "$sha" "$@"; rc=$?
@@ -182,8 +189,9 @@ scenario() {
 	check "$([ "$(agents_running "$dir")" = "1" ] && echo 0 || echo 1)" "$name: exactly one agent is running ($(agents_running "$dir"))"
 	check "$([ "$(last_field "$dir" by)" = "$expect" ] && echo 0 || echo 1)" "$name: the new agent was started by: $expect (was '$(last_field "$dir" by)')"
 	case "$name" in
-		W1|W5) check "$(grep -q '^start GSE-Agent' "$TMP/$name/sc.log" && echo 0 || echo 1)" "$name: the helper asked the service to start" ;;
-		W2|W4|W6) check "$(grep -q '^start' "$TMP/$name/sc.log" && echo 1 || echo 0)" "$name: the helper did not try to start a service" ;;
+		W1|W5|W6) check "$(grep -q '^start GSE-Agent' "$TMP/$name/sc.log" && echo 0 || echo 1)" "$name: the helper asked the GSE-Agent service to start" ;;
+		W8) check "$(grep -q '^start OtherAgent' "$TMP/$name/sc.log" && echo 0 || echo 1)" "$name: the helper asked the service named in Cfg/Config.pm to start" ;;
+		W2|W4|W7) check "$(grep -q '^start' "$TMP/$name/sc.log" && echo 1 || echo 0)" "$name: the helper did not try to start a service" ;;
 		W3) check "$(grep -q '^start GSE-Agent' "$TMP/$name/sc.log" && echo 0 || echo 1)" "$name: the helper tried the service first, then fell back" ;;
 	esac
 	if [ "$name" = "W5" ]; then
@@ -195,6 +203,30 @@ scenario() {
 setup_missing() { : > "$1/missing"; }
 setup_start_fails() { : > "$1/start_fails"; }
 setup_stuck_running() { echo RUNNING > "$1/forced_state"; }
+setup_config_name() { mkdir -p "$2/Cfg"; printf 'package Cfg::Config;\nour %%Config = (key => "k", service_name => "OtherAgent");\n1;\n' > "$2/Cfg/Config.pm"; }
+
+scenario_self_replace() {
+	local shift_lines="$1" name="W9/$1" dir zip sha rc stage n
+	echo "--- $name (the shipped helper has $1 extra lines near the top)"
+	dir="$(make_sandbox "W9-$shift_lines")"
+	cp "$HELPER" "$dir/agent_update_helper.sh"	# the installed copy: it is the one that runs, and the one that gets replaced
+	start_original_agent "$dir"
+	wait_for_starts "$dir" 1 15; check $? "$name: the fake agent started (v1)"
+	zip="$(HELPER_SHIFT_LINES="$shift_lines" make_release "W9-$shift_lines" "$dir" "$HELPER")"
+	sha="$(sha256sum "$zip" | cut -d' ' -f1)"
+	PATH_SHIMS="$SHIMS" HELPER_TO_RUN="$dir/agent_update_helper.sh" run_helper "W9-$shift_lines" "$dir" "$zip" "$sha" --service-name GSE-Agent; rc=$?
+	check "$([ "$rc" -eq 0 ] && echo 0 || echo 1)" "$name: the helper finished successfully (exit $rc)"
+	check "$([ "$(state_status "$dir")" = "ok" ] && echo 0 || echo 1)" "$name: the recorded state is ok (is '$(state_status "$dir")')"
+	check "$([ "$(last_field "$dir" code)" = "v2" ] && echo 0 || echo 1)" "$name: the agent that is running loaded the new code (loaded '$(last_field "$dir" code)')"
+	check "$(grep -q 'shipped by the test release' "$dir/agent_update_helper.sh" && echo 0 || echo 1)" "$name: the installed helper really was replaced by the different one"
+	for stage in "Agent stopped" "Checksum verified" "Backup of current install written" "New files copied in" "New agent is running"; do
+		n="$(grep -c "$stage" "$dir/update.log" 2>/dev/null)"
+		check "$([ "$n" = "1" ] && echo 0 || echo 1)" "$name: the stage '$stage' ran exactly once ($n)"
+	done
+	n="$(grep -c -i -E 'syntax error|unexpected|command not found|No such file or directory|unbound variable' "$dir/helper.out" 2>/dev/null)"
+	check "$([ "$n" = "0" ] && echo 0 || echo 1)" "$name: the helper printed no shell errors ($n)"
+	stop_sandbox "$dir"
+}
 
 for s in $ONLY; do
 	case "$s" in
@@ -203,7 +235,10 @@ for s in $ONLY; do
 		W3) PATH_SHIMS="$SHIMS" scenario W3 direct setup_start_fails --service-name GSE-Agent ;;
 		W4) PATH_SHIMS="$NOSC_SHIMS" scenario W4 direct "" --service-name GSE-Agent ;;
 		W5) PATH_SHIMS="$SHIMS" scenario W5 service setup_stuck_running --service-name GSE-Agent ;;
-		W6) PATH_SHIMS="$SHIMS" scenario W6 direct "" ;;
+		W6) PATH_SHIMS="$SHIMS" scenario W6 service "" ;;
+		W7) PATH_SHIMS="$SHIMS" scenario W7 direct setup_missing ;;
+		W8) PATH_SHIMS="$SHIMS" scenario W8 service setup_config_name ;;
+		W9) for lines in 5 40 120 250; do scenario_self_replace "$lines"; done ;;
 	esac
 done
 
