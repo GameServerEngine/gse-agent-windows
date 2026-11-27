@@ -48,12 +48,14 @@ param(
     [string]$RunPureFtpd = "",
     [string]$FtpPort = "21",
     [string]$FtpIp = "0.0.0.0",
-    [string]$FtpPasvRange = ""
+    [string]$FtpPasvRange = "40000:50000",
+    [string]$FtpPublicIp = ""
 )
 
 $ErrorActionPreference = "Stop"
 $Script:LogDir = Join-Path $InstallPath "logs"
 $Script:LogFile = Join-Path $Script:LogDir "install.log"
+$Script:FtpServiceName = "GSE-PureFTPd"
 $Script:AgentAccountName = $AgentUser
 $Script:AgentUserExplicit = $AgentUserWasSet.IsPresent -or $PSBoundParameters.ContainsKey("AgentUser")
 $Script:AgentAccountResolved = $false
@@ -947,6 +949,7 @@ function Write-AgentConfiguration {
     $ftpPort = $FtpPort
     $ftpIp = $FtpIp
     $ftpPasv = $FtpPasvRange
+    $Script:FtpResolved = [pscustomobject]@{ Managed = $manageFtp; Method = $ftpMethod; Run = $runPureFtpd; Port = $ftpPort; Ip = $ftpIp; Pasv = $ftpPasv }
 
     $configLines = @(
         "%Cfg::Config = (",
@@ -1156,6 +1159,177 @@ function Register-AgentService {
     Invoke-CygrunsrvChecked -Cygrunsrv $cygrunsrv -Arguments @("-V", "-Q", $ServiceName)
 }
 
+function Test-FtpWanted {
+    # Managed FTP on, the method is Pure-FTPd, and the config says to run it.
+    return ($null -ne $Script:FtpResolved -and $Script:FtpResolved.Managed -eq "1" -and $Script:FtpResolved.Method -eq "PureFTPd" -and $Script:FtpResolved.Run -eq "1")
+}
+
+function Get-PureFtpdArguments {
+    # The pure-ftpd command line. TLS, the address given to clients and the passive range are only added when known.
+    param([string]$Port, [string]$BindIp, [string]$PasvRange, [string]$PublicIp, [bool]$Tls, [string]$DataDir = "/etc/ftp")
+    $list = @("-l", "puredb:$DataDir/pureftpd.pdb", "-E", "-R", "-c", "50", "-C", "8", "-I", "15")
+    if ($Tls) { $list += @("-Y", "1") }
+    if (-not [string]::IsNullOrWhiteSpace($PublicIp)) { $list += @("-P", $PublicIp) }
+    if (-not [string]::IsNullOrWhiteSpace($PasvRange)) { $list += @("-p", ($PasvRange -replace "-", ":")) }
+    $list += @("-S", "$BindIp,$Port", "-A", "-H", "-x")
+    return ,$list
+}
+
+function Initialize-FtpData {
+    # Creates the FTP account file, its database and a TLS certificate when they are missing. Nothing that exists is touched.
+    # Returns $true when a TLS certificate is available.
+    param([string]$InstallPath, [string]$DataDir = "etc\ftp", [string]$CertDir = "etc\ssl\private")
+    $dir = Join-Path $InstallPath $DataDir
+    New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    $unixDir = "/" + ($DataDir -replace "\\", "/")
+    $passwd = Join-Path $dir "pureftpd.passwd"
+    $pdb = Join-Path $dir "pureftpd.pdb"
+    $previousPath = $env:PATH
+    $env:PATH = (Join-Path $InstallPath "bin") + ";" + $env:PATH
+    try {
+        if (-not (Test-Path -LiteralPath $passwd)) {
+            New-Item -ItemType File -Path $passwd -Force | Out-Null
+            Write-Log "Created the empty FTP account file $passwd"
+        }
+        if (-not (Test-Path -LiteralPath $pdb)) {
+            $purePw = Join-Path $InstallPath "bin\pure-pw.exe"
+            if (-not (Test-Path -LiteralPath $purePw)) { throw "Missing pure-pw.exe at $purePw" }
+            $env:PURE_PASSWDFILE = "$unixDir/pureftpd.passwd"
+            $env:PURE_DBFILE = "$unixDir/pureftpd.pdb"
+            try {
+                Invoke-Checked -FilePath $purePw -Arguments @("mkdb", "$unixDir/pureftpd.pdb", "-f", "$unixDir/pureftpd.passwd")
+            } finally {
+                Remove-Item Env:PURE_PASSWDFILE, Env:PURE_DBFILE -ErrorAction SilentlyContinue
+            }
+            Write-Log "Created the empty FTP account database $pdb"
+        }
+        $pem = Join-Path $InstallPath "$CertDir\pure-ftpd.pem"
+        if (-not (Test-Path -LiteralPath $pem)) {
+            $openssl = @("usr\bin\openssl.exe", "bin\openssl.exe") | ForEach-Object { Join-Path $InstallPath $_ } | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+            if ($openssl) {
+                New-Item -ItemType Directory -Path (Join-Path $InstallPath $CertDir) -Force | Out-Null
+                $unixPem = "/" + (($CertDir -replace "\\", "/")) + "/pure-ftpd.pem"
+                $made = Invoke-NativeCapture -FilePath $openssl -Arguments @("req", "-x509", "-nodes", "-newkey", "rsa:2048", "-sha256", "-days", "3650", "-subj", "/CN=$env:COMPUTERNAME", "-keyout", $unixPem, "-out", $unixPem)
+                if ($made.ExitCode -ne 0) {
+                    Write-Log "Could not create a TLS certificate for FTP ($((Get-NativeCaptureText -Result $made).Trim())); FTP will run without TLS."
+                } else {
+                    Write-Log "Created a self-signed TLS certificate for FTP at $pem"
+                }
+            } else {
+                Write-Log "openssl.exe was not found; FTP will run without TLS."
+            }
+        }
+    } finally {
+        $env:PATH = $previousPath
+    }
+    return (Test-Path -LiteralPath $pem)
+}
+
+function Wait-FtpBanner {
+    # True once something on the port answers with an FTP "220" greeting. Each answer needs a forked child, so it also proves forking works.
+    param([string]$Port, [int]$TimeoutSeconds = 60)
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    do {
+        try {
+            $client = New-Object System.Net.Sockets.TcpClient
+            $client.ReceiveTimeout = 3000
+            $client.Connect("127.0.0.1", [int]$Port)
+            $reader = New-Object System.IO.StreamReader($client.GetStream())
+            $banner = $reader.ReadLine()
+            $client.Close()
+            if ($banner -like "220*") { return $true }
+        } catch { }
+        Start-Sleep -Seconds 2
+    } while ((Get-Date) -lt $deadline)
+    return $false
+}
+
+function Remove-FtpService {
+    param([string]$Name, [string]$InstallPath)
+    $cygrunsrv = Join-Path $InstallPath "bin\cygrunsrv.exe"
+    if (-not (Test-Path -LiteralPath $cygrunsrv)) { return }
+    if (-not (Test-CygrunsrvServiceExists -Cygrunsrv $cygrunsrv -Name $Name)) { return }
+    Write-Log "Stopping and removing service $Name"
+    Stop-CygrunsrvServiceForRemoval -Cygrunsrv $cygrunsrv -Name $Name
+    Invoke-CygrunsrvChecked -Cygrunsrv $cygrunsrv -Arguments @("-R", $Name)
+    if (-not (Wait-ServiceAbsent -Name $Name -TimeoutSeconds 60)) {
+        throw "Service $Name was removed but is still visible to Windows. It may be marked for deletion."
+    }
+}
+
+function Register-FtpService {
+    # Registers Pure-FTPd as a Windows service that starts at boot, restarts itself after a crash, and runs as the same
+    # account as the agent (so the files it creates in a game home belong to an account the agent can use).
+    param(
+        [string]$Name, [string]$InstallPath, [string]$Port, [string]$BindIp, [string]$PasvRange, [string]$PublicIp,
+        [bool]$Tls, [string]$AccountName, [string]$PlainPassword,
+        [string]$DisplayName = "GSE Pure-FTPd", [string]$DataDir = "/etc/ftp"
+    )
+    $cygrunsrv = Join-Path $InstallPath "bin\cygrunsrv.exe"
+    if (-not (Test-Path -LiteralPath $cygrunsrv)) { throw "Missing cygrunsrv.exe at $cygrunsrv" }
+    if (-not (Test-Path -LiteralPath (Join-Path $InstallPath "usr\sbin\pure-ftpd.exe"))) { throw "Missing pure-ftpd.exe under $InstallPath\usr\sbin" }
+    Remove-FtpService -Name $Name -InstallPath $InstallPath
+
+    $ftpArguments = Get-PureFtpdArguments -Port $Port -BindIp $BindIp -PasvRange $PasvRange -PublicIp $PublicIp -Tls $Tls -DataDir $DataDir
+    $arguments = @(
+        "-I", $Name,
+        "-d", $DisplayName,
+        "-p", "/usr/sbin/pure-ftpd.exe",
+        "-a", ($ftpArguments -join " "),
+        "-0", "/dev/null",
+        "-1", "/var/log/$Name.log",
+        "-2", "/var/log/$Name.log",
+        "-e", "CYGWIN=server ntsec",
+        "-y", "tcpip"
+    )
+    if (-not (Test-LocalSystemAccount $AccountName)) {
+        $arguments += @("-u", "$env:COMPUTERNAME\$AccountName", "-w", $PlainPassword)
+    }
+    $displayArgs = ($arguments | ForEach-Object { if ($PlainPassword -and $_ -eq $PlainPassword) { "<redacted>" } else { $_ } }) -join " "
+    Write-Log "Registering service $Name with cygrunsrv"
+    Invoke-Checked -FilePath $cygrunsrv -Arguments $arguments -DisplayArguments $displayArgs
+
+    Invoke-ScChecked -Arguments @("config", $Name, "start=", "auto") | Out-Null
+    Invoke-ScChecked -Arguments @("failure", $Name, "reset=", "86400", "actions=", "restart/60000/restart/60000/restart/300000") | Out-Null
+    Invoke-ScChecked -Arguments @("failureflag", $Name, "1") | Out-Null
+
+    $config = Invoke-ScChecked -Arguments @("qc", $Name)
+    if ($config -notmatch "AUTO_START") { throw "Service $Name is not set to start automatically at boot." }
+    $failure = Invoke-ScChecked -Arguments @("qfailure", $Name)
+    if (([regex]::Matches($failure, "(?i)RESTART")).Count -lt 3) { throw "Service $Name recovery actions are not configured for three restart attempts." }
+    Write-Log "Verified service $Name starts at boot and restarts after a crash."
+}
+
+function Start-FtpService {
+    param([string]$Name, [string]$Port)
+    Write-Log "Starting service $Name"
+    Invoke-ScChecked -Arguments @("start", $Name) | Out-Host
+    $deadline = (Get-Date).AddSeconds(60)
+    do {
+        $service = Get-Service -Name $Name -ErrorAction Stop
+        if ($service.Status -eq "Running") { break }
+        if ($service.Status -eq "Stopped") { throw "Service $Name stopped before reaching Running state. See $InstallPath\var\log\$Name.log." }
+        Start-Sleep -Seconds 2
+    } while ((Get-Date) -lt $deadline)
+    if ($service.Status -ne "Running") { throw "Service $Name did not reach Running state within 60 seconds." }
+    if (-not (Wait-FtpBanner -Port $Port -TimeoutSeconds 60)) {
+        throw "Service $Name is running but nothing on port $Port answers with an FTP greeting. See $InstallPath\var\log\$Name.log."
+    }
+    Write-Log "Verified service $Name is running and answers on port $Port."
+}
+
+function Install-FtpServiceIfWanted {
+    param([string]$PlainPassword)
+    if (-not (Test-FtpWanted)) {
+        Write-Log "The FTP service was not requested (managed FTP is off, or the method is not PureFTPd); not installing it."
+        return
+    }
+    $tls = [bool](@(Initialize-FtpData -InstallPath $InstallPath)[-1])
+    Register-FtpService -Name $Script:FtpServiceName -InstallPath $InstallPath -Port $Script:FtpResolved.Port -BindIp $Script:FtpResolved.Ip `
+        -PasvRange $Script:FtpResolved.Pasv -PublicIp $FtpPublicIp -Tls $tls -AccountName $Script:AgentAccountName -PlainPassword $PlainPassword
+    Start-FtpService -Name $Script:FtpServiceName -Port $Script:FtpResolved.Port
+}
+
 function Ensure-FirewallRule {
     param([string]$RuleName, [string]$Port)
     if ([string]::IsNullOrWhiteSpace($Port)) {
@@ -1180,6 +1354,9 @@ function Ensure-AgentFirewallRules {
     Ensure-FirewallRule -RuleName "GSE Windows Agent ($ServiceName)" -Port $ListenPort
     if ($FtpManaged -eq "1") {
         Ensure-FirewallRule -RuleName "GSE Windows Agent FTP ($ServiceName)" -Port $FtpPort
+        if (-not [string]::IsNullOrWhiteSpace($FtpPasvRange)) {
+            Ensure-FirewallRule -RuleName "GSE Windows Agent FTP passive ($ServiceName)" -Port ($FtpPasvRange -replace ":", "-")
+        }
     }
 }
 
@@ -1210,6 +1387,7 @@ function Start-AgentService {
 
 function Remove-AgentService {
     Remove-LegacyScheduledTasks
+    Remove-FtpService -Name $Script:FtpServiceName -InstallPath $InstallPath
 
     $cygrunsrv = Join-Path $InstallPath "bin\cygrunsrv.exe"
     if (Test-Path $cygrunsrv) {
@@ -1258,6 +1436,7 @@ function Invoke-InstallOrRepair {
     Register-AgentService -PlainPassword $password
     Ensure-AgentFirewallRules
     Start-AgentService
+    Install-FtpServiceIfWanted -PlainPassword $password
 }
 
 function Invoke-Reconfigure {
@@ -1279,6 +1458,7 @@ function Invoke-Reconfigure {
     Register-AgentService -PlainPassword $password
     Ensure-AgentFirewallRules
     Start-AgentService
+    Install-FtpServiceIfWanted -PlainPassword $password
 }
 
 function Invoke-Uninstall {

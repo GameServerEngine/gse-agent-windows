@@ -73,6 +73,7 @@ use Sys::Hostname qw(hostname);
 use File::Spec;
 use POSIX ();
 use GSE::HomeAcl qw(plan_for_home);
+use GSE::FtpAccounts qw(ftp_account_command);
 use GSE::Container::Runtime;
 use GSE::Resource::InventoryWin qw(collect_windows_inventory); # read-only hardware inventory (Phase 2)
 
@@ -5597,23 +5598,17 @@ sub ftp_mgr
 	my $pdb = '/etc/ftp/pureftpd.pdb';
 	my $uid = `id -u`; chomp $uid;
 	my $gid = `id -g`; chomp $gid;
-	# Quote a value for the shell (single quotes, with embedded quotes escaped).
-	my $q = sub { my $s = defined $_[0] ? $_[0] : ''; $s =~ s/'/'\\''/g; return "'$s'"; };
-
-	my $cmd;
-	if ($action eq 'list') { $cmd = "pure-pw list -f $pwf"; }
-	elsif ($action eq 'show') { $cmd = "pure-pw show " . $q->($login) . " -f $pwf"; }
-	elsif ($action eq 'userdel') { $cmd = "pure-pw userdel " . $q->($login) . " -f $pwf && pure-pw mkdb $pdb -f $pwf"; }
-	elsif ($action eq 'useradd') {
-		$cmd = "(printf '%s\\n%s\\n' " . $q->($password) . " " . $q->($password) . ") | pure-pw useradd " . $q->($login) . " -f $pwf -u $uid -g $gid -d " . $q->($home_path) . " && pure-pw mkdb $pdb -f $pwf";
-	}
-	elsif ($action eq 'passwd') {
-		$cmd = "(printf '%s\\n%s\\n' " . $q->($password) . " " . $q->($password) . ") | pure-pw passwd " . $q->($login) . " -f $pwf && pure-pw mkdb $pdb -f $pwf";
-	}
-	elsif ($action eq 'usermod') {
-		$cmd = "pure-pw usermod " . $q->($login) . " -f $pwf -d " . $q->($home_path) . " && pure-pw mkdb $pdb -f $pwf";
-	}
-	else { return "ERROR: unknown FTP action '$action'"; }
+	my $cmd = ftp_account_command(
+		action      => $action,
+		login       => $login,
+		password    => $password,
+		home_path   => $home_path,
+		passwd_file => $pwf,
+		db_file     => $pdb,
+		uid         => $uid,
+		gid         => $gid,
+	);
+	return "ERROR: unknown FTP action '$action'" unless defined $cmd;
 
 	my $out = `$cmd 2>&1`;
 	my $rc = $? >> 8;
