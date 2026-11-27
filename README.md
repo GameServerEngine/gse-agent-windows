@@ -27,7 +27,7 @@ Status: the `working` branch is in development. Updated behaviour has been commi
 - The agent never updates at startup or restart. An update runs only when the panel asks for it.
 - The panel sends the release archive URL, its SHA-256 checksum, the version and the protocol version. The agent refuses a URL that is not https, a checksum that is not 64 hex characters, and an invalid version.
 - The agent downloads the archive to a staging folder, verifies the SHA-256 checksum, writes state, and starts `AgentScripts/agent_update_helper.sh` in the background.
-- The helper waits for the agent to stop, re-checks the checksum, backs up the current install, copies the new files in and starts the agent again. If the new agent does not stay up, the helper restores the backup.
+- The helper waits for the agent to stop, re-checks the checksum, backs up the current install, copies the new files in and starts the agent again through its Windows service (`service_name` in `Cfg/Config.pm`, default `GSE-Agent`; an install without that service starts the launcher directly). If the new agent does not stay up, the helper restores the backup.
 - Config, runtime data and customer state are preserved: `etc/`, `var/`, `startups/`, `Cfg/Preferences.pm`, `Cfg/bash_prefs.cfg`, the update state and request files, the update log, and the `agent_update_*` folders.
 - Rollback keeps only the current install. The backup is the version that was running before the update, not a history.
 

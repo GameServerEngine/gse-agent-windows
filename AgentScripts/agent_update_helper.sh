@@ -8,18 +8,19 @@
 #   2. re-checks the SHA-256 of the staged zip,
 #   3. keeps ONE backup of the current install (the install being replaced),
 #   4. copies the new files in, leaving config and runtime data untouched,
-#   5. starts the agent again and waits for it to stay up,
+#   5. starts the agent again (through its Windows service when it has one, so the service reports the
+#      truth and the panel's restart keeps working) and waits for it to stay up,
 #   6. on any failure after the swap starts, restores the backup and restarts
 #      the previous agent, then records the outcome.
 #
 # Usage:
 #   agent_update_helper.sh --agent-dir DIR --zip FILE --sha256 HEX \
-#       --version VER --agent-pid PID --launcher FILE --state-file FILE --log-file FILE
+#       --version VER --agent-pid PID --launcher FILE [--service-name NAME] --state-file FILE --log-file FILE
 
 set -u
 
 AGENT_DIR=""; ZIP=""; EXPECTED_SHA=""; VERSION=""; AGENT_PID=""
-LAUNCHER=""; STATE_FILE=""; LOG_FILE=""
+LAUNCHER=""; SERVICE_NAME=""; STATE_FILE=""; LOG_FILE=""
 
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -29,6 +30,7 @@ while [ $# -gt 0 ]; do
 		--version) VERSION="$2"; shift 2 ;;
 		--agent-pid) AGENT_PID="$2"; shift 2 ;;
 		--launcher) LAUNCHER="$2"; shift 2 ;;
+		--service-name) SERVICE_NAME="$2"; shift 2 ;;
 		--state-file) STATE_FILE="$2"; shift 2 ;;
 		--log-file) LOG_FILE="$2"; shift 2 ;;
 		*) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -41,6 +43,10 @@ done
 
 BACKUP_DIR="$AGENT_DIR/agent_update_backup"
 STAGE_DIR="$AGENT_DIR/agent_update_stage"
+# Timings. The defaults are the real ones; the tests shorten them.
+SETTLE_SECONDS="${GSE_UPDATE_SETTLE_SECONDS:-5}"
+POLL_SECONDS="${GSE_UPDATE_POLL_SECONDS:-5}"
+STABLE_SECONDS="${GSE_UPDATE_STABLE_SECONDS:-30}"
 
 log() {
 	mkdir -p "$(dirname "$LOG_FILE")" 2>/dev/null || true
@@ -88,20 +94,72 @@ agent_running() {
 	[ -n "$(agent_pids)" ]
 }
 
+# sc.exe, found by name first and then under the Windows folder (the helper may run with a short PATH).
+find_sc() {
+	local sc root
+	if sc="$(command -v sc.exe 2>/dev/null)" && [ -n "$sc" ]; then echo "$sc"; return 0; fi
+	root="${SYSTEMROOT:-${SystemRoot:-}}"
+	if [ -n "$root" ] && command -v cygpath >/dev/null 2>&1; then
+		sc="$(cygpath -u "$root")/System32/sc.exe"
+		[ -x "$sc" ] && { echo "$sc"; return 0; }
+	fi
+	return 1
+}
+SC_BIN="$(find_sc || true)"
+
+# State of the agent's Windows service (STOPPED, RUNNING, ...). Prints nothing when there is no such service.
+service_state() {
+	[ -n "$SC_BIN" ] && [ -n "$SERVICE_NAME" ] || return 0
+	"$SC_BIN" query "$SERVICE_NAME" 2>/dev/null | tr -d '\r' | awk '/STATE/ { print $4; exit }'
+}
+
+# Starts the agent through its Windows service. Fails (without side effects) when there is no usable service.
+start_agent_service() {
+	local state waited=0
+	[ -n "$SC_BIN" ] && [ -n "$SERVICE_NAME" ] || return 1
+	state="$(service_state)"
+	[ -n "$state" ] || return 1
+	# Stopping the agent ends the service; give it a moment to say so.
+	while [ "$state" = "STOP_PENDING" ] && [ "$waited" -lt 30 ]; do
+		sleep 1; waited=$((waited + 1)); state="$(service_state)"
+	done
+	if [ "$state" = "RUNNING" ] || [ "$state" = "START_PENDING" ]; then
+		# No agent is running (this helper only starts one when none is), yet the service says it is up.
+		log "Service $SERVICE_NAME reports $state but no agent is running; stopping it first"
+		"$SC_BIN" stop "$SERVICE_NAME" >/dev/null 2>&1 || true
+		waited=0
+		while [ "$(service_state)" != "STOPPED" ] && [ "$waited" -lt 30 ]; do sleep 1; waited=$((waited + 1)); done
+		state="$(service_state)"
+	fi
+	if [ "$state" != "STOPPED" ]; then
+		log "Service $SERVICE_NAME is $state, not STOPPED; starting the agent directly"
+		return 1
+	fi
+	log "Starting the $SERVICE_NAME service"
+	if ! "$SC_BIN" start "$SERVICE_NAME" >/dev/null 2>&1; then
+		log "Starting the $SERVICE_NAME service failed; starting the agent directly"
+		return 1
+	fi
+	return 0
+}
+
 start_agent() {
-	# Launched detached so this helper can finish and report on its own.
+	# Through the service when there is one, so the service state matches reality and the panel's restart
+	# (Restart-Service) keeps working. Installs without the service start the launcher directly, detached so
+	# this helper can finish and report on its own.
+	start_agent_service && return 0
 	( cd "$AGENT_DIR" && nohup bash "$LAUNCHER" service >> "$LOG_FILE" 2>&1 & ) >/dev/null 2>&1
 }
 
 wait_for_agent_up() {
-	# Agent counts as up once it has stayed alive for 30 seconds.
+	# Agent counts as up once it has stayed alive for 30 seconds (STABLE_SECONDS).
 	local waited=0
 	while [ "$waited" -lt 120 ]; do
-		sleep 5; waited=$((waited + 5))
+		sleep "$POLL_SECONDS"; waited=$((waited + POLL_SECONDS))
 		if [ -n "$(agent_pids)" ]; then
 			local stable=0
-			while [ "$stable" -lt 30 ]; do
-				sleep 5; stable=$((stable + 5))
+			while [ "$stable" -lt "$STABLE_SECONDS" ]; do
+				sleep "$POLL_SECONDS"; stable=$((stable + POLL_SECONDS))
 				[ -n "$(agent_pids)" ] || break
 			done
 			[ -n "$(agent_pids)" ] && return 0
@@ -146,7 +204,7 @@ log "Helper started for version $VERSION"
 write_state running "Waiting for agent to stop" "" false
 
 # 1. Ask the agent to stop, then wait for it to exit.
-sleep 5
+sleep "$SETTLE_SECONDS"
 if agent_running; then
 	log "Stopping agent: $(agent_pids | tr '\n' ' ')"
 	for pid in $(agent_pids); do kill -TERM "$pid" 2>/dev/null || true; done
