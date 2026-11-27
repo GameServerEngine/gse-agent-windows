@@ -72,6 +72,7 @@ use Digest::SHA qw(hmac_sha256_hex);
 use Sys::Hostname qw(hostname);
 use File::Spec;
 use POSIX ();
+use GSE::HomeAcl qw(plan_for_home);
 use GSE::Container::Runtime;
 use GSE::Resource::InventoryWin qw(collect_windows_inventory); # read-only hardware inventory (Phase 2)
 
@@ -5664,72 +5665,30 @@ sub stop_fastdl_without_decrypt
 }
 
 sub take_ownership{
-	# Keep the service account able to execute while optionally removing broad inherited home ACLs.
+	# Gives SYSTEM, Administrators, the account running the agent and any account that already has full control of the
+	# home (for example the account the FTP service runs as) full control of it. With windows_home_acl_isolation on it
+	# also takes the broad groups (Everyone, Users, ...) off. The commands and why they are in this order are in
+	# GSE::HomeAcl. With $action "str" the commands are returned as text (for install scripts) instead of being run.
 	my ($home_path, $action) = @_;
 
-	my $icaclsStr = "";
-	my $icaclsAdminGroupFullPerms = "";
-	my $icaclsSystemFullPerms = "";
-	my $icaclsRemoveBroadGroups = "";
-	my $takeownCommand = "";
-	my $chmodCommand = "";
-	my $fullCommands = "";
-	my $isolate_home_acl = WINDOWS_HOME_ACL_ISOLATION eq "1" ? 1 : 0;
+	return 1 unless (defined $home_path && $home_path ne "" && -e "$home_path");
+	my $windows_home_path = clean(`cygpath -wa $home_path`);
+	return 1 if $windows_home_path eq "";
 
-	if (defined $home_path && $home_path ne "" && -e "$home_path"){
-		my $windows_home_path = clean(`cygpath -wa $home_path`);
+	my @commands = plan_for_home(
+		path         => $windows_home_path,
+		running_user => USER_RUNNING_SCRIPT,
+		isolate      => (WINDOWS_HOME_ACL_ISOLATION eq "1" ? 1 : 0),
+	);
 
-		logger "Running takeown commands on path of $home_path and $windows_home_path";
-
-		#cygwin path handling
-		$takeownCommand = 'takeown /U ' . USER_RUNNING_SCRIPT . ' /f "' . $home_path . '" /r >/dev/null 2>&1';
-				$chmodCommand = 'icacls "' . ($windows_home_path =~ s{\\}{/}gr) . '" /reset /T /C >/dev/null 2>&1';
-		if(defined $action && $action eq "str"){
-			$fullCommands .= $takeownCommand . "\n";
-			$fullCommands .= $chmodCommand . "\n";
-		}else{
-			system($takeownCommand);
-			system($chmodCommand);
-		}
-
-		# Windows path handling
-		if(defined $windows_home_path && $windows_home_path ne ""){
-			$takeownCommand = 'takeown /U ' . USER_RUNNING_SCRIPT . ' /f "' . $windows_home_path . '" /r >/dev/null 2>&1';
-			$chmodCommand = 'icacls "' . ($windows_home_path =~ s{\\}{/}gr) . '" /reset /T /C >/dev/null 2>&1';
-			if($isolate_home_acl == 1){
-				$icaclsStr = 'icacls "' . $windows_home_path . '" /inheritance:r /grant:r "' . USER_RUNNING_SCRIPT . '":\\(OI\\)\\(CI\\)F /T /C /Q >/dev/null 2>&1';
-				$icaclsSystemFullPerms = 'icacls "' . $windows_home_path . '" /grant:r \\*S-1-5-18:\\(OI\\)\\(CI\\)F /T /C /Q >/dev/null 2>&1';
-				$icaclsAdminGroupFullPerms = 'icacls "' . $windows_home_path . '" /grant:r \\*S-1-5-32-544:\\(OI\\)\\(CI\\)F /T /C /Q >/dev/null 2>&1';
-				$icaclsRemoveBroadGroups = 'icacls "' . $windows_home_path . '" /remove:g \\*S-1-1-0 \\*S-1-5-11 \\*S-1-5-32-545 \\*S-1-5-32-546 /T /C /Q >/dev/null 2>&1';
-			}else{
-				$icaclsStr = 'icacls "' . $windows_home_path . '" /grant ' . USER_RUNNING_SCRIPT . ':\\(OI\\)\\(CI\\)F /T >/dev/null 2>&1';
-				$icaclsAdminGroupFullPerms = 'icacls "' . $windows_home_path . '" /grant administrators:F /T >/dev/null 2>&1';
-			}
-
-			if(defined $action && $action eq "str"){
-				$fullCommands .= $takeownCommand . "\n";
-				$fullCommands .= $chmodCommand . "\n";
-				$fullCommands .= $icaclsStr . "\n";
-				$fullCommands .= $icaclsSystemFullPerms . "\n" if($icaclsSystemFullPerms ne "");
-				$fullCommands .= $icaclsAdminGroupFullPerms . "\n";
-				$fullCommands .= $icaclsRemoveBroadGroups . "\n" if($icaclsRemoveBroadGroups ne "");
-			}else{
-				logger "Running icacls command: $icaclsStr";
-				logger "Running icacls SYSTEM command: $icaclsSystemFullPerms" if($icaclsSystemFullPerms ne "");
-				logger "Running icacls admin group command: $icaclsAdminGroupFullPerms";
-				logger "Running icacls broad group removal command: $icaclsRemoveBroadGroups" if($icaclsRemoveBroadGroups ne "");
-				system($takeownCommand);
-				system($chmodCommand);
-				system($icaclsStr);
-				system($icaclsSystemFullPerms) if($icaclsSystemFullPerms ne "");
-				system($icaclsAdminGroupFullPerms);
-				system($icaclsRemoveBroadGroups) if($icaclsRemoveBroadGroups ne "");
-			}
-		}
+	if(defined $action && $action eq "str"){
+		return join("", map { $_ . " >/dev/null 2>&1\n" } @commands);
 	}
 
-	if($fullCommands ne ""){
-		return $fullCommands;
+	logger "Fixing permissions of $windows_home_path (agent running as " . USER_RUNNING_SCRIPT . ")";
+	foreach my $command (@commands){
+		my $status = system($command . " >/dev/null 2>&1");
+		logger "Permissions command failed with exit code " . ($status >> 8) . ": $command" if($status != 0);
 	}
 
 	return 1;
