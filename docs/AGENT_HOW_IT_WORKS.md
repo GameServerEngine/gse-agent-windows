@@ -100,7 +100,9 @@ error instead of killing it.
   both do this.
 - `AgentScripts/agent_update_helper.sh` waits for the agent to exit, checks the SHA-256,
   keeps one backup of the install being replaced, copies new files, starts the agent through its Windows service
-  (or the launcher directly when there is none), and rolls back if it does not stay up. Config and runtime data are preserved.
+  (or the launcher directly when there is none), and rolls back if it does not stay up. The service name comes from
+  `--service-name`, then `service_name` in `Cfg/Config.pm`, then `GSE-Agent`. Every step is in one function called on the last line,
+  because the helper replaces itself while it runs and bash reads a script as it goes. Config and runtime data are preserved.
 - Runtime git clone or pull updates are not supported.
 
 ## 9. Tooling rules
