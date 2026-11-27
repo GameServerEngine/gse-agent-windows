@@ -4967,7 +4967,9 @@ sub status_read_cpu_totals
 # Cumulative CPU seconds, working set (bytes) and name for every process, from Get-Process.
 sub status_win_proc_snapshot
 {
-	my $ps = q{powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f $_.Id, $_.ProcessName, $_.TotalProcessorTime.TotalSeconds, $_.WorkingSet64 }" 2>nul};
+	# The backticks below run through Cygwin's sh, so $_ must be written \$_ or sh replaces it
+	# before PowerShell sees it (the same as the listener check in this file).
+	my $ps = q{powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f \$_.Id, \$_.ProcessName, \$_.TotalProcessorTime.TotalSeconds, \$_.WorkingSet64 }" 2>/dev/null};
 	my (%cpu, %ws, %name);
 	my $out = `$ps`;
 	foreach my $line (split(/\r?\n/, defined $out ? $out : ''))
