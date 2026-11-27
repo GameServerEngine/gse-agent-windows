@@ -99,8 +99,8 @@ error instead of killing it.
 - `agent_launch.sh` applies the pending update before Perl starts. Service and foreground
   both do this.
 - `AgentScripts/agent_update_helper.sh` waits for the agent to exit, checks the SHA-256,
-  keeps one backup of the install being replaced, copies new files, starts the agent,
-  and rolls back if it does not stay up. Config and runtime data are preserved.
+  keeps one backup of the install being replaced, copies new files, starts the agent through its Windows service
+  (or the launcher directly when there is none), and rolls back if it does not stay up. Config and runtime data are preserved.
 - Runtime git clone or pull updates are not supported.
 
 ## 9. Tooling rules

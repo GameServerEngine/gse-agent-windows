@@ -6154,6 +6154,9 @@ sub start_agent_update
 
 	my $helper = "$Bin/agent_update_helper.sh";
 	my $launcher = "$Bin/agent_launch.sh";
+	# The helper starts the agent again through this Windows service (same name logic as the restart function).
+	my $service = $Cfg::Config{service_name} || 'GSE-Agent';
+	$service = 'GSE-Agent' unless $service =~ /^[A-Za-z0-9_.-]{1,64}$/;
 	my $command = join(' ',
 		'nohup', 'bash', agent_update_shell_quote($helper),
 		'--agent-dir', agent_update_shell_quote(AGENT_RUN_DIR . ''),
@@ -6162,6 +6165,7 @@ sub start_agent_update
 		'--version', agent_update_shell_quote($version),
 		'--agent-pid', $$,
 		'--launcher', agent_update_shell_quote($launcher),
+		'--service-name', agent_update_shell_quote($service),
 		'--state-file', agent_update_shell_quote(AGENT_UPDATE_STATE_FILE . ''),
 		'--log-file', agent_update_shell_quote(AGENT_UPDATE_LOG_FILE . ''),
 		'>/dev/null 2>&1', '&'
