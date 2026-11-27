@@ -72,7 +72,7 @@ The installer:
 - prompts for OGP-compatible agent settings
 - writes `AgentScripts/Cfg/Config.pm`, `AgentScripts/Cfg/Preferences.pm`, and `AgentScripts/Cfg/bash_prefs.cfg`
 - validates `AgentScripts/agent_core.pl` with bundled Cygwin Perl
-- registers the `GSPAgent` Windows service through bundled `cygrunsrv.exe`
+- registers the `GSE-Agent` Windows service through bundled `cygrunsrv.exe`
 - removes the known legacy `GSP Windows Agent` scheduled task when present
 - sets and verifies Automatic startup, Windows service recovery restart actions, and non-crash failure recovery
 - starts the service
@@ -107,8 +107,8 @@ agent_stop.bat
 Production hosts should run the agent through the registered Windows service:
 
 ```powershell
-Get-Service GSPAgent
-Restart-Service GSPAgent
+Get-Service GSE-Agent
+Restart-Service GSE-Agent
 ```
 
 Service registration, Automatic startup, and service recovery are owned by `Installer-Agent-Windows.ps1`. The service starts `/bin/bash /AgentScripts/agent_service_wrapper.sh` through bundled `cygrunsrv.exe`; the generated wrapper then runs `/bin/bash /AgentScripts/agent_launch.sh service`. The installer verifies Automatic startup and restart recovery settings after registration; a repair or install fails if Windows does not report the expected service behavior.

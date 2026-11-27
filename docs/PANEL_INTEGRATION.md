@@ -146,3 +146,12 @@ Windows now mirrors the Linux server-content runtime layout for server-owned sid
 Stop and restart clean this runtime before main game process escalation. The main server PID remains tracked through `runtime_status/pid-<home_id>.kv`; `server_content.pids` must only contain server-content watchdog/app PIDs.
 
 Legacy `_alsoRun.bat` support remains compatibility-only. When `_alsoRun.pid` is present, the Windows agent imports those PIDs into the server-content cleanup path so Panel Start/Stop/Restart does not leave legacy helper processes behind.
+
+## Hardware inventory
+
+`agent_hardware_inventory` returns a read-only description of the machine, with the same schema as the Linux agent.
+PowerShell runs one fixed script of CIM queries and returns raw JSON, and `AgentScripts/GSE/Resource/InventoryWin.pm`
+turns it into the schema. Available memory comes from `ComputerInfo.AvailablePhysicalMemory`, because the Windows
+performance counters are broken on some hosts. Unknown values are null, never 0. The tests are
+`tests/inventory_windows_test.pl`. The reply format and the schema are in the panel repository:
+`docs/agent-hardware-inventory-protocol.md`.

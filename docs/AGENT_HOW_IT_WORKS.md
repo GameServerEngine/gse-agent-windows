@@ -6,7 +6,7 @@ Where something is not verified, it says so. Do not assume the opposite of what 
 
 ## 1. What runs where
 
-- The production agent is the Windows service `GSPAgent`. It runs the Perl agent
+- The production agent is the Windows service `GSE-Agent`. It runs the Perl agent
   (`AgentScripts/agent_core.pl`) through `AgentScripts/agent_launch.sh`.
 - Start and stop of the service belong to Windows Services. `agent_stop.bat` only
   stops the foreground instance (`agent_core_foreground.pid`). It must not stop the service.
@@ -125,7 +125,7 @@ error instead of killing it.
 - `docs/GAME_SERVER_LIFECYCLE_CONTRACT.md` describes an earlier batch-file launch model in
   places. Read the code (`GameManager.pm`) for the current launch behavior.
 
-## 11. Before any restart of the GSPAgent service on a live host
+## 11. Before any restart of the GSE-Agent service on a live host
 
 1. List all game processes by name and port, and the saved state file for each home.
 2. Confirm which running servers have a matching state (PID alive, port listening).

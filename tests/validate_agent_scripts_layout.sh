@@ -49,7 +49,7 @@ if grep -Eq '^GSP/(perl_env.sh|agent_core.pl|agent_launch.sh)$' "$manifest"; the
     fail "manifest still references legacy GSP entry points"
 fi
 
-require_text "$ps_file" '[string]$ServiceName = "GSPAgent"'
+require_text "$ps_file" '[string]$ServiceName = "GSE-Agent"'
 require_text "$ps_file" 'function New-AgentServiceWrapper'
 require_text "$ps_file" '"exec /bin/bash /AgentScripts/agent_launch.sh service"'
 require_text "$ps_file" '"-p", "/bin/bash"'

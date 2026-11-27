@@ -8,7 +8,7 @@ param(
     [ValidateSet("Install", "Repair", "Reconfigure", "Uninstall")]
     [string]$Mode = "Install",
     [string]$InstallPath = "C:\GSE\Agent",
-    [string]$ServiceName = "GSPAgent",
+    [string]$ServiceName = "GSE-Agent",
     [string]$ServiceDisplayName = "GSE Windows Agent",
     [string]$AgentUser = "gameserver",
     [string]$PayloadSourcePath = "",
