@@ -4916,22 +4916,33 @@ sub discover_ips
 		return "";
 	}
 
-	my $iplist = "";
-
-	my @data = `ipconfig /all`;
-
-	foreach my $temp (@data)
+	# Every IPv4 address players can reach a game on. ipconfig lists one block per adapter: a
+	# header line ("Ethernet adapter Ethernet:"), then its Description, then its IPv4 Address.
+	# Virtual adapters are left out (VPN tunnels such as WireGuard, Hyper-V and Docker switches,
+	# loopback, TAP, Tailscale, ZeroTier), and so are link-local 169.254 addresses. The panel
+	# offers every address returned here for game servers, so a VPN address here meant games bound to it.
+	my @ips;
+	my $skip_adapter = 0;
+	foreach my $line (`ipconfig /all`)
 	{
-		if ($temp =~ /ip.+: (\d+\.\d+\.\d+\.\d+)/si)
+		if ($line =~ /^\S.*adapter .*:\s*$/i)
 		{
-			chomp $1;
-			logger "Found an IP $1";
-			$iplist .= "$1,";
+			$skip_adapter = 0;
+			next;
+		}
+		if ($line =~ /Description[ .]*: (.*)$/i && $1 =~ /WireGuard|Hyper-V|vEthernet|Loopback|TAP-|Tailscale|ZeroTier|Docker/i)
+		{
+			$skip_adapter = 1;
+			next;
+		}
+		next if ($skip_adapter);
+		if ($line =~ /IPv4 Address[ .]*: (\d+\.\d+\.\d+\.\d+)/i && $1 !~ /^(127|169\.254)\./)
+		{
+			push @ips, $1;
 		}
 	}
-	logger "IPlist is $iplist";
-	chop $iplist;
-	return "$iplist";
+	logger "Found IPs: @ips";
+	return join(",", @ips);
 }
 
 # ---------------------------------------------------------------------------
