@@ -155,3 +155,22 @@ turns it into the schema. Available memory comes from `ComputerInfo.AvailablePhy
 performance counters are broken on some hosts. Unknown values are null, never 0. The tests are
 `tests/inventory_windows_test.pl`. The reply format and the schema are in the panel repository:
 `docs/agent-hardware-inventory-protocol.md`.
+
+## Status sample: per game server usage
+
+`status_sample` (polled by the panel's status history poller) also returns one line per game
+server that has a status file:
+
+    home.<id>=<state>|<cpu>|<ram>|<disk>|<disk_at>
+
+- `state`: the game manager state (RUNNING, STOPPED, ...).
+- `cpu`: percent of the whole machine over the one-second window the sample measures.
+- `ram`: bytes of working set.
+- CPU and RAM add up the game process and the bot (BEC) with all their child processes,
+  found from the `pid` in `status` and `bot-status`. A stopped server reports 0 and 0.
+- `disk` and `disk_at`: size in bytes of the server folder and when it was measured. The size is
+  measured in the background at most once an hour (`du -sb`, result in `<home>/disk-usage`),
+  so the sample never waits for it. Both are empty until the first measurement is done.
+
+The Linux agent sends the same lines, plus `container.<n>=` lines for Docker containers that do
+not belong to a game server.
