@@ -4969,18 +4969,23 @@ sub status_win_proc_snapshot
 {
 	# The backticks below run through Cygwin's sh, so $_ must be written \$_ or sh replaces it
 	# before PowerShell sees it (the same as the listener check in this file).
-	my $ps = q{powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f \$_.Id, \$_.ProcessName, \$_.TotalProcessorTime.TotalSeconds, \$_.WorkingSet64 }" 2>/dev/null};
-	my (%cpu, %ws, %name);
+	# Win32_Process gives the parent of each process, which the per-server figures need.
+	# KernelModeTime and UserModeTime are in units of 100 ns; dividing by 10000000 gives seconds.
+	my $ps = q{powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}|{2}|{3}|{4}' -f \$_.ProcessId, \$_.ParentProcessId, \$_.Name, ((\$_.KernelModeTime + \$_.UserModeTime) / 10000000), \$_.WorkingSetSize }" 2>/dev/null};
+	my (%cpu, %ws, %name, %parent);
 	my $out = `$ps`;
 	foreach my $line (split(/\r?\n/, defined $out ? $out : ''))
 	{
-		my @f = split(/\|/, $line, 4);
-		next unless (@f == 4 && $f[0] =~ /^\d+$/);
-		$cpu{$f[0]}  = $f[2] + 0;
-		$ws{$f[0]}   = $f[3] + 0;
-		$name{$f[0]} = $f[1];
+		my @f = split(/\|/, $line, 5);
+		# PID 0 is the System Idle Process: its "CPU time" is idle time, not work.
+		next unless (@f == 5 && $f[0] =~ /^\d+$/ && $f[0] > 0);
+		$parent{$f[0]} = $f[1] + 0;
+		$name{$f[0]}   = $f[2];
+		$name{$f[0]}   =~ s/\.exe$//i;
+		$cpu{$f[0]}    = $f[3] + 0;
+		$ws{$f[0]}     = $f[4] + 0;
 	}
-	return (\%cpu, \%ws, \%name);
+	return (\%cpu, \%ws, \%name, \%parent);
 }
 
 sub status_top_five
@@ -5022,11 +5027,11 @@ sub status_sample
 	# Two process snapshots one second apart. Each is timed from before to after the call, and the
 	# midpoint stands for the moment it was read, so the Get-Process run time does not skew the window.
 	my $t0 = Time::HiRes::time();
-	my ($cpu_a, $ws_a, $name_a) = status_win_proc_snapshot();
+	my ($cpu_a, $ws_a, $name_a, $parent_a) = status_win_proc_snapshot();
 	my $t1 = Time::HiRes::time();
 	Time::HiRes::usleep(1000000);
 	my $t2 = Time::HiRes::time();
-	my ($cpu_b, $ws_b, $name_b) = status_win_proc_snapshot();
+	my ($cpu_b, $ws_b, $name_b, $parent_b) = status_win_proc_snapshot();
 	my $t3 = Time::HiRes::time();
 	my $elapsed = (($t2 + $t3) / 2) - (($t0 + $t1) / 2);
 	my ($total2, $idle2) = status_read_cpu_totals();
@@ -5042,8 +5047,10 @@ sub status_sample
 			$cpu_delta{$pid} = $d if $d > 0;
 		}
 	}
-	my @top_cpu = status_top_five(\%cpu_delta, $name_b, $machine_seconds > 0 ? 100 / $machine_seconds : 0);
+	my $cpu_scale = $machine_seconds > 0 ? 100 / $machine_seconds : 0;
+	my @top_cpu = status_top_five(\%cpu_delta, $name_b, $cpu_scale);
 	my @top_ram = status_top_five($ws_b, $name_b, 0);
+	my @homes = status_home_lines(\%cpu_delta, $cpu_scale, $ws_b, $parent_b);
 
 	my $uptime = 0;
 	if (open(my $fh, '<', '/proc/uptime')) { my $l = <$fh>; close($fh); $uptime = (defined $l && $l =~ /^(\d+)/) ? $1 : 0; }
@@ -5093,7 +5100,73 @@ sub status_sample
 	$out .= "disk_used=$disk_used\n";
 	for my $i (1 .. scalar(@top_cpu)) { $out .= "proc_cpu.$i=$top_cpu[$i - 1]\n"; }
 	for my $i (1 .. scalar(@top_ram)) { $out .= "proc_ram.$i=$top_ram[$i - 1]\n"; }
+	$out .= "$_\n" foreach @homes;
 	return $out;
+}
+
+# One line per game server with a status file:
+#   home.<id>=<state>|<cpu percent of the machine>|<RAM bytes>|<disk bytes>|<when the disk was measured>
+# CPU and RAM add up the game process and the bot (BEC) with all their child processes.
+sub status_home_lines
+{
+	my ($cpu_delta, $cpu_scale, $ws, $parent) = @_;
+	my @lines;
+	opendir(my $dh, GAME_HOMES_WIN) or return @lines;
+	my @ids = sort { $a <=> $b } grep { /^\d+$/ && -e GAME_HOMES_WIN . "\\$_\\status" } readdir($dh);
+	closedir($dh);
+	foreach my $id (@ids)
+	{
+		my $state = gm()->read_state($id);
+		my $bot = gm()->read_state("$id-bot");
+		my @pids = (status_pid_tree($state->{pid}, $ws, $parent), status_pid_tree($bot->{pid}, $ws, $parent));
+		my ($cpu, $ram) = (0, 0);
+		foreach my $pid (@pids)
+		{
+			$cpu += ($cpu_delta->{$pid} || 0) * $cpu_scale;
+			$ram += $ws->{$pid} || 0;
+		}
+		my $home_dir = Cygwin::win_to_posix_path(GAME_HOMES_WIN . "\\$id");
+		my ($disk, $disk_at) = status_home_disk($home_dir);
+		push @lines, sprintf("home.%d=%s|%.2f|%d|%s|%s", $id, $state->{state}, $cpu, $ram, $disk, $disk_at);
+	}
+	return @lines;
+}
+
+# A process and all its children, only if the process is running now. Empty for a stopped server.
+sub status_pid_tree
+{
+	my ($root, $ws, $parent) = @_;
+	return () unless (defined $root && $root =~ /^\d+$/ && $root > 0 && exists $ws->{$root});
+	my @tree = ($root);
+	for (my $i = 0; $i < @tree; $i++)
+	{
+		my $pid = $tree[$i];
+		push @tree, grep { $parent->{$_} == $pid && $_ != $pid } keys %$parent;
+	}
+	return @tree;
+}
+
+# Size of a game server folder, from the disk-usage file in it ("<epoch> <bytes>").
+# Measuring a big folder takes a while, so it runs in the background at most once an hour
+# and this returns the last result. Empty values until the first measurement is done.
+sub status_home_disk
+{
+	my ($home_dir) = @_;
+	my $cache = "$home_dir/disk-usage";
+	my ($at, $bytes) = ('', '');
+	if (open(my $fh, '<', $cache))
+	{
+		my $line = <$fh>;
+		close($fh);
+		($at, $bytes) = ($1, $2) if (defined $line && $line =~ /^(\d+) (\d+)/);
+	}
+	my $running = "$cache.running";
+	my $busy = -e $running && (time() - (stat($running))[9]) < 3600;
+	if (!$busy && ($at eq '' || time() - $at >= 3600))
+	{
+		system("touch '$running' && ( b=\$(du -sb '$home_dir' 2>/dev/null | cut -f1); [ -n \"\$b\" ] && echo \"\$(date +%s) \$b\" > '$cache'; rm -f '$running' ) >/dev/null 2>&1 &");
+	}
+	return ($bytes, $at);
 }
 
 ### Return -1 In case of invalid param
